@@ -80,6 +80,14 @@ export function ResumeView({ resume }: ResumeViewProps) {
           </div>
         )}
 
+        {/* Tip for client-side sync */}
+        <div className="p-3 bg-blue-500/10 text-blue-500 dark:text-blue-400 rounded-lg text-xs flex items-start gap-2 border border-blue-500/20 shadow-sm">
+          <AlertCircle size={14} className="mt-0.5 shrink-0" />
+          <div>
+            <span className="font-semibold">Dica de Segurança:</span> Para sincronizar seu perfil do LinkedIn de forma 100% segura e evitar que a sua sessão seja invalidada pela plataforma, abra a extensão **JobFinder Sync** no seu navegador e clique no botão **Sincronizar**.
+          </div>
+        </div>
+
         {/* 1. PROFILE HEADER CARD (LinkedIn Style) */}
         <div className="bg-bg-card border border-border-color rounded-lg overflow-hidden relative shadow-subtle transition-colors">
           {/* Banner cover */}
