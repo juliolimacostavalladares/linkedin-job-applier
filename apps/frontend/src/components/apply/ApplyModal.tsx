@@ -36,7 +36,12 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
   const handleSubmit = async () => {
     setSubmitting(true);
     try {
-      await applyJob(job.id, formValues);
+      await applyJob(job.id, formValues, {
+        jobTitle: job.title,
+        companyName: job.companyName,
+        companyLogo: job.companyLogo,
+        jobUrl: job.url,
+      });
       alert('Candidatura finalizada com sucesso!');
       onClose();
     } catch (err: unknown) {

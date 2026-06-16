@@ -14,7 +14,11 @@ interface JobsState {
   credentialError: boolean;
   fetchJobs: () => Promise<void>;
   selectJob: (job: Job) => Promise<void>;
-  applyJob: (jobId: string, answers: Record<string, string>) => Promise<void>;
+  applyJob: (
+    jobId: string, 
+    answers: Record<string, string>,
+    metadata?: { jobTitle?: string; companyName?: string; companyLogo?: string; jobUrl?: string }
+  ) => Promise<void>;
   clearSelection: () => void;
   clearError: () => void;
 }
@@ -80,13 +84,25 @@ export const useJobsStore = create<JobsState>((set) => ({
     }
   },
 
-  applyJob: async (jobId: string, answers: Record<string, string>) => {
+  applyJob: async (
+    jobId: string, 
+    answers: Record<string, string>,
+    metadata?: { jobTitle?: string; companyName?: string; companyLogo?: string; jobUrl?: string }
+  ) => {
     set({ loadingDetail: true, error: '' });
     try {
-      await apiService.applyJob(jobId, answers);
+      await apiService.applyJob(jobId, answers, metadata);
       set((state) => {
+        const updatedJobs = state.jobs.map((j) => {
+          if (j.id === jobId) {
+            return { ...j, applied: true };
+          }
+          return j;
+        });
+
         if (state.selectedJob && state.selectedJob.id === jobId) {
           return {
+            jobs: updatedJobs,
             selectedJob: {
               ...state.selectedJob,
               applied: true,
@@ -95,7 +111,7 @@ export const useJobsStore = create<JobsState>((set) => ({
             loadingDetail: false,
           };
         }
-        return { loadingDetail: false };
+        return { jobs: updatedJobs, loadingDetail: false };
       });
     } catch (err: unknown) {
       let message = 'Erro desconhecido ao candidatar';

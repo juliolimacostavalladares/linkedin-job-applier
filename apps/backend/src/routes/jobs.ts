@@ -37,7 +37,15 @@ router.get('/', async (_req, res, next) => {
       headersJson: creds.headersJson,
     });
 
-    res.json({ jobs: data.jobs, source: 'linkedin-graphql' });
+    const appliedIds = await applicationService.listAppliedJobIds();
+    const appliedSet = new Set(appliedIds);
+
+    const enrichedJobs = (data.jobs || []).map((job) => ({
+      ...job,
+      applied: appliedSet.has(job.id),
+    }));
+
+    res.json({ jobs: enrichedJobs, source: 'linkedin-graphql' });
   } catch (error) {
     next(error);
   }
@@ -206,9 +214,14 @@ router.get('/:id/apply-form', async (req, res, next) => {
 router.post('/:id/apply', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { answers } = req.body;
+    const { answers, jobTitle, companyName, companyLogo, jobUrl } = req.body;
 
-    const application = await applicationService.save(id, answers || {}, 'applied');
+    const application = await applicationService.save(id, answers || {}, 'applied', {
+      jobTitle,
+      companyName,
+      companyLogo,
+      jobUrl,
+    });
 
     res.json({
       success: true,

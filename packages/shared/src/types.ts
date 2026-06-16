@@ -3,6 +3,7 @@ export interface Job {
   title: string;
   companyInfo: string;
   companyLogo?: string;
+  applied?: boolean;
 }
 
 export interface JobDetail {
