@@ -10,7 +10,8 @@
     "strict": true
   },
   "references": [
-    { "path": "./apps/web" },
+    { "path": "./apps/backend" },
+    { "path": "./apps/frontend" },
     { "path": "./apps/extension" },
     { "path": "./packages/shared" }
   ]
