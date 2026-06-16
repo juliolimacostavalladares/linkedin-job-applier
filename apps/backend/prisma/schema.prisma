@@ -8,11 +8,12 @@ datasource db {
 }
 
 model Credentials {
-  id        String   @id @default(uuid())
-  cookie    String
-  csrf      String
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  cookie      String
+  csrf        String
+  headersJson String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
 
   @@map("credentials")
 }

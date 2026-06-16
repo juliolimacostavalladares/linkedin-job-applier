@@ -19,8 +19,8 @@ router.post('/from-linkedin', async (req, res, next) => {
     }
 
     const query = `
-      query GetResumePdf($profileId: String!, $cookie: String!, $csrf: String!) {
-        resumePdf(profileId: $profileId, cookie: $cookie, csrf: $csrf) {
+      query GetResumePdf($profileId: String!, $cookie: String!, $csrf: String!, $headersJson: String) {
+        resumePdf(profileId: $profileId, cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
           success
           text
           pdfBase64
@@ -40,6 +40,7 @@ router.post('/from-linkedin', async (req, res, next) => {
       profileId,
       cookie: creds.cookie,
       csrf: creds.csrf,
+      headersJson: creds.headersJson,
     });
 
     const result = data.resumePdf;
@@ -47,6 +48,76 @@ router.post('/from-linkedin', async (req, res, next) => {
     await resumeService.upsert(profileId, result.text, 'Curriculo_LinkedIn.pdf');
 
     res.json({ success: true, text: result.text, pdfBase64: result.pdfBase64 });
+  } catch (error) {
+    next(error);
+  }
+});
+
+interface ExperienceInput {
+  company: string;
+  role: string;
+  duration: string;
+  description?: string;
+}
+
+interface EducationInput {
+  institution: string;
+  degree: string;
+  duration: string;
+}
+
+// POST /api/resume/sync-profile-data - Save synced profile data directly from Extension
+router.post('/sync-profile-data', async (req, res, next) => {
+  try {
+    const { profileId, name, headline, photoUrl, about, experiences, education } = req.body;
+    validateProfileId(profileId);
+
+    // Reconstruct the text resume
+    let reconstructedText = `${name}\n${headline}\n\n`;
+    if (about) {
+      reconstructedText += `SOBRE\n${about}\n\n`;
+    }
+    if (experiences && Array.isArray(experiences)) {
+      reconstructedText += `EXPERIÊNCIA\n`;
+      (experiences as ExperienceInput[]).forEach((exp) => {
+        reconstructedText += `- ${exp.role} em ${exp.company} (${exp.duration})\n`;
+        if (exp.description) {
+          reconstructedText += `  ${exp.description}\n`;
+        }
+      });
+      reconstructedText += `\n`;
+    }
+    if (education && Array.isArray(education)) {
+      reconstructedText += `EDUCAÇÃO\n`;
+      (education as EducationInput[]).forEach((edu) => {
+        reconstructedText += `- ${edu.institution}: ${edu.degree} (${edu.duration})\n`;
+      });
+      reconstructedText += `\n`;
+    }
+    const pdfText = reconstructedText.trim();
+
+    // Save/upsert to DB using resumeService
+    const result = await resumeService.upsert(profileId, pdfText, 'Curriculo_LinkedIn.pdf', {
+      name,
+      headline,
+      photoUrl,
+      about,
+      experienceJson: JSON.stringify(experiences),
+      educationJson: JSON.stringify(education),
+    });
+
+    res.json({
+      success: true,
+      profileId,
+      name,
+      headline,
+      photoUrl,
+      about,
+      experiences,
+      education,
+      text: pdfText,
+      filename: 'Curriculo_LinkedIn.pdf'
+    });
   } catch (error) {
     next(error);
   }
@@ -114,7 +185,7 @@ router.get('/profile', async (req, res, next) => {
     }
 
     logger.info('Syncing profile from LinkedIn (on-demand/first-load)');
-    const result = await resumeService.syncProfile(creds.cookie, creds.csrf);
+    const result = await resumeService.syncProfile(creds.cookie, creds.csrf, creds.headersJson);
     res.json(result);
   } catch (error) {
     next(error);

@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger';
+import pdfParse from 'pdf-parse';
 import type { LinkedInResponse, Job, JobDetail, WorkExperience, Education } from '@linkedin-job-applier/shared';
 
 interface LinkedInVectorImage {
@@ -105,10 +106,18 @@ interface LinkedInGraphQLResponse {
 export class LinkedInService {
   private cookie: string;
   private csrf: string;
+  private dynamicHeaders: Record<string, string> = {};
 
-  constructor(cookie: string, csrf: string) {
+  constructor(cookie: string, csrf: string, headersJson?: string | null) {
     this.cookie = cookie;
     this.csrf = csrf;
+    if (headersJson) {
+      try {
+        this.dynamicHeaders = JSON.parse(headersJson);
+      } catch (e) {
+        logger.error('Error parsing dynamic headers JSON', e);
+      }
+    }
   }
 
   async fetchJobs(): Promise<Job[]> {
@@ -221,11 +230,34 @@ export class LinkedInService {
       method: 'POST',
       headers: {
         accept: '*/*',
+        'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+        'cache-control': 'no-cache',
         'content-type': 'application/json',
         'csrf-token': this.csrf,
+        dnt: '1',
+        origin: 'https://www.linkedin.com',
+        pragma: 'no-cache',
+        priority: 'u=1, i',
+        referer: `https://www.linkedin.com/in/${profileId}/`,
+        'sec-ch-prefers-color-scheme': 'dark',
+        'sec-ch-ua': '"Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-origin',
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
+        'x-li-anchor-page-key': 'd_flagship3_profile_view_base',
+        'x-li-application-instance': 'undefined',
+        'x-li-application-version': '0.2.6025',
+        'x-li-page-instance': 'urn:li:page:d_flagship3_profile_view_base;JYk6JxbeTUqXjkNpUgFnZg==',
+        'x-li-page-instance-tracking-id': 'JYk6JxbeTUqXjkNpUgFnZg==',
+        'x-li-pageforestid': '00065461c408e6a4004a1d771b24b000',
+        'x-li-rsc-stream': 'true',
+        'x-li-traceparent': '00-00065461c408e6a4004a1d771b24b000-3fd4c6e732a05d5c-00',
+        'x-li-tracestate': 'LinkedIn=3fd4c6e732a05d5c',
+        'x-li-track': '{"clientVersion":"0.2.6025","mpVersion":"0.2.6025","osName":"web","timezoneOffset":-3,"timezone":"America/Sao_Paulo","deviceFormFactor":"DESKTOP","mpName":"web","displayDensity":2,"displayWidth":2560,"displayHeight":1600}',
         cookie: this.cookie,
-        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
       },
       body: JSON.stringify(payload),
       redirect: 'follow',
@@ -247,8 +279,11 @@ export class LinkedInService {
       headers: {
         cookie: this.cookie,
         accept: '*/*',
-        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
         'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+        'sec-ch-ua': '"Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
       },
     });
 
@@ -269,8 +304,9 @@ export class LinkedInService {
     experiences: WorkExperience[];
     education: Education[];
   }> {
+    // Step 1: Get basic identity from /voyager/api/me
     const apiUrl = 'https://www.linkedin.com/voyager/api/me';
-    logger.debug('Fetching profile info from LinkedIn API');
+    logger.debug('Fetching profile identity from LinkedIn /me API');
 
     const response = await fetch(apiUrl, {
       headers: this.getHeaders(),
@@ -291,7 +327,7 @@ export class LinkedInService {
     const firstName = miniProfile.firstName || '';
     const lastName = miniProfile.lastName || '';
     const name = `${firstName} ${lastName}`.trim();
-    const defaultHeadline = miniProfile.occupation || '';
+    const headline = miniProfile.occupation || '';
     const profileId = miniProfile.entityUrn?.split(':').pop() || '';
 
     let photoUrl = '';
@@ -300,109 +336,27 @@ export class LinkedInService {
       photoUrl = miniProfile.picture.rootUrl + artifact.fileIdentifyingUrlPathSegment;
     }
 
-    let headline = defaultHeadline;
+    // Step 2: Download profile PDF and parse its text
     let about = '';
     let experiences: WorkExperience[] = [];
     let education: Education[] = [];
 
-    // 1. Fetch Profile Summary (About) via voyagerIdentityDashProfiles (Safe GraphQL)
     try {
-      const profileQueryUrl = `https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=false&variables=(memberIdentity:${profileId},profileDecorationId:com.linkedin.voyager.dash.decorations.identity.profile.FullProfileWithEntities)&queryId=voyagerIdentityDashProfiles.b5c27c04968c409fc0ed3546575b9b7a`;
-      logger.debug('Fetching profile details via GraphQL', { profileId });
-      
-      const profileRes = await fetch(profileQueryUrl, {
-        headers: this.getHeaders(),
-        redirect: 'manual',
-      });
+      logger.debug('Downloading LinkedIn profile PDF for parsing', { profileId });
+      const pdfBuffer = await this.fetchResumePdf(profileId);
+      const pdfData = await pdfParse(Buffer.from(pdfBuffer));
+      const pdfText = pdfData.text || '';
+      logger.info('PDF downloaded and parsed successfully', { profileId, textLength: pdfText.length });
 
-      if (profileRes.ok) {
-        const profileJson = (await profileRes.json()) as LinkedInGraphQLResponse;
-        const included = profileJson.included || [];
-        const profileObj = included.find(
-          (item) => item.$type === 'com.linkedin.voyager.dash.identity.profile.Profile'
-        ) as { headline?: string; summary?: string } | undefined;
-        
-        if (profileObj) {
-          if (profileObj.headline) headline = profileObj.headline;
-          if (profileObj.summary) about = profileObj.summary;
-        }
-      }
+      const parsed = this.parsePdfText(pdfText);
+      about = parsed.about;
+      experiences = parsed.experiences;
+      education = parsed.education;
     } catch (err) {
-      logger.error('Error fetching GraphQL profile details', { error: err });
+      logger.error('Error downloading/parsing profile PDF — using partial identity only', { error: err });
     }
 
-    // 2. Fetch Experiences (Positions) via voyagerIdentityDashPositions (Safe GraphQL)
-    try {
-      const positionsQueryUrl = `https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=false&variables=(profileUrn:urn%3Ali%3Afsd_profile%3A${profileId})&queryId=voyagerIdentityDashPositions.a3c8cc7db956cf57b98d24b613143522`;
-      logger.debug('Fetching positions via GraphQL', { profileId });
-
-      const positionsRes = await fetch(positionsQueryUrl, {
-        headers: this.getHeaders(),
-        redirect: 'manual',
-      });
-
-      if (positionsRes.ok) {
-        const positionsJson = (await positionsRes.json()) as LinkedInGraphQLResponse;
-        const included = positionsJson.included || [];
-        const positions = included.filter(
-          (item) => item.$type === 'com.linkedin.voyager.dash.identity.profile.Position'
-        ) as Array<{
-          companyName?: string;
-          title?: string;
-          description?: string;
-          timePeriod?: {
-            startDate?: { month?: number; year?: number };
-            endDate?: { month?: number; year?: number };
-          };
-        }>;
-
-        experiences = positions.map((pos) => ({
-          company: pos.companyName || '',
-          role: pos.title || '',
-          duration: this.formatTimePeriod(pos.timePeriod),
-          description: pos.description || '',
-        }));
-      }
-    } catch (err) {
-      logger.error('Error fetching GraphQL positions', { error: err });
-    }
-
-    // 3. Fetch Education via voyagerIdentityDashEducation (Safe GraphQL)
-    try {
-      const educationQueryUrl = `https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=false&variables=(profileUrn:urn%3Ali%3Afsd_profile%3A${profileId})&queryId=voyagerIdentityDashEducation.b12bfa4b03afda37bcfe63d7d41d6132`;
-      logger.debug('Fetching education via GraphQL', { profileId });
-
-      const educationRes = await fetch(educationQueryUrl, {
-        headers: this.getHeaders(),
-        redirect: 'manual',
-      });
-
-      if (educationRes.ok) {
-        const educationJson = (await educationRes.json()) as LinkedInGraphQLResponse;
-        const included = educationJson.included || [];
-        const schools = included.filter(
-          (item) => item.$type === 'com.linkedin.voyager.dash.identity.profile.Education'
-        ) as Array<{
-          schoolName?: string;
-          degreeName?: string;
-          fieldOfStudy?: string;
-          timePeriod?: {
-            startDate?: { year?: number };
-            endDate?: { year?: number };
-          };
-        }>;
-
-        education = schools.map((sch) => ({
-          institution: sch.schoolName || '',
-          degree: this.formatDegree(sch.degreeName, sch.fieldOfStudy),
-          duration: this.formatEducationTimePeriod(sch.timePeriod),
-        }));
-      }
-    } catch (err) {
-      logger.error('Error fetching GraphQL education', { error: err });
-    }
-
-    logger.info('Fetched complete profile info via GraphQL voyagerIdentityDash APIs', { name, profileId });
+    logger.info('Fetched complete profile info via PDF parsing', { name, profileId });
 
     return {
       success: true,
@@ -416,60 +370,269 @@ export class LinkedInService {
     };
   }
 
-  private formatTimePeriod(tp?: {
-    startDate?: { month?: number; year?: number };
-    endDate?: { month?: number; year?: number };
-  }): string {
-    if (!tp) return '';
-    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-    
-    let startStr = '';
-    if (tp.startDate?.year) {
-      const monthStr = tp.startDate.month ? `${monthNames[tp.startDate.month - 1]} ` : '';
-      startStr = `${monthStr}${tp.startDate.year}`;
+  /**
+   * Parses the plain text extracted from the LinkedIn profile PDF.
+   * Identifies sections by well-known headings and builds structured data.
+   */
+  private parsePdfText(text: string): {
+    about: string;
+    experiences: WorkExperience[];
+    education: Education[];
+  } {
+    // Normalize line endings and collapse excessive blank lines
+    const lines = text
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .split('\n')
+      .map((l) => l.trim());
+
+    // Section heading patterns (LinkedIn PDFs in PT/EN)
+    const SECTION_HEADINGS = [
+      /^(sobre|about|resumo|summary)$/i,
+      /^(experi[eê]ncia|experience|experi[eê]ncias profissionais?)$/i,
+      /^(forma[cç][aã]o|educa[cç][aã]o|education|academic)$/i,
+      /^(habilidades|skills|competências)$/i,
+      /^(idiomas?|languages?)$/i,
+      /^(certificados?|certifications?|cursos?)$/i,
+      /^(prêmios?|honras?|awards?)$/i,
+      /^(voluntariado?|volunteer)$/i,
+      /^(projetos?|projects?)$/i,
+      /^(publica[cç][oõ]es?|publications?)$/i,
+      /^(recomenda[cç][oõ]es?|recommendations?)$/i,
+      /^(interesses?|interests?)$/i,
+    ];
+
+    const isHeading = (line: string) =>
+      SECTION_HEADINGS.some((rx) => rx.test(line.trim()));
+
+    // Split into sections
+    type Section = { heading: string; lines: string[] };
+    const sections: Section[] = [];
+    let current: Section | null = null;
+
+    for (const line of lines) {
+      if (!line) continue;
+      if (isHeading(line)) {
+        if (current) sections.push(current);
+        current = { heading: line.toLowerCase(), lines: [] };
+      } else if (current) {
+        current.lines.push(line);
+      }
     }
-    
-    let endStr = 'Presente';
-    if (tp.endDate?.year) {
-      const monthStr = tp.endDate.month ? `${monthNames[tp.endDate.month - 1]} ` : '';
-      endStr = `${monthStr}${tp.endDate.year}`;
-    } else if (!tp.startDate?.year) {
-      return '';
+    if (current) sections.push(current);
+
+    // ─── About ───────────────────────────────────────────────────
+    const aboutSection = sections.find((s) =>
+      /^(sobre|about|resumo|summary)$/i.test(s.heading)
+    );
+    const about = aboutSection?.lines.join(' ').trim() || '';
+
+    // ─── Experiences ─────────────────────────────────────────────
+    const expSection = sections.find((s) =>
+      /^(experi[eê]ncia|experience|experi[eê]ncias profissionais?)$/i.test(s.heading)
+    );
+    const experiences: WorkExperience[] = [];
+
+    if (expSection && expSection.lines.length > 0) {
+      // LinkedIn PDF experience block format (typical):
+      // Line 0: Company name
+      // Line 1: Role title  (or "Role · Duration")
+      // Line 2: Duration    ("Jan 2023 - Presente · X anos")
+      // Line 3+: Description (optional, multi-line)
+      // Then next entry starts again
+      //
+      // We detect a new entry when we see a duration-like pattern following a role
+      const DURATION_RX = /\d{4}|presente|current|hoje|now/i;
+      const ROLE_SEP_RX = / · /;
+
+      let i = 0;
+      const expLines = expSection.lines;
+
+      while (i < expLines.length) {
+        // Skip empty / separators
+        while (i < expLines.length && !expLines[i]) i++;
+        if (i >= expLines.length) break;
+
+        // Try to detect a block:
+        // Pattern A: company on its own line, then role, then duration
+        // Pattern B: "Role · Duration" on one line with company above
+        let company = '';
+        let role = '';
+        let duration = '';
+        const descLines: string[] = [];
+
+        const first = expLines[i];
+
+        // Check if line contains a duration (then it's the start of a role line)
+        if (ROLE_SEP_RX.test(first) && DURATION_RX.test(first)) {
+          // "Role · Company · Duration" pattern
+          const parts = first.split(' · ');
+          role = parts[0] || '';
+          if (parts.length >= 3) {
+            company = parts[1] || '';
+            duration = parts.slice(2).join(' · ');
+          } else {
+            duration = parts[1] || '';
+          }
+          i++;
+        } else {
+          // first line = company or role
+          company = first;
+          i++;
+
+          if (i < expLines.length) {
+            const second = expLines[i];
+            if (ROLE_SEP_RX.test(second)) {
+              // "Role · Duration" pattern
+              const parts = second.split(' · ');
+              role = parts[0] || '';
+              duration = parts.slice(1).join(' · ');
+              i++;
+            } else if (DURATION_RX.test(second) && !ROLE_SEP_RX.test(second)) {
+              // second line is pure duration → company was already role
+              role = company;
+              company = '';
+              duration = second;
+              i++;
+            } else {
+              // second line is the role title
+              role = second;
+              i++;
+              if (i < expLines.length) {
+                const third = expLines[i];
+                if (DURATION_RX.test(third)) {
+                  duration = third;
+                  i++;
+                }
+              }
+            }
+          }
+        }
+
+        // Collect description until next entry (detected by another company-like line)
+        while (
+          i < expLines.length &&
+          !isHeading(expLines[i]) &&
+          !(DURATION_RX.test(expLines[i]) && !descLines.length)
+        ) {
+          // Stop if we see what looks like a new entry
+          const peek = expLines[i];
+          if (
+            descLines.length > 0 &&
+            !DURATION_RX.test(peek) &&
+            i + 1 < expLines.length &&
+            DURATION_RX.test(expLines[i + 1])
+          ) break;
+          descLines.push(peek);
+          i++;
+        }
+
+        if (role || company) {
+          experiences.push({
+            company,
+            role,
+            duration,
+            description: descLines.join(' ').trim(),
+          });
+        }
+      }
     }
-    
-    return `${startStr} - ${endStr}`;
+
+    // ─── Education ───────────────────────────────────────────────
+    const eduSection = sections.find((s) =>
+      /^(forma[cç][aã]o|educa[cç][aã]o|education|academic)$/i.test(s.heading)
+    );
+    const education: Education[] = [];
+
+    if (eduSection && eduSection.lines.length > 0) {
+      // LinkedIn PDF education format:
+      // Line 0: Institution name
+      // Line 1: Degree, Field of study
+      // Line 2: Duration ("2018 - 2022")
+      const YEAR_RX = /\b\d{4}\b/;
+      let i = 0;
+      const eduLines = eduSection.lines;
+
+      while (i < eduLines.length) {
+        while (i < eduLines.length && !eduLines[i]) i++;
+        if (i >= eduLines.length) break;
+
+        const institution = eduLines[i]; i++;
+        let degree = '';
+        let duration = '';
+
+        if (i < eduLines.length && !YEAR_RX.test(eduLines[i])) {
+          degree = eduLines[i]; i++;
+        }
+        if (i < eduLines.length && YEAR_RX.test(eduLines[i])) {
+          duration = eduLines[i]; i++;
+        }
+        // Skip activity/note lines until next institution
+        while (
+          i < eduLines.length &&
+          !isHeading(eduLines[i]) &&
+          !(
+            i + 1 < eduLines.length &&
+            !YEAR_RX.test(eduLines[i]) &&
+            YEAR_RX.test(eduLines[i + 1] || '')
+          )
+        ) {
+          // If next two lines look like institution + year, stop collecting
+          if (
+            !YEAR_RX.test(eduLines[i]) &&
+            i + 2 < eduLines.length &&
+            YEAR_RX.test(eduLines[i + 1] || '')
+          ) break;
+          if (
+            !YEAR_RX.test(eduLines[i]) &&
+            i + 1 < eduLines.length &&
+            !YEAR_RX.test(eduLines[i + 1] || '') &&
+            i + 2 < eduLines.length &&
+            YEAR_RX.test(eduLines[i + 2] || '')
+          ) break;
+          i++;
+        }
+
+        if (institution) {
+          education.push({ institution, degree, duration });
+        }
+      }
+    }
+
+    return { about, experiences, education };
   }
 
-  private formatEducationTimePeriod(tp?: {
-    startDate?: { year?: number };
-    endDate?: { year?: number };
-  }): string {
-    if (!tp) return '';
-    const start = tp.startDate?.year ? String(tp.startDate.year) : '';
-    const end = tp.endDate?.year ? String(tp.endDate.year) : 'Presente';
-    if (!start) return '';
-    return `${start} - ${end}`;
-  }
-
-  private formatDegree(degreeName?: string, fieldOfStudy?: string): string {
-    if (degreeName && fieldOfStudy) {
-      return `${degreeName}, ${fieldOfStudy}`;
-    }
-    return degreeName || fieldOfStudy || '';
-  }
 
   parseJobsFromExtension(data: LinkedInResponse): Job[] {
     return this.parseJobs(data);
   }
 
   private getHeaders() {
-    return {
+    const baseHeaders = {
       accept: 'application/vnd.linkedin.normalized+json+2.1',
       'csrf-token': this.csrf,
       cookie: this.cookie,
       'x-restli-protocol-version': '2.0.0',
-      'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
       'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+      'sec-ch-ua': '"Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"',
+      'sec-ch-ua-mobile': '?0',
+      'sec-ch-ua-platform': '"macOS"',
+      'sec-fetch-dest': 'empty',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'same-origin',
+    };
+
+    const cleanedDynamicHeaders: Record<string, string> = {};
+    Object.keys(this.dynamicHeaders).forEach(key => {
+      cleanedDynamicHeaders[key.toLowerCase()] = this.dynamicHeaders[key];
+    });
+
+    return {
+      ...baseHeaders,
+      ...cleanedDynamicHeaders,
+      'csrf-token': this.csrf,
+      cookie: this.cookie,
     };
   }
 

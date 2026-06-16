@@ -3,17 +3,17 @@ import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../utils/logger';
 
 export class CredentialsService {
-  async getOrCreate(cookie: string, csrf: string) {
+  async getOrCreate(cookie: string, csrf: string, headersJson?: string | null) {
     const existing = await prisma.credentials.findFirst({
       orderBy: { updatedAt: 'desc' },
     });
 
     if (existing) {
-      if (existing.cookie !== cookie || existing.csrf !== csrf) {
+      if (existing.cookie !== cookie || existing.csrf !== csrf || existing.headersJson !== headersJson) {
         logger.info('Updating credentials');
         return await prisma.credentials.update({
           where: { id: existing.id },
-          data: { cookie, csrf },
+          data: { cookie, csrf, headersJson },
         });
       }
       return existing;
@@ -25,6 +25,7 @@ export class CredentialsService {
         id: uuidv4(),
         cookie,
         csrf,
+        headersJson,
       },
     });
   }
@@ -35,10 +36,10 @@ export class CredentialsService {
     });
   }
 
-  async getCookieAndCsrf(): Promise<{ cookie: string; csrf: string } | null> {
+  async getCookieAndCsrf(): Promise<{ cookie: string; csrf: string; headersJson: string | null } | null> {
     const creds = await this.getLatest();
     if (!creds) return null;
-    return { cookie: creds.cookie, csrf: creds.csrf };
+    return { cookie: creds.cookie, csrf: creds.csrf, headersJson: creds.headersJson };
   }
 }
 
