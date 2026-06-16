@@ -118,7 +118,7 @@ importers:
         specifier: ~5.8.2
         version: 5.8.3
 
-  apps/linkedin-service:
+  apps/graphql-linkedin:
     dependencies:
       '@apollo/server':
         specifier: ^4.11.3

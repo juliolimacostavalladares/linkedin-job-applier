@@ -9,7 +9,7 @@ linkedin-job-applier/
 ├── apps/
 │   ├── backend/          # Servidor Express, Prisma ORM (SQLite) e Gateway
 │   ├── frontend/         # Aplicação React + Vite + Tailwind CSS + Zustand
-│   ├── linkedin-service/ # Microsserviço GraphQL para gerenciar chamadas ao LinkedIn
+│   ├── graphql-linkedin/ # Microsserviço GraphQL para gerenciar chamadas ao LinkedIn
 │   └── extension/        # Extensão do Chrome para captura segura de credenciais
 └── packages/
     └── shared/           # Tipos TypeScript e utilitários compartilhados
@@ -63,11 +63,11 @@ pnpm dev    # Inicia em modo de desenvolvimento (porta 3000)
 pnpm build  # Compila para produção
 ```
 
-### LinkedIn Service (`apps/linkedin-service`)
+### GraphQL LinkedIn (`apps/graphql-linkedin`)
 Serviço GraphQL isolado responsável por gerenciar toda a interação de baixo nível com as APIs do LinkedIn (buscar vagas, parsear formulários, extrair PDF de currículo).
 
 ```bash
-cd apps/linkedin-service
+cd apps/graphql-linkedin
 pnpm dev    # Inicia em modo de desenvolvimento (porta 4000)
 pnpm build  # Compila para produção
 ```
@@ -106,7 +106,7 @@ import { Job, JobDetail, FormQuestion, AIAnswer } from '@linkedin-job-applier/sh
    PORT=3000
    ```
 
-2. **LinkedIn Service**: copie `apps/linkedin-service/.env.example` para `apps/linkedin-service/.env` e configure:
+2. **GraphQL LinkedIn**: copie `apps/graphql-linkedin/.env.example` para `apps/graphql-linkedin/.env` e configure:
    ```env
    PORT=4000
    ```

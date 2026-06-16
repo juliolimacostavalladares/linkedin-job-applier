@@ -23,7 +23,7 @@ logs/
 └── combined.log    # Todos os logs do backend (service: linkedin-job-applier)
 ```
 
-**GraphQL Service (`apps/linkedin-service/logs/`):**
+**GraphQL Service (`apps/graphql-linkedin/logs/`):**
 ```
 logs/
 ├── error.log       # Apenas erros do serviço de integração

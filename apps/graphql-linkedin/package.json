@@ -1,5 +1,5 @@
 {
-  "name": "@linkedin-job-applier/linkedin-service",
+  "name": "@linkedin-job-applier/graphql-linkedin",
   "version": "0.0.0",
   "private": true,
   "type": "module",

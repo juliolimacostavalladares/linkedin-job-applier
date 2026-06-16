@@ -12,7 +12,7 @@
   "references": [
     { "path": "./apps/backend" },
     { "path": "./apps/frontend" },
-    { "path": "./apps/linkedin-service" },
+    { "path": "./apps/graphql-linkedin" },
     { "path": "./apps/extension" },
     { "path": "./packages/shared" }
   ]
