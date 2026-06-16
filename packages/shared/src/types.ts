@@ -52,3 +52,35 @@ export interface LinkedInResponse {
   included?: unknown[];
   [key: string]: unknown;
 }
+
+export interface WorkExperience {
+  company: string;
+  role: string;
+  duration: string;
+  description: string;
+}
+
+export interface Education {
+  institution: string;
+  degree: string;
+  duration: string;
+}
+
+export interface ParsedResume {
+  about: string;
+  experiences: WorkExperience[];
+  education: Education[];
+}
+
+export interface UserProfileResponse {
+  profileId: string | null;
+  name: string | null;
+  headline: string | null;
+  photoUrl: string | null;
+  about: string | null;
+  experiences: WorkExperience[];
+  education: Education[];
+  text: string;
+  filename: string | null;
+}
+

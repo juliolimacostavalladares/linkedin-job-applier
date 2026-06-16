@@ -1,4 +1,5 @@
-import { Briefcase, FileText } from 'lucide-react';
+import { Briefcase, FileText, Sun, Moon } from 'lucide-react';
+import { useThemeStore } from '../../stores';
 
 interface SidebarProps {
   activeView: 'jobs' | 'resume';
@@ -6,31 +7,40 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeView, onViewChange }: SidebarProps) {
+  const { theme, toggleTheme } = useThemeStore();
+
   return (
-    <aside className="hidden md:flex w-24 bg-[#0a0d14]/50 border-r border-white/5 z-30 flex-col items-center py-8">
-      <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(37,99,235,0.5)] mb-12">
-        <span className="text-white font-bold text-lg">in</span>
+    <aside className="hidden md:flex w-18 bg-bg-sidebar border-r border-border-color z-30 flex-col items-center py-6 shrink-0 transition-colors duration-200">
+      {/* Brand logo (Sober LinkedIn style) */}
+      <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center mb-8 shrink-0">
+        <span className="text-white font-extrabold text-base tracking-tighter">in</span>
       </div>
       
-      <div className="flex flex-col gap-6 flex-1 w-full items-center">
+      {/* Navigation */}
+      <div className="flex flex-col gap-4 flex-1 w-full items-center">
         <NavButton
-          icon={<Briefcase size={20} />}
+          icon={<Briefcase size={18} />}
           active={activeView === 'jobs'}
           onClick={() => onViewChange('jobs')}
+          tooltip="Vagas"
         />
         <NavButton
-          icon={<FileText size={20} />}
+          icon={<FileText size={18} />}
           active={activeView === 'resume'}
           onClick={() => onViewChange('resume')}
+          tooltip="Currículo"
         />
       </div>
 
-      <div className="mt-8 relative">
-        <div className="w-10 h-10 rounded-full bg-[#1a1f2e] border border-white/10 shadow-sm flex items-center justify-center text-xs font-bold text-slate-300">
-          ME
-        </div>
-        <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-blue-500 rounded-full border-2 border-[#121620]"></div>
-      </div>
+      {/* Theme Toggle (Replaces profile) */}
+      <button
+        onClick={toggleTheme}
+        className="w-10 h-10 rounded-lg flex items-center justify-center text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-all border border-border-color shadow-sm mt-auto"
+        aria-label="Alternar Tema"
+        title="Alternar Tema"
+      >
+        {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} />}
+      </button>
     </aside>
   );
 }
@@ -39,16 +49,18 @@ interface NavButtonProps {
   icon: React.ReactNode;
   active: boolean;
   onClick: () => void;
+  tooltip?: string;
 }
 
-function NavButton({ icon, active, onClick }: NavButtonProps) {
+function NavButton({ icon, active, onClick, tooltip }: NavButtonProps) {
   return (
     <button
       onClick={onClick}
-      className={`w-12 h-12 rounded-[16px] flex items-center justify-center transition-colors border border-transparent ${
+      title={tooltip}
+      className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all border ${
         active
-          ? 'bg-blue-600 text-white shadow-[0_0_15px_rgba(37,99,235,0.4)]'
-          : 'text-slate-500 hover:bg-white/5 hover:text-slate-200'
+          ? 'bg-brand-blue text-white border-brand-blue hover:bg-brand-blue-hover'
+          : 'text-text-secondary bg-transparent border-transparent hover:bg-bg-hover hover:text-text-primary'
       }`}
     >
       {icon}

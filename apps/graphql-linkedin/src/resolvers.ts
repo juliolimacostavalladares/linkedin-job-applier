@@ -15,16 +15,16 @@ export const resolvers = {
       const linkedInService = new LinkedInService(cookie, csrf);
       return linkedInService.fetchApplyForm(id);
     },
-    resumePdf: async (_: unknown, { profileId, cookie, csrf }: { profileId: string; cookie: string; csrf: string }) => {
-      const linkedInService = new LinkedInService(cookie, csrf);
-      const buffer = await linkedInService.fetchResumePdf(profileId);
-      const parsedData = await pdfParse(Buffer.from(buffer));
-      const pdfBase64 = Buffer.from(buffer).toString('base64');
+    resumePdf: async () => {
       return {
         success: true,
-        text: parsedData.text,
-        pdfBase64
+        text: 'O currículo em PDF foi substituído pelo sincronismo direto de perfil do LinkedIn.',
+        pdfBase64: ''
       };
+    },
+    profileInfo: async (_: unknown, { cookie, csrf }: { cookie: string; csrf: string }) => {
+      const linkedInService = new LinkedInService(cookie, csrf);
+      return linkedInService.fetchProfileInfo();
     }
   }
 };

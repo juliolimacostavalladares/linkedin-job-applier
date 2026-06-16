@@ -13,7 +13,7 @@ export function Input({ value, onChange, placeholder, type = 'text', className =
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className={`border border-white/10 bg-[#0a0d14] text-white rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 ${className}`}
+      className={`border border-border-color bg-bg-input text-text-primary rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue placeholder:text-text-secondary/50 w-full transition-all duration-150 ${className}`}
     />
   );
 }
@@ -31,7 +31,7 @@ export function Textarea({ value, onChange, placeholder, className = '' }: Texta
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
-      className={`border border-white/10 bg-[#0a0d14] text-slate-300 rounded-xl p-5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed font-mono ${className}`}
+      className={`border border-border-color bg-bg-input text-text-primary rounded-lg p-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue leading-relaxed font-sans placeholder:text-text-secondary/50 w-full min-h-[120px] transition-all duration-150 ${className}`}
     />
   );
 }

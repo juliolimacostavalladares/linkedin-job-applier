@@ -25,7 +25,7 @@ Thumbs.db
 .cache/
 
 # Turbo
-.turbo/
+**/.turbo/
 
 # pnpm
 pnpm-debug.log*
@@ -35,5 +35,6 @@ logs/
 *.log
 
 # Database
-*.db
-*.db-journal
+**/*.db
+**/*.db-journal
+apps/backend/prisma/dev.db
