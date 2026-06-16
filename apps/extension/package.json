@@ -1,0 +1,10 @@
+{
+  "name": "@linkedin-job-applier/extension",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo 'Extension build completed'",
+    "clean": "rm -rf dist"
+  }
+}

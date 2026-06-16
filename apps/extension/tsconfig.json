@@ -2,16 +2,15 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "lib": ["ES2022"],
+    "lib": ["ES2022", "DOM"],
     "skipLibCheck": true,
     "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "strict": true
   },
-  "references": [
-    { "path": "./apps/web" },
-    { "path": "./apps/extension" },
-    { "path": "./packages/shared" }
-  ]
+  "include": ["**/*.ts", "**/*.js"]
 }
