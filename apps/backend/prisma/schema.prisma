@@ -17,26 +17,6 @@ model Credentials {
   @@map("credentials")
 }
 
-model Job {
-  id               String   @id @default(uuid())
-  linkedinId       String   @unique
-  title            String
-  companyInfo      String
-  companyLogo      String?
-  description      String?
-  location         String?
-  url              String?
-  employmentStatus String?
-  companyName      String?
-  source           String   @default("api")
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  @@index([linkedinId])
-  @@index([title])
-  @@map("jobs")
-}
-
 model Resume {
   id         String   @id @default(uuid())
   profileId  String?  @unique

@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { credentialsService } from '../services/credentialsService';
-import { jobService } from '../services/jobService';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -9,10 +8,9 @@ const router = Router();
 router.get('/status', async (_req, res, next) => {
   try {
     const creds = await credentialsService.getLatest();
-    const jobs  = await jobService.getAll();
     res.json({
       hasCredentials: !!creds,
-      jobCount: jobs.length,
+      jobCount: 0,
       updatedAt: creds?.updatedAt ?? null,
     });
   } catch (error) {

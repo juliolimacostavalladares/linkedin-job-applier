@@ -1,7 +1,5 @@
 import { Router } from 'express';
 import { credentialsService } from '../services/credentialsService';
-import { jobService } from '../services/jobService';
-import { resumeService } from '../services/resumeService';
 
 const router = Router();
 
@@ -9,10 +7,9 @@ const router = Router();
 router.get('/', async (req, res, next) => {
   try {
     const creds = await credentialsService.getLatest();
-    const importedJobs = await jobService.getAll();
     res.json({
       hasCredentials: !!creds,
-      hasImportedJobs: importedJobs.length > 0,
+      hasImportedJobs: false,
     });
   } catch (error) {
     next(error);

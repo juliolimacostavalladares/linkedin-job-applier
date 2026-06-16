@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import { LinkedInService } from '../services/linkedinService';
-import { jobService } from '../services/jobService';
 import { credentialsService } from '../services/credentialsService';
-import { logger } from '../utils/logger';
 
 const router = Router();
 
@@ -19,9 +17,6 @@ router.get('/', async (_req, res, next) => {
 
     const linkedInService = new LinkedInService(creds.cookie, creds.csrf);
     const jobs = await linkedInService.fetchJobs();
-
-    // Persist / update jobs in the database
-    await jobService.saveFromLinkedIn(jobs);
 
     res.json({ jobs, source: 'linkedin' });
   } catch (error) {
@@ -40,12 +35,8 @@ router.get('/:id', async (req, res, next) => {
       return;
     }
 
-    // Use any logo/company already cached in the database
-    const savedJob = await jobService.getByLinkedinId(id);
-
     const linkedInService = new LinkedInService(creds.cookie, creds.csrf);
     const jobDetail = await linkedInService.fetchJobDetail(id);
-    await jobService.saveJobDetail(jobDetail);
 
     res.json({
       id:               jobDetail.id,
@@ -54,9 +45,9 @@ router.get('/:id', async (req, res, next) => {
       location:         jobDetail.location || '',
       url:              jobDetail.url || `https://www.linkedin.com/jobs/view/${jobDetail.id}`,
       employmentStatus: jobDetail.employmentStatus || 'FULL_TIME',
-      companyName:      savedJob?.companyInfo || jobDetail.companyName || '',
-      companyInfo:      savedJob?.companyInfo || jobDetail.companyName || '',
-      companyLogo:      savedJob?.companyLogo || jobDetail.companyLogo || undefined,
+      companyName:      jobDetail.companyName || '',
+      companyInfo:      jobDetail.companyName || '',
+      companyLogo:      jobDetail.companyLogo || undefined,
     });
   } catch (error) {
     next(error);
