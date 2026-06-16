@@ -280,7 +280,7 @@ function FormField({ question, value, onChange, hasAiAnswer }: FormFieldProps) {
   const { urn, required, title, type, options } = question;
 
   return (
-    <div className="flex flex-col gap-1 relative">
+    <div className="flex flex-col gap-1">
       <label className="text-[11px] font-bold text-text-primary flex items-center justify-between">
         <span>
           {title}
@@ -288,58 +288,72 @@ function FormField({ question, value, onChange, hasAiAnswer }: FormFieldProps) {
         </span>
       </label>
 
-      {type === 'dropdown' || type === 'checkbox' ? (
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="border border-border-color rounded bg-bg-input text-text-primary p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue w-full transition-all duration-150"
-        >
-          <option value="">Selecione uma opção...</option>
-          {options?.map((opt: string, j: number) => (
-            <option key={j} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
-      ) : type === 'file' ? (
-        <label className="border border-dashed border-border-color hover:border-brand-blue hover:bg-bg-hover transition-colors rounded p-3 bg-bg-input flex items-center justify-center flex-col gap-1.5 cursor-pointer relative">
-          <input
-            type="file"
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                onChange(file.name);
-              }
-            }}
-          />
-          {value ? (
-            <div className="flex flex-col items-center gap-1 text-brand-blue">
-              <CheckCircle size={20} />
-              <span className="text-xs font-semibold">{value}</span>
-            </div>
-          ) : (
-            <>
-              <FileText size={20} className="text-text-secondary/60" />
-              <span className="text-xs text-text-secondary font-medium">
-                Carregar documento ({options?.join(', ') || 'PDF, DOCX'})
-              </span>
-            </>
+      {type === 'file' ? (
+        <div className="relative w-full">
+          <label className="border border-dashed border-border-color hover:border-brand-blue hover:bg-bg-hover transition-colors rounded p-3 bg-bg-input flex items-center justify-center flex-col gap-1.5 cursor-pointer relative">
+            <input
+              type="file"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  onChange(file.name);
+                }
+              }}
+            />
+            {value ? (
+              <div className="flex flex-col items-center gap-1 text-brand-blue">
+                <CheckCircle size={20} />
+                <span className="text-xs font-semibold">{value}</span>
+              </div>
+            ) : (
+              <>
+                <FileText size={20} className="text-text-secondary/60" />
+                <span className="text-xs text-text-secondary font-medium">
+                  Carregar documento ({options?.join(', ') || 'PDF, DOCX'})
+                </span>
+              </>
+            )}
+          </label>
+          {hasAiAnswer && (
+            <span className="absolute right-3 top-3 text-brand-blue flex items-center pointer-events-none animate-pulse" title="Sugerido por IA">
+              <Sparkles size={13} className="fill-brand-blue/20" />
+            </span>
           )}
-        </label>
+        </div>
       ) : (
-        <Input
-          value={value}
-          onChange={onChange}
-          placeholder="Sua resposta..."
-          className="py-2 px-2.5 text-xs"
-        />
-      )}
+        <div className="relative flex items-center w-full">
+          {type === 'dropdown' || type === 'checkbox' ? (
+            <select
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              className="border border-border-color rounded bg-bg-input text-text-primary p-2 pr-8 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue w-full transition-all duration-150"
+            >
+              <option value="">Selecione uma opção...</option>
+              {options?.map((opt: string, j: number) => (
+                <option key={j} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <Input
+              value={value}
+              onChange={onChange}
+              placeholder="Sua resposta..."
+              className="py-2 pl-2.5 pr-8 text-xs w-full"
+            />
+          )}
 
-      {hasAiAnswer && (
-        <span className="absolute right-3.5 top-7 text-brand-blue" title="Preenchido por IA">
-          ✨
-        </span>
+          {hasAiAnswer && (
+            <span 
+              className={`absolute ${type === 'dropdown' || type === 'checkbox' ? 'right-7.5' : 'right-3'} text-brand-blue flex items-center pointer-events-none animate-pulse`} 
+              title="Sugerido por IA"
+            >
+              <Sparkles size={13} className="fill-brand-blue/20" />
+            </span>
+          )}
+        </div>
       )}
     </div>
   );
