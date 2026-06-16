@@ -8,9 +8,9 @@ interface JobListProps {
 }
 
 export function JobList({ onSelectJob }: JobListProps) {
-  const { jobs, selectedJobId, loading, error, credentialError } = useJobsStore();
+  const { jobs, selectedJobId, loadingList, error, credentialError } = useJobsStore();
 
-  if (loading && !error) {
+  if (loadingList && !error) {
     return (
       <div className="py-12 text-center text-text-secondary">
         <RefreshCw className="mx-auto animate-spin mb-3 text-text-secondary/60" size={24} />
@@ -18,6 +18,7 @@ export function JobList({ onSelectJob }: JobListProps) {
       </div>
     );
   }
+
 
   if (credentialError) {
     return (

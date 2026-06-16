@@ -7,15 +7,16 @@ interface JobDetailPanelProps {
 }
 
 export function JobDetailPanel({ onApply }: JobDetailPanelProps) {
-  const { selectedJob, loading, error, credentialError, selectedJobId } = useJobsStore();
+  const { selectedJob, loadingDetail, error, credentialError, selectedJobId } = useJobsStore();
 
-  if (loading) {
+  if (loadingDetail) {
     return (
       <div className="flex-1 flex items-center justify-center bg-bg-app">
         <RefreshCw className="animate-spin text-text-secondary/60" size={24} />
       </div>
     );
   }
+
 
   if (!selectedJob) {
     if (credentialError && selectedJobId) {

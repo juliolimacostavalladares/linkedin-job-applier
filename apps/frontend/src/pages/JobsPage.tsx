@@ -11,7 +11,7 @@ import type { Job } from '@linkedin-job-applier/shared';
 
 export default function JobsPage() {
   const navigate = useNavigate();
-  const { jobs, loading: jobsLoading, fetchJobs, selectJob } = useJobsStore();
+  const { jobs, loadingList, fetchJobs, selectJob } = useJobsStore();
   const { selectedJob, applyForm } = useJobDetailStore();
   const { isApplyModalOpen, setIsApplyModalOpen, setCurrentStep, closeModal } = useApplyFormStore();
   const { theme, toggleTheme } = useThemeStore();
@@ -72,7 +72,7 @@ export default function JobsPage() {
         <div className="flex flex-1 overflow-hidden">
           {/* Compact Left Sidebar for Job List */}
           <aside className={`w-full md:w-[350px] border-r border-border-color flex flex-col shrink-0 z-10 transition-colors duration-200 ${selectedJob ? 'hidden md:flex' : 'flex'}`}>
-            <SearchBar onRefresh={fetchJobs} loading={jobsLoading} />
+            <SearchBar onRefresh={fetchJobs} loading={loadingList} />
             <div className="flex-1 overflow-y-auto px-4 pb-4 scrollbar-hide">
               <JobList onSelectJob={handleSelectJob} />
             </div>
