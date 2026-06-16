@@ -303,8 +303,8 @@ export class LinkedInService {
     let education: Education[] = [];
 
     try {
-      const profileViewUrl = `https://www.linkedin.com/voyager/api/identity/profiles/${profileId}/profileView`;
-      logger.debug('Fetching profileView from LinkedIn API', { profileId });
+      const profileViewUrl = `https://www.linkedin.com/voyager/api/identity/profiles/${publicIdentifier}/profileView`;
+      logger.debug('Fetching profileView from LinkedIn API', { publicIdentifier });
       
       const viewResponse = await fetch(profileViewUrl, {
         headers: this.getHeaders(),
