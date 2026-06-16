@@ -64,10 +64,40 @@ document.getElementById('syncBtn').addEventListener('click', async () => {
     try {
       setStatus(statusEl, '2/4 Salvando credenciais no servidor...');
 
+      const clientVersion = "1.13.44770";
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const timezoneOffset = new Date().getTimezoneOffset() / -60;
+      
+      const xLiTrack = {
+        clientVersion: clientVersion,
+        mpVersion: clientVersion,
+        osName: "web",
+        timezoneOffset: timezoneOffset,
+        timezone: timezone,
+        deviceFormFactor: "DESKTOP",
+        mpName: "voyager-web",
+        displayDensity: window.devicePixelRatio || 1,
+        displayWidth: window.screen.width,
+        displayHeight: window.screen.height
+      };
+
+      const collectedHeaders = {
+        'user-agent': navigator.userAgent,
+        'accept-language': navigator.languages ? navigator.languages.join(',') : 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+        'x-li-track': JSON.stringify(xLiTrack),
+        'sec-ch-ua': '"Chromium";v="148", "Google Chrome";v="148", "Not/A)Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"macOS"',
+      };
+
       const res = await fetch(`${serverUrl}/api/credentials`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cookie: fullCookie, csrf: csrfToken }),
+        body: JSON.stringify({ 
+          cookie: fullCookie, 
+          csrf: csrfToken,
+          headers: collectedHeaders
+        }),
       });
 
       if (!res.ok) {

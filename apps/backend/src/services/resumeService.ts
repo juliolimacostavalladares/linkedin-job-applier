@@ -69,13 +69,13 @@ export class ResumeService {
     });
   }
 
-  async syncProfile(cookie: string, csrf: string) {
+  async syncProfile(cookie: string, csrf: string, headersJson?: string | null) {
     logger.info('Starting syncProfile from LinkedIn');
     
     // 1. Fetch profileInfo from GraphQL (including about, experiences, education)
     const profileInfoQuery = `
-      query GetProfileInfo($cookie: String!, $csrf: String!) {
-        profileInfo(cookie: $cookie, csrf: $csrf) {
+      query GetProfileInfo($cookie: String!, $csrf: String!, $headersJson: String) {
+        profileInfo(cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
           success
           profileId
           name
@@ -123,7 +123,7 @@ export class ResumeService {
       };
     }
 
-    const profileData = await queryGraphQL<ProfileInfoResponse>(profileInfoQuery, { cookie, csrf });
+    const profileData = await queryGraphQL<ProfileInfoResponse>(profileInfoQuery, { cookie, csrf, headersJson });
     const { profileId, name, headline, photoUrl, about, experiences, education } = profileData.profileInfo;
 
     // 2. Reconstruct plain text resume

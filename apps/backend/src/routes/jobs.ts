@@ -17,8 +17,8 @@ router.get('/', async (_req, res, next) => {
     }
 
     const query = `
-      query GetJobs($cookie: String!, $csrf: String!) {
-        jobs(cookie: $cookie, csrf: $csrf) {
+      query GetJobs($cookie: String!, $csrf: String!, $headersJson: String) {
+        jobs(cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
           id
           title
           companyInfo
@@ -30,6 +30,7 @@ router.get('/', async (_req, res, next) => {
     const data = await queryGraphQL<{ jobs: Job[] }>(query, {
       cookie: creds.cookie,
       csrf: creds.csrf,
+      headersJson: creds.headersJson,
     });
 
     res.json({ jobs: data.jobs, source: 'linkedin-graphql' });
@@ -50,8 +51,8 @@ router.get('/:id', async (req, res, next) => {
     }
 
     const query = `
-      query GetJobDetail($id: ID!, $cookie: String!, $csrf: String!) {
-        jobDetail(id: $id, cookie: $cookie, csrf: $csrf) {
+      query GetJobDetail($id: ID!, $cookie: String!, $csrf: String!, $headersJson: String) {
+        jobDetail(id: $id, cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
           id
           title
           description
@@ -68,6 +69,7 @@ router.get('/:id', async (req, res, next) => {
       id,
       cookie: creds.cookie,
       csrf: creds.csrf,
+      headersJson: creds.headersJson,
     });
 
     const { jobDetail } = data;
@@ -100,8 +102,8 @@ router.get('/:id/apply-form', async (req, res, next) => {
     }
 
     const query = `
-      query GetApplyForm($id: ID!, $cookie: String!, $csrf: String!) {
-        applyForm(id: $id, cookie: $cookie, csrf: $csrf) {
+      query GetApplyForm($id: ID!, $cookie: String!, $csrf: String!, $headersJson: String) {
+        applyForm(id: $id, cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
           success
           message
           steps {
@@ -129,6 +131,7 @@ router.get('/:id/apply-form', async (req, res, next) => {
       id,
       cookie: creds.cookie,
       csrf: creds.csrf,
+      headersJson: creds.headersJson,
     });
 
     res.json(data.applyForm);

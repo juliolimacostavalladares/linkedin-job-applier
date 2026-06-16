@@ -68,10 +68,10 @@ export const typeDefs = `#graphql
   }
 
   type Query {
-    jobs(cookie: String!, csrf: String!): [Job!]!
-    jobDetail(id: ID!, cookie: String!, csrf: String!): JobDetail!
-    applyForm(id: ID!, cookie: String!, csrf: String!): ApplyForm!
-    resumePdf(profileId: String!, cookie: String!, csrf: String!): ResumePdfResponse!
-    profileInfo(cookie: String!, csrf: String!): LinkedInProfile!
+    jobs(cookie: String!, csrf: String!, headersJson: String): [Job!]!
+    jobDetail(id: ID!, cookie: String!, csrf: String!, headersJson: String): JobDetail!
+    applyForm(id: ID!, cookie: String!, csrf: String!, headersJson: String): ApplyForm!
+    resumePdf(profileId: String!, cookie: String!, csrf: String!, headersJson: String): ResumePdfResponse!
+    profileInfo(cookie: String!, csrf: String!, headersJson: String): LinkedInProfile!
   }
 `;

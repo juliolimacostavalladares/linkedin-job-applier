@@ -19,8 +19,8 @@ router.post('/from-linkedin', async (req, res, next) => {
     }
 
     const query = `
-      query GetResumePdf($profileId: String!, $cookie: String!, $csrf: String!) {
-        resumePdf(profileId: $profileId, cookie: $cookie, csrf: $csrf) {
+      query GetResumePdf($profileId: String!, $cookie: String!, $csrf: String!, $headersJson: String) {
+        resumePdf(profileId: $profileId, cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
           success
           text
           pdfBase64
@@ -40,6 +40,7 @@ router.post('/from-linkedin', async (req, res, next) => {
       profileId,
       cookie: creds.cookie,
       csrf: creds.csrf,
+      headersJson: creds.headersJson,
     });
 
     const result = data.resumePdf;
@@ -184,7 +185,7 @@ router.get('/profile', async (req, res, next) => {
     }
 
     logger.info('Syncing profile from LinkedIn (on-demand/first-load)');
-    const result = await resumeService.syncProfile(creds.cookie, creds.csrf);
+    const result = await resumeService.syncProfile(creds.cookie, creds.csrf, creds.headersJson);
     res.json(result);
   } catch (error) {
     next(error);

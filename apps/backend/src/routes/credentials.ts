@@ -22,14 +22,15 @@ router.get('/status', async (_req, res, next) => {
 // POST /api/credentials – called by the Chrome extension to save session credentials
 router.post('/', async (req, res, next) => {
   try {
-    const { cookie, csrf } = req.body as { cookie?: string; csrf?: string };
+    const { cookie, csrf, headers } = req.body as { cookie?: string; csrf?: string; headers?: Record<string, string> };
 
     if (!cookie || !csrf) {
       res.status(400).json({ error: 'Os campos `cookie` e `csrf` são obrigatórios.' });
       return;
     }
 
-    const saved = await credentialsService.getOrCreate(cookie, csrf);
+    const headersJson = headers ? JSON.stringify(headers) : null;
+    const saved = await credentialsService.getOrCreate(cookie, csrf, headersJson);
     logger.info('Credentials saved via extension', { id: saved.id });
 
     // Trigger background sync for LinkedIn profile and resume parsing

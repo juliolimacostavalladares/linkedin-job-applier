@@ -105,10 +105,18 @@ interface LinkedInGraphQLResponse {
 export class LinkedInService {
   private cookie: string;
   private csrf: string;
+  private dynamicHeaders: Record<string, string> = {};
 
-  constructor(cookie: string, csrf: string) {
+  constructor(cookie: string, csrf: string, headersJson?: string | null) {
     this.cookie = cookie;
     this.csrf = csrf;
+    if (headersJson) {
+      try {
+        this.dynamicHeaders = JSON.parse(headersJson);
+      } catch (e) {
+        logger.error('Error parsing dynamic headers JSON', e);
+      }
+    }
   }
 
   async fetchJobs(): Promise<Job[]> {
@@ -489,7 +497,7 @@ export class LinkedInService {
   }
 
   private getHeaders() {
-    return {
+    const baseHeaders = {
       accept: 'application/vnd.linkedin.normalized+json+2.1',
       'csrf-token': this.csrf,
       cookie: this.cookie,
@@ -502,6 +510,18 @@ export class LinkedInService {
       'sec-fetch-dest': 'empty',
       'sec-fetch-mode': 'cors',
       'sec-fetch-site': 'same-origin',
+    };
+
+    const cleanedDynamicHeaders: Record<string, string> = {};
+    Object.keys(this.dynamicHeaders).forEach(key => {
+      cleanedDynamicHeaders[key.toLowerCase()] = this.dynamicHeaders[key];
+    });
+
+    return {
+      ...baseHeaders,
+      ...cleanedDynamicHeaders,
+      'csrf-token': this.csrf,
+      cookie: this.cookie,
     };
   }
 
