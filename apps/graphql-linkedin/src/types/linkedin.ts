@@ -11,12 +11,21 @@ export interface LinkedInVectorImage {
   }>;
 }
 
+export interface LinkedInApplyMethod {
+  /** `com.linkedin.voyager.dash.jobs.ComplexOnsiteApply` = Easy Apply */
+  $type?: string;
+  /** Present only on external apply jobs */
+  companyApplyUrl?: string;
+}
+
 export interface LinkedInIncludedItem {
   $type?: string;
   entityUrn?: string;
   urn?: string;
   title?: string | { text?: string };
   primaryDescription?: { text?: string };
+  /** Present on JobPosting items – used to detect Easy Apply vs external */
+  applyMethod?: LinkedInApplyMethod;
   logo?: {
     attributes?: Array<{
       detailData?: Record<string, unknown>;
@@ -84,7 +93,7 @@ export interface LinkedInJobDetailRaw {
   title?: string;
   description?: { text?: string };
   formattedLocation?: string;
-  applyMethod?: { companyApplyUrl?: string };
+  applyMethod?: LinkedInApplyMethod;
   jobPostingUrl?: string;
   employmentStatus?: string;
   companyDetails?: {

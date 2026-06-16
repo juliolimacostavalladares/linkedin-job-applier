@@ -7,7 +7,7 @@ import type { LinkedInIncludedItem, LinkedInVectorImage } from '../../types/link
  */
 export function parseJobs(data: LinkedInResponse): Job[] {
   const included = (data.included || []) as LinkedInIncludedItem[];
-  const jobsMap = new Map<string, Partial<Job> & { id: string }>();
+  const jobsMap = new Map<string, Partial<Job> & { id: string; isEasyApply?: boolean }>();
 
   // ── 1. Extract job titles from JobPosting items ───────────────────────────
   for (const item of included) {
@@ -20,6 +20,15 @@ export function parseJobs(data: LinkedInResponse): Job[] {
         if (job) {
           job.title =
             typeof item.title === 'string' ? item.title : item.title?.text ?? '';
+
+          // ── Easy Apply detection ──────────────────────────────────────────
+          // LinkedIn $type for Easy Apply: `...ComplexOnsiteApply`
+          // LinkedIn $type for external:   `...OffsiteApply`
+          // External apply jobs also expose `companyApplyUrl`.
+          const applyType = item.applyMethod?.$type ?? '';
+          const hasExternalUrl = Boolean(item.applyMethod?.companyApplyUrl);
+          job.isEasyApply =
+            !hasExternalUrl && !applyType.toLowerCase().includes('offsite');
         }
       }
     }
@@ -64,7 +73,9 @@ export function parseJobs(data: LinkedInResponse): Job[] {
 
   return Array.from(jobsMap.values()).filter(
     (j): j is Job =>
-      typeof j.title === 'string' && typeof j.companyInfo === 'string',
+      typeof j.title === 'string' &&
+      typeof j.companyInfo === 'string' &&
+      j.isEasyApply === true,
   );
 }
 
