@@ -224,6 +224,8 @@ export class LinkedInService {
         'content-type': 'application/json',
         'csrf-token': this.csrf,
         cookie: this.cookie,
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
       },
       body: JSON.stringify(payload),
       redirect: 'follow',
@@ -245,6 +247,8 @@ export class LinkedInService {
       headers: {
         cookie: this.cookie,
         accept: '*/*',
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
       },
     });
 
@@ -287,9 +291,8 @@ export class LinkedInService {
     const firstName = miniProfile.firstName || '';
     const lastName = miniProfile.lastName || '';
     const name = `${firstName} ${lastName}`.trim();
-    const headline = miniProfile.occupation || '';
+    const defaultHeadline = miniProfile.occupation || '';
     const profileId = miniProfile.entityUrn?.split(':').pop() || '';
-    const publicIdentifier = (miniProfile as { publicIdentifier?: string }).publicIdentifier || profileId;
 
     let photoUrl = '';
     if (miniProfile.picture?.rootUrl && miniProfile.picture.artifacts && miniProfile.picture.artifacts.length > 0) {
@@ -297,75 +300,109 @@ export class LinkedInService {
       photoUrl = miniProfile.picture.rootUrl + artifact.fileIdentifyingUrlPathSegment;
     }
 
-    // Now fetch the full profile view
+    let headline = defaultHeadline;
     let about = '';
     let experiences: WorkExperience[] = [];
     let education: Education[] = [];
 
+    // 1. Fetch Profile Summary (About) via voyagerIdentityDashProfiles (Safe GraphQL)
     try {
-      const profileViewUrl = `https://www.linkedin.com/voyager/api/identity/profiles/${publicIdentifier}/profileView`;
-      logger.debug('Fetching profileView from LinkedIn API', { publicIdentifier });
+      const profileQueryUrl = `https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=false&variables=(memberIdentity:${profileId},profileDecorationId:com.linkedin.voyager.dash.decorations.identity.profile.FullProfileWithEntities)&queryId=voyagerIdentityDashProfiles.b5c27c04968c409fc0ed3546575b9b7a`;
+      logger.debug('Fetching profile details via GraphQL', { profileId });
       
-      const viewResponse = await fetch(profileViewUrl, {
+      const profileRes = await fetch(profileQueryUrl, {
         headers: this.getHeaders(),
         redirect: 'manual',
       });
 
-      this.handleResponseError(viewResponse);
-
-      const viewJson = (await viewResponse.json()) as LinkedInGraphQLResponse;
-      const included = viewJson.included || [];
-
-      // Find about/summary
-      const profileObj = included.find(
-        (item) => item.$type === 'com.linkedin.voyager.identity.profile.Profile'
-      );
-      about = (profileObj as { summary?: string } | undefined)?.summary || '';
-
-      // Parse experiences (Positions)
-      const positions = included.filter(
-        (item) => item.$type === 'com.linkedin.voyager.identity.profile.Position'
-      ) as Array<{
-        companyName?: string;
-        title?: string;
-        locationName?: string;
-        description?: string;
-        timePeriod?: {
-          startDate?: { month?: number; year?: number };
-          endDate?: { month?: number; year?: number };
-        };
-      }>;
-
-      experiences = positions.map((pos) => ({
-        company: pos.companyName || '',
-        role: pos.title || '',
-        duration: this.formatTimePeriod(pos.timePeriod),
-        description: pos.description || '',
-      }));
-
-      // Parse education (Educations)
-      const schools = included.filter(
-        (item) => item.$type === 'com.linkedin.voyager.identity.profile.Education'
-      ) as Array<{
-        schoolName?: string;
-        degreeName?: string;
-        fieldOfStudy?: string;
-        timePeriod?: {
-          startDate?: { year?: number };
-          endDate?: { year?: number };
-        };
-      }>;
-
-      education = schools.map((sch) => ({
-        institution: sch.schoolName || '',
-        degree: this.formatDegree(sch.degreeName, sch.fieldOfStudy),
-        duration: this.formatEducationTimePeriod(sch.timePeriod),
-      }));
-
-      logger.info('Fetched complete profile info and profileView', { name, profileId });
-    } catch (viewError) {
-      logger.error('Error fetching profileView details, using partial me data', { error: viewError });
+      if (profileRes.ok) {
+        const profileJson = (await profileRes.json()) as LinkedInGraphQLResponse;
+        const included = profileJson.included || [];
+        const profileObj = included.find(
+          (item) => item.$type === 'com.linkedin.voyager.dash.identity.profile.Profile'
+        ) as { headline?: string; summary?: string } | undefined;
+        
+        if (profileObj) {
+          if (profileObj.headline) headline = profileObj.headline;
+          if (profileObj.summary) about = profileObj.summary;
+        }
+      }
+    } catch (err) {
+      logger.error('Error fetching GraphQL profile details', { error: err });
     }
+
+    // 2. Fetch Experiences (Positions) via voyagerIdentityDashPositions (Safe GraphQL)
+    try {
+      const positionsQueryUrl = `https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=false&variables=(profileUrn:urn%3Ali%3Afsd_profile%3A${profileId})&queryId=voyagerIdentityDashPositions.a3c8cc7db956cf57b98d24b613143522`;
+      logger.debug('Fetching positions via GraphQL', { profileId });
+
+      const positionsRes = await fetch(positionsQueryUrl, {
+        headers: this.getHeaders(),
+        redirect: 'manual',
+      });
+
+      if (positionsRes.ok) {
+        const positionsJson = (await positionsRes.json()) as LinkedInGraphQLResponse;
+        const included = positionsJson.included || [];
+        const positions = included.filter(
+          (item) => item.$type === 'com.linkedin.voyager.dash.identity.profile.Position'
+        ) as Array<{
+          companyName?: string;
+          title?: string;
+          description?: string;
+          timePeriod?: {
+            startDate?: { month?: number; year?: number };
+            endDate?: { month?: number; year?: number };
+          };
+        }>;
+
+        experiences = positions.map((pos) => ({
+          company: pos.companyName || '',
+          role: pos.title || '',
+          duration: this.formatTimePeriod(pos.timePeriod),
+          description: pos.description || '',
+        }));
+      }
+    } catch (err) {
+      logger.error('Error fetching GraphQL positions', { error: err });
+    }
+
+    // 3. Fetch Education via voyagerIdentityDashEducation (Safe GraphQL)
+    try {
+      const educationQueryUrl = `https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=false&variables=(profileUrn:urn%3Ali%3Afsd_profile%3A${profileId})&queryId=voyagerIdentityDashEducation.b12bfa4b03afda37bcfe63d7d41d6132`;
+      logger.debug('Fetching education via GraphQL', { profileId });
+
+      const educationRes = await fetch(educationQueryUrl, {
+        headers: this.getHeaders(),
+        redirect: 'manual',
+      });
+
+      if (educationRes.ok) {
+        const educationJson = (await educationRes.json()) as LinkedInGraphQLResponse;
+        const included = educationJson.included || [];
+        const schools = included.filter(
+          (item) => item.$type === 'com.linkedin.voyager.dash.identity.profile.Education'
+        ) as Array<{
+          schoolName?: string;
+          degreeName?: string;
+          fieldOfStudy?: string;
+          timePeriod?: {
+            startDate?: { year?: number };
+            endDate?: { year?: number };
+          };
+        }>;
+
+        education = schools.map((sch) => ({
+          institution: sch.schoolName || '',
+          degree: this.formatDegree(sch.degreeName, sch.fieldOfStudy),
+          duration: this.formatEducationTimePeriod(sch.timePeriod),
+        }));
+      }
+    } catch (err) {
+      logger.error('Error fetching GraphQL education', { error: err });
+    }
+
+    logger.info('Fetched complete profile info via GraphQL voyagerIdentityDash APIs', { name, profileId });
 
     return {
       success: true,
@@ -431,6 +468,8 @@ export class LinkedInService {
       'csrf-token': this.csrf,
       cookie: this.cookie,
       'x-restli-protocol-version': '2.0.0',
+      'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
     };
   }
 
