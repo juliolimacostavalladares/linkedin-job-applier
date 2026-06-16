@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AlertCircle, RefreshCw, CheckCircle, FileText, Sparkles, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input, Textarea } from '../ui/Input';
 import type { JobDetail, ApplyForm, FormQuestion, AIAnswer } from '../../types';
-import { useApplyFormStore, useResumeStore } from '../../stores';
+import { useApplyFormStore, useResumeStore, useJobsStore } from '../../stores';
 
 interface ApplyModalProps {
   job: JobDetail;
@@ -20,6 +20,8 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
   } = useApplyFormStore();
 
   const { resumeText, isEditingResume, setIsEditingResume, saveResume, setResumeText } = useResumeStore();
+  const { applyJob } = useJobsStore();
+  const [submitting, setSubmitting] = useState(false);
 
   // Prefill form values with suggested answers from AI if available
   useEffect(() => {
@@ -44,9 +46,17 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
     }
   };
 
-  const handleSubmit = () => {
-    alert('Candidatura finalizada (simulada).\n\nRespostas enviadas:\n' + JSON.stringify(formValues, null, 2));
-    onClose();
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      await applyJob(job.id, formValues);
+      alert('Candidatura finalizada com sucesso!');
+      onClose();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Erro ao enviar candidatura');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -74,6 +84,7 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
           setCurrentStep={setCurrentStep}
           onClose={onClose}
           onSubmit={handleSubmit}
+          submitting={submitting}
         />
       </div>
     </div>
@@ -365,9 +376,10 @@ interface ModalFooterProps {
   setCurrentStep: (value: number) => void;
   onClose: () => void;
   onSubmit: () => void;
+  submitting?: boolean;
 }
 
-function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit }: ModalFooterProps) {
+function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit, submitting }: ModalFooterProps) {
   const hasSteps = applyForm.success && applyForm.steps && applyForm.steps.length > 0;
   const isLastStep = hasSteps && currentStep === applyForm.steps!.length - 1;
   const isFirstStep = currentStep === 0;
@@ -376,7 +388,8 @@ function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit
     <div className="px-4 py-3 border-t border-border-color bg-bg-card flex justify-end gap-2 transition-colors">
       <button
         onClick={onClose}
-        className="px-3.5 py-1.5 text-xs font-semibold text-text-secondary hover:bg-bg-hover hover:text-text-primary rounded-md transition-colors"
+        disabled={submitting}
+        className="px-3.5 py-1.5 text-xs font-semibold text-text-secondary hover:bg-bg-hover hover:text-text-primary rounded-md transition-colors disabled:opacity-50"
       >
         Cancelar
       </button>
@@ -386,7 +399,8 @@ function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit
           {!isFirstStep && (
             <button
               onClick={() => setCurrentStep(currentStep - 1)}
-              className="px-3.5 py-1.5 text-xs font-semibold border border-border-color bg-transparent text-text-primary hover:bg-bg-hover rounded-md transition-colors shadow-sm"
+              disabled={submitting}
+              className="px-3.5 py-1.5 text-xs font-semibold border border-border-color bg-transparent text-text-primary hover:bg-bg-hover rounded-md transition-colors shadow-sm disabled:opacity-50"
             >
               Voltar
             </button>
@@ -395,15 +409,18 @@ function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit
           {!isLastStep ? (
             <button
               onClick={() => setCurrentStep(currentStep + 1)}
-              className="px-4 py-1.5 text-xs font-bold bg-brand-blue text-white hover:bg-brand-blue-hover rounded-md transition-colors shadow-sm"
+              disabled={submitting}
+              className="px-4 py-1.5 text-xs font-bold bg-brand-blue text-white hover:bg-brand-blue-hover rounded-md transition-colors shadow-sm disabled:opacity-50"
             >
               Avançar
             </button>
           ) : (
             <button
               onClick={onSubmit}
-              className="px-4 py-1.5 text-xs font-bold bg-brand-blue text-white hover:bg-brand-blue-hover rounded-md transition-colors shadow-sm"
+              disabled={submitting}
+              className="px-4 py-1.5 text-xs font-bold bg-brand-blue text-white hover:bg-brand-blue-hover rounded-md transition-colors shadow-sm disabled:opacity-50 flex items-center gap-1.5"
             >
+              {submitting && <RefreshCw size={11} className="animate-spin" />}
               Finalizar Candidatura
             </button>
           )}

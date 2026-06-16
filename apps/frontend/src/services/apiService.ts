@@ -16,6 +16,9 @@ export const apiService = {
   getJobDetail: (id: string) => api.get(`/api/jobs/${id}`),
   
   getApplyForm: (id: string) => api.get(`/api/jobs/${id}/apply-form`),
+
+  applyJob: (id: string, answers: Record<string, string>) =>
+    api.post(`/api/jobs/${id}/apply`, { answers }),
   
   generateAnswers: (questions: FormQuestion[], resume: string) =>
     api.post('/api/generate-answers', { questions, resume }),

@@ -3,6 +3,7 @@ import { credentialsService } from '../services/credentialsService';
 import { queryGraphQL } from '../utils/graphqlClient';
 import { resumeService } from '../services/resumeService';
 import { AIService } from '../services/aiService';
+import { applicationService } from '../services/applicationService';
 import { logger } from '../utils/logger';
 import type { Job, JobDetail, ApplyForm } from '../types';
 
@@ -94,7 +95,7 @@ router.get('/:id', async (req, res, next) => {
       }
     `;
 
-    const [detailRes, formRes] = await Promise.allSettled([
+    const [detailRes, formRes, appDbRes] = await Promise.allSettled([
       queryGraphQL<{ jobDetail: JobDetail }>(detailQuery, {
         id,
         cookie: creds.cookie,
@@ -106,7 +107,8 @@ router.get('/:id', async (req, res, next) => {
         cookie: creds.cookie,
         csrf: creds.csrf,
         headersJson: creds.headersJson,
-      })
+      }),
+      applicationService.listByJob(id)
     ]);
 
     if (detailRes.status === 'rejected') {
@@ -159,6 +161,17 @@ router.get('/:id', async (req, res, next) => {
       }
     }
 
+    let applied = false;
+    let appliedAt: string | undefined;
+
+    if (appDbRes.status === 'fulfilled' && appDbRes.value && appDbRes.value.length > 0) {
+      const activeApp = appDbRes.value.find((app) => app.status === 'applied');
+      if (activeApp) {
+        applied = true;
+        appliedAt = activeApp.createdAt.toISOString();
+      }
+    }
+
     res.json({
       id:               jobDetail.id,
       title:            jobDetail.title,
@@ -170,6 +183,8 @@ router.get('/:id', async (req, res, next) => {
       companyInfo:      jobDetail.companyName || '',
       companyLogo:      jobDetail.companyLogo || undefined,
       applyForm,
+      applied,
+      appliedAt,
     });
   } catch (error) {
     next(error);
@@ -221,6 +236,24 @@ router.get('/:id/apply-form', async (req, res, next) => {
     });
 
     res.json(data.applyForm);
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /api/jobs/:id/apply – Submit Easy Apply form (locally and update status)
+router.post('/:id/apply', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { answers } = req.body;
+
+    const application = await applicationService.save(id, answers || {}, 'applied');
+
+    res.json({
+      success: true,
+      message: 'Candidatura finalizada com sucesso!',
+      application,
+    });
   } catch (error) {
     next(error);
   }

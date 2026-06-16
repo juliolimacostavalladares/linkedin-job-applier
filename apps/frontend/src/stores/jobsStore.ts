@@ -14,6 +14,7 @@ interface JobsState {
   credentialError: boolean;
   fetchJobs: () => Promise<void>;
   selectJob: (job: Job) => Promise<void>;
+  applyJob: (jobId: string, answers: Record<string, string>) => Promise<void>;
   clearSelection: () => void;
   clearError: () => void;
 }
@@ -76,6 +77,35 @@ export const useJobsStore = create<JobsState>((set) => ({
         loadingDetail: false,
         credentialError: message.includes('Credenciais') || status === 403,
       });
+    }
+  },
+
+  applyJob: async (jobId: string, answers: Record<string, string>) => {
+    set({ loadingDetail: true, error: '' });
+    try {
+      await apiService.applyJob(jobId, answers);
+      set((state) => {
+        if (state.selectedJob && state.selectedJob.id === jobId) {
+          return {
+            selectedJob: {
+              ...state.selectedJob,
+              applied: true,
+              appliedAt: new Date().toISOString(),
+            },
+            loadingDetail: false,
+          };
+        }
+        return { loadingDetail: false };
+      });
+    } catch (err: unknown) {
+      let message = 'Erro desconhecido ao candidatar';
+      if (axios.isAxiosError(err)) {
+        message = err.response?.data?.error || err.message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      set({ error: message, loadingDetail: false });
+      throw new Error(message);
     }
   },
 

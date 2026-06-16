@@ -15,6 +15,8 @@ export interface JobDetail {
   companyName: string;
   companyLogo?: string;
   applyForm?: ApplyForm;
+  applied?: boolean;
+  appliedAt?: string;
 }
 
 export interface FormQuestion {

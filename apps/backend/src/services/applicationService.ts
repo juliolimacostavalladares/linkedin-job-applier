@@ -2,13 +2,13 @@ import prisma from '../lib/prisma';
 import { v4 as uuidv4 } from 'uuid';
 
 export class ApplicationService {
-  async save(jobId: string, answers: any[]) {
+  async save(jobId: string, answers: any, status: string = 'applied') {
     return await prisma.application.create({
       data: {
         id: uuidv4(),
         jobId,
-        answers: JSON.stringify(answers),
-        status: 'draft',
+        answers: typeof answers === 'string' ? answers : JSON.stringify(answers),
+        status,
       },
     });
   }
