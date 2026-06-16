@@ -1,6 +1,0 @@
-{
-  "name": "LinkedIn Job Explorer",
-  "description": "Lista vagas do LinkedIn com descrições usando as chaves internas.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
