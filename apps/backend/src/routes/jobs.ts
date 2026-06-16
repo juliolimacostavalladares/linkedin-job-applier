@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { LinkedInService } from '../services/linkedinService';
 import { credentialsService } from '../services/credentialsService';
+import { queryGraphQL } from '../utils/graphqlClient';
+import type { Job, JobDetail, ApplyForm } from '../types';
 
 const router = Router();
 
-// GET /api/jobs – Fetch recommended jobs using stored credentials
+// GET /api/jobs – Fetch recommended jobs using stored credentials via LinkedIn GraphQL Service
 router.get('/', async (_req, res, next) => {
   try {
     const creds = await credentialsService.getCookieAndCsrf();
@@ -15,16 +16,29 @@ router.get('/', async (_req, res, next) => {
       return;
     }
 
-    const linkedInService = new LinkedInService(creds.cookie, creds.csrf);
-    const jobs = await linkedInService.fetchJobs();
+    const query = `
+      query GetJobs($cookie: String!, $csrf: String!) {
+        jobs(cookie: $cookie, csrf: $csrf) {
+          id
+          title
+          companyInfo
+          companyLogo
+        }
+      }
+    `;
 
-    res.json({ jobs, source: 'linkedin' });
+    const data = await queryGraphQL<{ jobs: Job[] }>(query, {
+      cookie: creds.cookie,
+      csrf: creds.csrf,
+    });
+
+    res.json({ jobs: data.jobs, source: 'linkedin-graphql' });
   } catch (error) {
     next(error);
   }
 });
 
-// GET /api/jobs/:id – Fetch job details
+// GET /api/jobs/:id – Fetch job details via LinkedIn GraphQL Service
 router.get('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -35,8 +49,28 @@ router.get('/:id', async (req, res, next) => {
       return;
     }
 
-    const linkedInService = new LinkedInService(creds.cookie, creds.csrf);
-    const jobDetail = await linkedInService.fetchJobDetail(id);
+    const query = `
+      query GetJobDetail($id: ID!, $cookie: String!, $csrf: String!) {
+        jobDetail(id: $id, cookie: $cookie, csrf: $csrf) {
+          id
+          title
+          description
+          location
+          url
+          employmentStatus
+          companyName
+          companyLogo
+        }
+      }
+    `;
+
+    const data = await queryGraphQL<{ jobDetail: JobDetail }>(query, {
+      id,
+      cookie: creds.cookie,
+      csrf: creds.csrf,
+    });
+
+    const { jobDetail } = data;
 
     res.json({
       id:               jobDetail.id,
@@ -54,7 +88,7 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-// GET /api/jobs/:id/apply-form – Fetch Easy Apply form structure
+// GET /api/jobs/:id/apply-form – Fetch Easy Apply form structure via LinkedIn GraphQL Service
 router.get('/:id/apply-form', async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -65,9 +99,39 @@ router.get('/:id/apply-form', async (req, res, next) => {
       return;
     }
 
-    const linkedInService = new LinkedInService(creds.cookie, creds.csrf);
-    const form = await linkedInService.fetchApplyForm(id);
-    res.json(form);
+    const query = `
+      query GetApplyForm($id: ID!, $cookie: String!, $csrf: String!) {
+        applyForm(id: $id, cookie: $cookie, csrf: $csrf) {
+          success
+          message
+          steps {
+            title
+            questions {
+              urn
+              required
+              title
+              type
+              options
+            }
+          }
+          questions {
+            urn
+            required
+            title
+            type
+            options
+          }
+        }
+      }
+    `;
+
+    const data = await queryGraphQL<{ applyForm: ApplyForm }>(query, {
+      id,
+      cookie: creds.cookie,
+      csrf: creds.csrf,
+    });
+
+    res.json(data.applyForm);
   } catch (error) {
     next(error);
   }

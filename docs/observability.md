@@ -14,12 +14,20 @@ O backend utiliza **Winston** para logging estruturado com múltiplos transporte
 
 ### Arquivos de Log
 
-Os logs são salvos em `apps/backend/logs/`:
+Os logs são salvos separadamente para cada serviço:
 
+**Backend (`apps/backend/logs/`):**
 ```
 logs/
 ├── error.log       # Apenas erros
-└── combined.log    # Todos os logs
+└── combined.log    # Todos os logs do backend (service: linkedin-job-applier)
+```
+
+**GraphQL Service (`apps/linkedin-service/logs/`):**
+```
+logs/
+├── error.log       # Apenas erros do serviço de integração
+└── combined.log    # Todos os logs do GraphQL (service: linkedin-graphql-service)
 ```
 
 Cada arquivo tem rotação automática:

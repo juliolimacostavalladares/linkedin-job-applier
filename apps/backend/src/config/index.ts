@@ -18,4 +18,8 @@ export const config = {
   cors: {
     allowedOrigins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:5173'],
   },
+
+  services: {
+    linkedinGraphQLUrl: process.env.LINKEDIN_SERVICE_URL || 'http://localhost:4000/graphql',
+  },
 };

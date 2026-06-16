@@ -1,8 +1,7 @@
 import { Router } from 'express';
-import { LinkedInService } from '../services/linkedinService';
 import { resumeService } from '../services/resumeService';
 import { credentialsService } from '../services/credentialsService';
-import pdfParse from 'pdf-parse';
+import { queryGraphQL } from '../utils/graphqlClient';
 import { validateProfileId } from '../middleware/validator';
 
 const router = Router();
@@ -18,15 +17,35 @@ router.post('/from-linkedin', async (req, res, next) => {
       return res.status(401).json({ error: 'Credenciais do LinkedIn ausentes no servidor.' });
     }
 
-    const linkedInService = new LinkedInService(creds.cookie, creds.csrf);
-    const buffer = await linkedInService.fetchResumePdf(profileId);
+    const query = `
+      query GetResumePdf($profileId: String!, $cookie: String!, $csrf: String!) {
+        resumePdf(profileId: $profileId, cookie: $cookie, csrf: $csrf) {
+          success
+          text
+          pdfBase64
+        }
+      }
+    `;
 
-    const parsedData = await pdfParse(Buffer.from(buffer));
-    const pdfBase64 = Buffer.from(buffer).toString('base64');
+    interface ResumePdfResponse {
+      resumePdf: {
+        success: boolean;
+        text: string;
+        pdfBase64: string;
+      };
+    }
 
-    await resumeService.upsert(profileId, parsedData.text, 'Curriculo_LinkedIn.pdf');
+    const data = await queryGraphQL<ResumePdfResponse>(query, {
+      profileId,
+      cookie: creds.cookie,
+      csrf: creds.csrf,
+    });
 
-    res.json({ success: true, text: parsedData.text, pdfBase64 });
+    const result = data.resumePdf;
+
+    await resumeService.upsert(profileId, result.text, 'Curriculo_LinkedIn.pdf');
+
+    res.json({ success: true, text: result.text, pdfBase64: result.pdfBase64 });
   } catch (error) {
     next(error);
   }

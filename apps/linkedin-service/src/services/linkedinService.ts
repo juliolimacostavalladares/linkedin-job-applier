@@ -1,5 +1,5 @@
 import { logger } from '../utils/logger';
-import type { LinkedInResponse, Job, JobDetail } from '../types';
+import type { LinkedInResponse, Job, JobDetail } from '@linkedin-job-applier/shared';
 
 interface LinkedInVectorImage {
   rootUrl?: string;

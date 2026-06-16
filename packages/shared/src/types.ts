@@ -47,3 +47,8 @@ export interface AIAnswer {
 export interface AIResponse {
   answers: AIAnswer[];
 }
+
+export interface LinkedInResponse {
+  included?: unknown[];
+  [key: string]: unknown;
+}

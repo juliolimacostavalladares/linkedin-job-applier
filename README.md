@@ -7,11 +7,12 @@ Monorepo para aplicação de vagas no LinkedIn com extensão do Chrome, frontend
 ```
 linkedin-job-applier/
 ├── apps/
-│   ├── backend/      # Servidor Express, Prisma ORM (SQLite) e Integração com Gemini
-│   ├── frontend/     # Aplicação React + Vite + Tailwind CSS + Zustand
-│   └── extension/    # Extensão do Chrome para captura segura de credenciais
+│   ├── backend/          # Servidor Express, Prisma ORM (SQLite) e Gateway
+│   ├── frontend/         # Aplicação React + Vite + Tailwind CSS + Zustand
+│   ├── linkedin-service/ # Microsserviço GraphQL para gerenciar chamadas ao LinkedIn
+│   └── extension/        # Extensão do Chrome para captura segura de credenciais
 └── packages/
-    └── shared/       # Tipos TypeScript e utilitários compartilhados
+    └── shared/           # Tipos TypeScript e utilitários compartilhados
 ```
 
 ## Setup
@@ -62,6 +63,15 @@ pnpm dev    # Inicia em modo de desenvolvimento (porta 3000)
 pnpm build  # Compila para produção
 ```
 
+### LinkedIn Service (`apps/linkedin-service`)
+Serviço GraphQL isolado responsável por gerenciar toda a interação de baixo nível com as APIs do LinkedIn (buscar vagas, parsear formulários, extrair PDF de currículo).
+
+```bash
+cd apps/linkedin-service
+pnpm dev    # Inicia em modo de desenvolvimento (porta 4000)
+pnpm build  # Compila para produção
+```
+
 ### Frontend (`apps/frontend`)
 Interface moderna em React e Tailwind CSS onde você visualiza as vagas e inicia o auto-preenchimento por Inteligência Artificial.
 
@@ -91,13 +101,17 @@ import { Job, JobDetail, FormQuestion, AIAnswer } from '@linkedin-job-applier/sh
 
 1. **Backend**: copie `apps/backend/.env.example` para `apps/backend/.env` e configure:
    ```env
-   LINKEDIN_COOKIE=seu-cookie-do-linkedin
-   LINKEDIN_CSRF=seu-token-csrf-do-linkedin
    GEMINI_API_KEY=sua-chave-api-do-gemini
+   LINKEDIN_SERVICE_URL=http://localhost:4000/graphql
    PORT=3000
    ```
 
-2. **Frontend**: copie `apps/frontend/.env.example` para `apps/frontend/.env` e configure:
+2. **LinkedIn Service**: copie `apps/linkedin-service/.env.example` para `apps/linkedin-service/.env` e configure:
+   ```env
+   PORT=4000
+   ```
+
+3. **Frontend**: copie `apps/frontend/.env.example` para `apps/frontend/.env` e configure:
    ```env
    VITE_API_URL=http://localhost:3000
    ```
