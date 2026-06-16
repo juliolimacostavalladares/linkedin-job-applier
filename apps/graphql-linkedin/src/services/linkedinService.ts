@@ -224,6 +224,8 @@ export class LinkedInService {
         'content-type': 'application/json',
         'csrf-token': this.csrf,
         cookie: this.cookie,
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
       },
       body: JSON.stringify(payload),
       redirect: 'follow',
@@ -245,6 +247,8 @@ export class LinkedInService {
       headers: {
         cookie: this.cookie,
         accept: '*/*',
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
       },
     });
 
@@ -464,6 +468,8 @@ export class LinkedInService {
       'csrf-token': this.csrf,
       cookie: this.cookie,
       'x-restli-protocol-version': '2.0.0',
+      'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'accept-language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
     };
   }
 
