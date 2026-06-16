@@ -7,6 +7,8 @@ interface JobsState {
   jobs: Job[];
   selectedJob: JobDetail | null;
   selectedJobId: string | null;
+  loadingList: boolean;
+  loadingDetail: boolean;
   loading: boolean;
   error: string;
   credentialError: boolean;
@@ -20,15 +22,17 @@ export const useJobsStore = create<JobsState>((set) => ({
   jobs: [],
   selectedJob: null,
   selectedJobId: null,
+  loadingList: false,
+  loadingDetail: false,
   loading: false,
   error: '',
   credentialError: false,
 
   fetchJobs: async () => {
-    set({ loading: true, error: '', credentialError: false });
+    set({ loadingList: true, loading: true, error: '', credentialError: false });
     try {
       const { data } = await apiService.getJobs();
-      set({ jobs: data.jobs || [], loading: false });
+      set({ jobs: data.jobs || [], loadingList: false, loading: false });
     } catch (err: unknown) {
       let message = 'Erro desconhecido';
       if (axios.isAxiosError(err)) {
@@ -38,6 +42,7 @@ export const useJobsStore = create<JobsState>((set) => ({
       }
       set({ 
         error: message,
+        loadingList: false,
         loading: false,
         credentialError: message.includes('Credenciais'),
       });
@@ -45,7 +50,7 @@ export const useJobsStore = create<JobsState>((set) => ({
   },
 
   selectJob: async (job: Job) => {
-    set({ selectedJobId: job.id, loading: true, error: '', credentialError: false });
+    set({ selectedJobId: job.id, loadingDetail: true, error: '', credentialError: false });
     try {
       const { data } = await apiService.getJobDetail(job.id);
       // Mescla com os dados da listagem (logo e companyInfo vêm de lá)
@@ -55,7 +60,7 @@ export const useJobsStore = create<JobsState>((set) => ({
           companyLogo: data.companyLogo || job.companyLogo || undefined,
           companyName: data.companyName || data.companyInfo || job.companyInfo || '',
         },
-        loading: false,
+        loadingDetail: false,
       });
     } catch (err: unknown) {
       let message = 'Erro desconhecido';
@@ -68,7 +73,7 @@ export const useJobsStore = create<JobsState>((set) => ({
       }
       set({
         error: message,
-        loading: false,
+        loadingDetail: false,
         credentialError: message.includes('Credenciais') || status === 403,
       });
     }
@@ -77,3 +82,4 @@ export const useJobsStore = create<JobsState>((set) => ({
   clearSelection: () => set({ selectedJob: null, selectedJobId: null }),
   clearError: () => set({ error: '', credentialError: false }),
 }));
+

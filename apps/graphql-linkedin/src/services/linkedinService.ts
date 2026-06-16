@@ -1,5 +1,5 @@
 import { logger } from '../utils/logger';
-import type { LinkedInResponse, Job, JobDetail } from '@linkedin-job-applier/shared';
+import type { LinkedInResponse, Job, JobDetail, WorkExperience, Education } from '@linkedin-job-applier/shared';
 
 interface LinkedInVectorImage {
   rootUrl?: string;
@@ -38,6 +38,16 @@ interface LinkedInIncludedItem {
   };
   formElementUrn?: string;
   required?: boolean;
+  firstName?: string;
+  lastName?: string;
+  occupation?: string;
+  picture?: {
+    rootUrl?: string;
+    artifacts?: Array<{
+      width: number;
+      fileIdentifyingUrlPathSegment: string;
+    }>;
+  };
   uploadFileCtaText?: string;
   mimeTypes?: string[];
   formComponentResolutionResult?: {
@@ -243,6 +253,172 @@ export class LinkedInService {
     }
 
     return await pdfResponse.arrayBuffer();
+  }
+
+  async fetchProfileInfo(): Promise<{
+    success: boolean;
+    profileId: string;
+    name: string;
+    headline: string;
+    photoUrl: string;
+    about: string;
+    experiences: WorkExperience[];
+    education: Education[];
+  }> {
+    const apiUrl = 'https://www.linkedin.com/voyager/api/me';
+    logger.debug('Fetching profile info from LinkedIn API');
+
+    const response = await fetch(apiUrl, {
+      headers: this.getHeaders(),
+      redirect: 'manual',
+    });
+
+    this.handleResponseError(response);
+
+    const json = (await response.json()) as LinkedInGraphQLResponse;
+    const miniProfile = json.included?.find(
+      (item) => item.$type === 'com.linkedin.voyager.identity.shared.MiniProfile'
+    );
+
+    if (!miniProfile) {
+      throw new Error('MiniProfile não encontrado na resposta do LinkedIn');
+    }
+
+    const firstName = miniProfile.firstName || '';
+    const lastName = miniProfile.lastName || '';
+    const name = `${firstName} ${lastName}`.trim();
+    const headline = miniProfile.occupation || '';
+    const profileId = miniProfile.entityUrn?.split(':').pop() || '';
+    const publicIdentifier = (miniProfile as { publicIdentifier?: string }).publicIdentifier || profileId;
+
+    let photoUrl = '';
+    if (miniProfile.picture?.rootUrl && miniProfile.picture.artifacts && miniProfile.picture.artifacts.length > 0) {
+      const artifact = miniProfile.picture.artifacts.find((art) => art.width === 200) || miniProfile.picture.artifacts[0];
+      photoUrl = miniProfile.picture.rootUrl + artifact.fileIdentifyingUrlPathSegment;
+    }
+
+    // Now fetch the full profile view
+    let about = '';
+    let experiences: WorkExperience[] = [];
+    let education: Education[] = [];
+
+    try {
+      const profileViewUrl = `https://www.linkedin.com/voyager/api/identity/profiles/${profileId}/profileView`;
+      logger.debug('Fetching profileView from LinkedIn API', { profileId });
+      
+      const viewResponse = await fetch(profileViewUrl, {
+        headers: this.getHeaders(),
+        redirect: 'manual',
+      });
+
+      this.handleResponseError(viewResponse);
+
+      const viewJson = (await viewResponse.json()) as LinkedInGraphQLResponse;
+      const included = viewJson.included || [];
+
+      // Find about/summary
+      const profileObj = included.find(
+        (item) => item.$type === 'com.linkedin.voyager.identity.profile.Profile'
+      );
+      about = (profileObj as { summary?: string } | undefined)?.summary || '';
+
+      // Parse experiences (Positions)
+      const positions = included.filter(
+        (item) => item.$type === 'com.linkedin.voyager.identity.profile.Position'
+      ) as Array<{
+        companyName?: string;
+        title?: string;
+        locationName?: string;
+        description?: string;
+        timePeriod?: {
+          startDate?: { month?: number; year?: number };
+          endDate?: { month?: number; year?: number };
+        };
+      }>;
+
+      experiences = positions.map((pos) => ({
+        company: pos.companyName || '',
+        role: pos.title || '',
+        duration: this.formatTimePeriod(pos.timePeriod),
+        description: pos.description || '',
+      }));
+
+      // Parse education (Educations)
+      const schools = included.filter(
+        (item) => item.$type === 'com.linkedin.voyager.identity.profile.Education'
+      ) as Array<{
+        schoolName?: string;
+        degreeName?: string;
+        fieldOfStudy?: string;
+        timePeriod?: {
+          startDate?: { year?: number };
+          endDate?: { year?: number };
+        };
+      }>;
+
+      education = schools.map((sch) => ({
+        institution: sch.schoolName || '',
+        degree: this.formatDegree(sch.degreeName, sch.fieldOfStudy),
+        duration: this.formatEducationTimePeriod(sch.timePeriod),
+      }));
+
+      logger.info('Fetched complete profile info and profileView', { name, profileId });
+    } catch (viewError) {
+      logger.error('Error fetching profileView details, using partial me data', { error: viewError });
+    }
+
+    return {
+      success: true,
+      profileId,
+      name,
+      headline,
+      photoUrl,
+      about,
+      experiences,
+      education,
+    };
+  }
+
+  private formatTimePeriod(tp?: {
+    startDate?: { month?: number; year?: number };
+    endDate?: { month?: number; year?: number };
+  }): string {
+    if (!tp) return '';
+    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    
+    let startStr = '';
+    if (tp.startDate?.year) {
+      const monthStr = tp.startDate.month ? `${monthNames[tp.startDate.month - 1]} ` : '';
+      startStr = `${monthStr}${tp.startDate.year}`;
+    }
+    
+    let endStr = 'Presente';
+    if (tp.endDate?.year) {
+      const monthStr = tp.endDate.month ? `${monthNames[tp.endDate.month - 1]} ` : '';
+      endStr = `${monthStr}${tp.endDate.year}`;
+    } else if (!tp.startDate?.year) {
+      return '';
+    }
+    
+    return `${startStr} - ${endStr}`;
+  }
+
+  private formatEducationTimePeriod(tp?: {
+    startDate?: { year?: number };
+    endDate?: { year?: number };
+  }): string {
+    if (!tp) return '';
+    const start = tp.startDate?.year ? String(tp.startDate.year) : '';
+    const end = tp.endDate?.year ? String(tp.endDate.year) : 'Presente';
+    if (!start) return '';
+    return `${start} - ${end}`;
+  }
+
+  private formatDegree(degreeName?: string, fieldOfStudy?: string): string {
+    if (degreeName && fieldOfStudy) {
+      return `${degreeName}, ${fieldOfStudy}`;
+    }
+    return degreeName || fieldOfStudy || '';
   }
 
   parseJobsFromExtension(data: LinkedInResponse): Job[] {

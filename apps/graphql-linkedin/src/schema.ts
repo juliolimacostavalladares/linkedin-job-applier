@@ -43,10 +43,35 @@ export const typeDefs = `#graphql
     pdfBase64: String!
   }
 
+  type WorkExperience {
+    company: String!
+    role: String!
+    duration: String!
+    description: String!
+  }
+
+  type Education {
+    institution: String!
+    degree: String!
+    duration: String!
+  }
+
+  type LinkedInProfile {
+    success: Boolean!
+    profileId: String!
+    name: String!
+    headline: String!
+    photoUrl: String
+    about: String
+    experiences: [WorkExperience!]!
+    education: [Education!]!
+  }
+
   type Query {
     jobs(cookie: String!, csrf: String!): [Job!]!
     jobDetail(id: ID!, cookie: String!, csrf: String!): JobDetail!
     applyForm(id: ID!, cookie: String!, csrf: String!): ApplyForm!
     resumePdf(profileId: String!, cookie: String!, csrf: String!): ResumePdfResponse!
+    profileInfo(cookie: String!, csrf: String!): LinkedInProfile!
   }
 `;

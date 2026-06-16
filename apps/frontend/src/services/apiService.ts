@@ -22,6 +22,12 @@ export const apiService = {
   
   fetchResumeFromLinkedIn: (profileId: string) =>
     api.post('/api/resume/from-linkedin', { profileId }),
+  
+  getProfile: (sync?: boolean) =>
+    api.get(`/api/resume/profile${sync ? '?sync=true' : ''}`),
+    
+  saveResumeText: (text: string) =>
+    api.post('/api/resume', { text }),
 };
 
 export default api;
