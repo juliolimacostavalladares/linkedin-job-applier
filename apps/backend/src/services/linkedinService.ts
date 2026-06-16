@@ -133,8 +133,8 @@ export class LinkedInService {
 
     this.handleResponseError(response);
 
-    const jsonData = (await response.json()) as LinkedInJobDetailRaw;
-    const data = jsonData;
+    const jsonData = (await response.json()) as { data?: LinkedInJobDetailRaw } & LinkedInJobDetailRaw;
+    const data = jsonData.data || jsonData;
 
     const jobDetail: JobDetail = {
       id: jobId,
