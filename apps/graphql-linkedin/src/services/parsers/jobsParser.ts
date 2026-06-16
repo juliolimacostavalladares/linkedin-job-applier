@@ -46,12 +46,14 @@ export function parseJobs(data: LinkedInResponse): Job[] {
           job.companyInfo =
             item.primaryDescription?.text ?? 'Empresa não informada';
 
-          // ── Easy Apply detection via footerItems ────────────────────────────
+          // ── Easy Apply detection via footerItems ─────────────────────────
           // The listing endpoint never returns applyMethod on JobPosting.
           // Instead, JobPostingCard.footerItems contains an entry with
           // type === 'EASY_APPLY_TEXT' when the job supports Easy Apply.
+          // NOTE: each job id appears TWICE in included — one card has footerItems,
+          // the other has none. Use ||= so a true value is never overwritten.
           const footerItems = (item.footerItems ?? []) as LinkedInFooterItem[];
-          job.isEasyApply = footerItems.some((f) => f.type === 'EASY_APPLY_TEXT');
+          job.isEasyApply ||= footerItems.some((f) => f.type === 'EASY_APPLY_TEXT');
 
           const vectorImage = resolveVectorImage(item, includedMap);
 

@@ -1,4 +1,5 @@
 import { logger } from '../../utils/logger';
+import { writeFileSync } from 'fs';
 import { getHeaders, handleResponseError } from '../http/linkedinHttpClient';
 import { parseJobs, parseJobsFromExtension } from '../parsers/jobsParser';
 import type { LinkedInResponse, Job, JobDetail } from '@linkedin-job-applier/shared';
@@ -26,6 +27,8 @@ export async function fetchJobs(
   handleResponseError(response);
 
   const data = (await response.json()) as LinkedInResponse;
+  // Save full raw response for offline inspection
+  try { writeFileSync('/tmp/linkedin-jobs-raw.json', JSON.stringify(data, null, 2)); } catch { /* ignore */ }
   const jobs = parseJobs(data);
 
   logger.info('Fetched jobs from LinkedIn', { count: jobs.length });
