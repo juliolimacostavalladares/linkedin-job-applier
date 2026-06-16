@@ -1,5 +1,5 @@
 import type { LinkedInResponse, Job } from '@linkedin-job-applier/shared';
-import type { LinkedInIncludedItem, LinkedInVectorImage } from '../../types/linkedin';
+import type { LinkedInIncludedItem, LinkedInVectorImage, LinkedInFooterItem } from '../../types/linkedin';
 
 /**
  * Parses a raw LinkedIn Voyager API response (from the jobs collection endpoint)
@@ -7,6 +7,7 @@ import type { LinkedInIncludedItem, LinkedInVectorImage } from '../../types/link
  */
 export function parseJobs(data: LinkedInResponse): Job[] {
   const included = (data.included || []) as LinkedInIncludedItem[];
+  // isEasyApply is determined from JobPostingCard.footerItems (type EASY_APPLY_TEXT)
   const jobsMap = new Map<string, Partial<Job> & { id: string; isEasyApply?: boolean }>();
 
   // ── 1. Extract job titles from JobPosting items ───────────────────────────
@@ -20,15 +21,7 @@ export function parseJobs(data: LinkedInResponse): Job[] {
         if (job) {
           job.title =
             typeof item.title === 'string' ? item.title : item.title?.text ?? '';
-
-          // ── Easy Apply detection ──────────────────────────────────────────
-          // LinkedIn $type for Easy Apply: `...ComplexOnsiteApply`
-          // LinkedIn $type for external:   `...OffsiteApply`
-          // External apply jobs also expose `companyApplyUrl`.
-          const applyType = item.applyMethod?.$type ?? '';
-          const hasExternalUrl = Boolean(item.applyMethod?.companyApplyUrl);
-          job.isEasyApply =
-            !hasExternalUrl && !applyType.toLowerCase().includes('offsite');
+          // isEasyApply will be set in step 3 from JobPostingCard.footerItems
         }
       }
     }
@@ -41,7 +34,7 @@ export function parseJobs(data: LinkedInResponse): Job[] {
     if (urn) includedMap.set(urn, item);
   }
 
-  // ── 3. Extract company name and logo from JobPostingCard items ────────────
+  // ── 3. Extract company name, logo AND Easy Apply flag from JobPostingCard items ──
   for (const item of included) {
     if (item.$type === 'com.linkedin.voyager.dash.jobs.JobPostingCard') {
       const match = item.entityUrn?.match(/\((\d+),/);
@@ -52,6 +45,13 @@ export function parseJobs(data: LinkedInResponse): Job[] {
         if (job) {
           job.companyInfo =
             item.primaryDescription?.text ?? 'Empresa não informada';
+
+          // ── Easy Apply detection via footerItems ────────────────────────────
+          // The listing endpoint never returns applyMethod on JobPosting.
+          // Instead, JobPostingCard.footerItems contains an entry with
+          // type === 'EASY_APPLY_TEXT' when the job supports Easy Apply.
+          const footerItems = (item.footerItems ?? []) as LinkedInFooterItem[];
+          job.isEasyApply = footerItems.some((f) => f.type === 'EASY_APPLY_TEXT');
 
           const vectorImage = resolveVectorImage(item, includedMap);
 

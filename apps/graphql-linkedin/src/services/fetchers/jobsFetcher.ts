@@ -6,6 +6,7 @@ import type { LinkedInJobDetailRaw } from '../../types/linkedin';
 
 /**
  * Fetches the Easy-Apply job listing from the LinkedIn Voyager API.
+ * Only jobs with a footerItem of type EASY_APPLY_TEXT are returned (see jobsParser.ts).
  */
 export async function fetchJobs(
   cookie: string,

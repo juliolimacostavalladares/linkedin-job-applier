@@ -11,6 +11,13 @@ export interface LinkedInVectorImage {
   }>;
 }
 
+/** Footer item on a JobPostingCard — EASY_APPLY_TEXT type marks Easy Apply jobs */
+export interface LinkedInFooterItem {
+  type?: string;
+  text?: { text?: string } | null;
+  timeAt?: number | null;
+}
+
 export interface LinkedInApplyMethod {
   /** `com.linkedin.voyager.dash.jobs.ComplexOnsiteApply` = Easy Apply */
   $type?: string;
@@ -26,6 +33,8 @@ export interface LinkedInIncludedItem {
   primaryDescription?: { text?: string };
   /** Present on JobPosting items – used to detect Easy Apply vs external */
   applyMethod?: LinkedInApplyMethod;
+  /** Present on JobPostingCard – EASY_APPLY_TEXT entry marks Easy Apply jobs */
+  footerItems?: LinkedInFooterItem[];
   logo?: {
     attributes?: Array<{
       detailData?: Record<string, unknown>;
