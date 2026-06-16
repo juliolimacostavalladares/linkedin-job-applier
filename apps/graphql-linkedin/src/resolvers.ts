@@ -25,6 +25,10 @@ export const resolvers = {
         text: parsedData.text,
         pdfBase64
       };
+    },
+    profileInfo: async (_: unknown, { cookie, csrf }: { cookie: string; csrf: string }) => {
+      const linkedInService = new LinkedInService(cookie, csrf);
+      return linkedInService.fetchProfileInfo();
     }
   }
 };

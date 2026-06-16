@@ -38,6 +38,16 @@ interface LinkedInIncludedItem {
   };
   formElementUrn?: string;
   required?: boolean;
+  firstName?: string;
+  lastName?: string;
+  occupation?: string;
+  picture?: {
+    rootUrl?: string;
+    artifacts?: Array<{
+      width: number;
+      fileIdentifyingUrlPathSegment: string;
+    }>;
+  };
   uploadFileCtaText?: string;
   mimeTypes?: string[];
   formComponentResolutionResult?: {
@@ -243,6 +253,55 @@ export class LinkedInService {
     }
 
     return await pdfResponse.arrayBuffer();
+  }
+
+  async fetchProfileInfo(): Promise<{
+    success: boolean;
+    profileId: string;
+    name: string;
+    headline: string;
+    photoUrl: string;
+  }> {
+    const apiUrl = 'https://www.linkedin.com/voyager/api/me';
+    logger.debug('Fetching profile info from LinkedIn API');
+
+    const response = await fetch(apiUrl, {
+      headers: this.getHeaders(),
+      redirect: 'manual',
+    });
+
+    this.handleResponseError(response);
+
+    const json = (await response.json()) as LinkedInGraphQLResponse;
+    const miniProfile = json.included?.find(
+      (item) => item.$type === 'com.linkedin.voyager.identity.shared.MiniProfile'
+    );
+
+    if (!miniProfile) {
+      throw new Error('MiniProfile não encontrado na resposta do LinkedIn');
+    }
+
+    const firstName = miniProfile.firstName || '';
+    const lastName = miniProfile.lastName || '';
+    const name = `${firstName} ${lastName}`.trim();
+    const headline = miniProfile.occupation || '';
+    const profileId = miniProfile.entityUrn?.split(':').pop() || '';
+
+    let photoUrl = '';
+    if (miniProfile.picture?.rootUrl && miniProfile.picture.artifacts && miniProfile.picture.artifacts.length > 0) {
+      const artifact = miniProfile.picture.artifacts.find((art) => art.width === 200) || miniProfile.picture.artifacts[0];
+      photoUrl = miniProfile.picture.rootUrl + artifact.fileIdentifyingUrlPathSegment;
+    }
+
+    logger.info('Fetched profile info', { name, profileId });
+
+    return {
+      success: true,
+      profileId,
+      name,
+      headline,
+      photoUrl,
+    };
   }
 
   parseJobsFromExtension(data: LinkedInResponse): Job[] {
