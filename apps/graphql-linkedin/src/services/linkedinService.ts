@@ -1,6 +1,5 @@
 import { logger } from '../utils/logger';
-import pdfParse from 'pdf-parse';
-import type { LinkedInResponse, Job, JobDetail, WorkExperience, Education } from '@linkedin-job-applier/shared';
+import type { LinkedInResponse, Job, JobDetail } from '@linkedin-job-applier/shared';
 
 interface LinkedInVectorImage {
   rootUrl?: string;
@@ -294,17 +293,18 @@ export class LinkedInService {
     return await pdfResponse.arrayBuffer();
   }
 
+  /**
+   * Fetches minimal LinkedIn identity from /voyager/api/me.
+   * Structured parsing (about, experiences, education) is the backend's
+   * responsibility via the AI service after downloading the PDF.
+   */
   async fetchProfileInfo(): Promise<{
     success: boolean;
     profileId: string;
     name: string;
     headline: string;
     photoUrl: string;
-    about: string;
-    experiences: WorkExperience[];
-    education: Education[];
   }> {
-    // Step 1: Get basic identity from /voyager/api/me
     const apiUrl = 'https://www.linkedin.com/voyager/api/me';
     logger.debug('Fetching profile identity from LinkedIn /me API');
 
@@ -331,277 +331,21 @@ export class LinkedInService {
     const profileId = miniProfile.entityUrn?.split(':').pop() || '';
 
     let photoUrl = '';
-    if (miniProfile.picture?.rootUrl && miniProfile.picture.artifacts && miniProfile.picture.artifacts.length > 0) {
-      const artifact = miniProfile.picture.artifacts.find((art) => art.width === 200) || miniProfile.picture.artifacts[0];
+    if (
+      miniProfile.picture?.rootUrl &&
+      miniProfile.picture.artifacts &&
+      miniProfile.picture.artifacts.length > 0
+    ) {
+      const artifact =
+        miniProfile.picture.artifacts.find((art) => art.width === 200) ||
+        miniProfile.picture.artifacts[0];
       photoUrl = miniProfile.picture.rootUrl + artifact.fileIdentifyingUrlPathSegment;
     }
 
-    // Step 2: Download profile PDF and parse its text
-    let about = '';
-    let experiences: WorkExperience[] = [];
-    let education: Education[] = [];
+    logger.info('Profile identity fetched', { name, profileId });
 
-    try {
-      logger.debug('Downloading LinkedIn profile PDF for parsing', { profileId });
-      const pdfBuffer = await this.fetchResumePdf(profileId);
-      const pdfData = await pdfParse(Buffer.from(pdfBuffer));
-      const pdfText = pdfData.text || '';
-      logger.info('PDF downloaded and parsed successfully', { profileId, textLength: pdfText.length });
-
-      const parsed = this.parsePdfText(pdfText);
-      about = parsed.about;
-      experiences = parsed.experiences;
-      education = parsed.education;
-    } catch (err) {
-      logger.error('Error downloading/parsing profile PDF — using partial identity only', { error: err });
-    }
-
-    logger.info('Fetched complete profile info via PDF parsing', { name, profileId });
-
-    return {
-      success: true,
-      profileId,
-      name,
-      headline,
-      photoUrl,
-      about,
-      experiences,
-      education,
-    };
+    return { success: true, profileId, name, headline, photoUrl };
   }
-
-  /**
-   * Parses the plain text extracted from the LinkedIn profile PDF.
-   * Identifies sections by well-known headings and builds structured data.
-   */
-  private parsePdfText(text: string): {
-    about: string;
-    experiences: WorkExperience[];
-    education: Education[];
-  } {
-    // Normalize line endings and collapse excessive blank lines
-    const lines = text
-      .replace(/\r\n/g, '\n')
-      .replace(/\r/g, '\n')
-      .split('\n')
-      .map((l) => l.trim());
-
-    // Section heading patterns (LinkedIn PDFs in PT/EN)
-    const SECTION_HEADINGS = [
-      /^(sobre|about|resumo|summary)$/i,
-      /^(experi[eê]ncia|experience|experi[eê]ncias profissionais?)$/i,
-      /^(forma[cç][aã]o|educa[cç][aã]o|education|academic)$/i,
-      /^(habilidades|skills|competências)$/i,
-      /^(idiomas?|languages?)$/i,
-      /^(certificados?|certifications?|cursos?)$/i,
-      /^(prêmios?|honras?|awards?)$/i,
-      /^(voluntariado?|volunteer)$/i,
-      /^(projetos?|projects?)$/i,
-      /^(publica[cç][oõ]es?|publications?)$/i,
-      /^(recomenda[cç][oõ]es?|recommendations?)$/i,
-      /^(interesses?|interests?)$/i,
-    ];
-
-    const isHeading = (line: string) =>
-      SECTION_HEADINGS.some((rx) => rx.test(line.trim()));
-
-    // Split into sections
-    type Section = { heading: string; lines: string[] };
-    const sections: Section[] = [];
-    let current: Section | null = null;
-
-    for (const line of lines) {
-      if (!line) continue;
-      if (isHeading(line)) {
-        if (current) sections.push(current);
-        current = { heading: line.toLowerCase(), lines: [] };
-      } else if (current) {
-        current.lines.push(line);
-      }
-    }
-    if (current) sections.push(current);
-
-    // ─── About ───────────────────────────────────────────────────
-    const aboutSection = sections.find((s) =>
-      /^(sobre|about|resumo|summary)$/i.test(s.heading)
-    );
-    const about = aboutSection?.lines.join(' ').trim() || '';
-
-    // ─── Experiences ─────────────────────────────────────────────
-    const expSection = sections.find((s) =>
-      /^(experi[eê]ncia|experience|experi[eê]ncias profissionais?)$/i.test(s.heading)
-    );
-    const experiences: WorkExperience[] = [];
-
-    if (expSection && expSection.lines.length > 0) {
-      // LinkedIn PDF experience block format (typical):
-      // Line 0: Company name
-      // Line 1: Role title  (or "Role · Duration")
-      // Line 2: Duration    ("Jan 2023 - Presente · X anos")
-      // Line 3+: Description (optional, multi-line)
-      // Then next entry starts again
-      //
-      // We detect a new entry when we see a duration-like pattern following a role
-      const DURATION_RX = /\d{4}|presente|current|hoje|now/i;
-      const ROLE_SEP_RX = / · /;
-
-      let i = 0;
-      const expLines = expSection.lines;
-
-      while (i < expLines.length) {
-        // Skip empty / separators
-        while (i < expLines.length && !expLines[i]) i++;
-        if (i >= expLines.length) break;
-
-        // Try to detect a block:
-        // Pattern A: company on its own line, then role, then duration
-        // Pattern B: "Role · Duration" on one line with company above
-        let company = '';
-        let role = '';
-        let duration = '';
-        const descLines: string[] = [];
-
-        const first = expLines[i];
-
-        // Check if line contains a duration (then it's the start of a role line)
-        if (ROLE_SEP_RX.test(first) && DURATION_RX.test(first)) {
-          // "Role · Company · Duration" pattern
-          const parts = first.split(' · ');
-          role = parts[0] || '';
-          if (parts.length >= 3) {
-            company = parts[1] || '';
-            duration = parts.slice(2).join(' · ');
-          } else {
-            duration = parts[1] || '';
-          }
-          i++;
-        } else {
-          // first line = company or role
-          company = first;
-          i++;
-
-          if (i < expLines.length) {
-            const second = expLines[i];
-            if (ROLE_SEP_RX.test(second)) {
-              // "Role · Duration" pattern
-              const parts = second.split(' · ');
-              role = parts[0] || '';
-              duration = parts.slice(1).join(' · ');
-              i++;
-            } else if (DURATION_RX.test(second) && !ROLE_SEP_RX.test(second)) {
-              // second line is pure duration → company was already role
-              role = company;
-              company = '';
-              duration = second;
-              i++;
-            } else {
-              // second line is the role title
-              role = second;
-              i++;
-              if (i < expLines.length) {
-                const third = expLines[i];
-                if (DURATION_RX.test(third)) {
-                  duration = third;
-                  i++;
-                }
-              }
-            }
-          }
-        }
-
-        // Collect description until next entry (detected by another company-like line)
-        while (
-          i < expLines.length &&
-          !isHeading(expLines[i]) &&
-          !(DURATION_RX.test(expLines[i]) && !descLines.length)
-        ) {
-          // Stop if we see what looks like a new entry
-          const peek = expLines[i];
-          if (
-            descLines.length > 0 &&
-            !DURATION_RX.test(peek) &&
-            i + 1 < expLines.length &&
-            DURATION_RX.test(expLines[i + 1])
-          ) break;
-          descLines.push(peek);
-          i++;
-        }
-
-        if (role || company) {
-          experiences.push({
-            company,
-            role,
-            duration,
-            description: descLines.join(' ').trim(),
-          });
-        }
-      }
-    }
-
-    // ─── Education ───────────────────────────────────────────────
-    const eduSection = sections.find((s) =>
-      /^(forma[cç][aã]o|educa[cç][aã]o|education|academic)$/i.test(s.heading)
-    );
-    const education: Education[] = [];
-
-    if (eduSection && eduSection.lines.length > 0) {
-      // LinkedIn PDF education format:
-      // Line 0: Institution name
-      // Line 1: Degree, Field of study
-      // Line 2: Duration ("2018 - 2022")
-      const YEAR_RX = /\b\d{4}\b/;
-      let i = 0;
-      const eduLines = eduSection.lines;
-
-      while (i < eduLines.length) {
-        while (i < eduLines.length && !eduLines[i]) i++;
-        if (i >= eduLines.length) break;
-
-        const institution = eduLines[i]; i++;
-        let degree = '';
-        let duration = '';
-
-        if (i < eduLines.length && !YEAR_RX.test(eduLines[i])) {
-          degree = eduLines[i]; i++;
-        }
-        if (i < eduLines.length && YEAR_RX.test(eduLines[i])) {
-          duration = eduLines[i]; i++;
-        }
-        // Skip activity/note lines until next institution
-        while (
-          i < eduLines.length &&
-          !isHeading(eduLines[i]) &&
-          !(
-            i + 1 < eduLines.length &&
-            !YEAR_RX.test(eduLines[i]) &&
-            YEAR_RX.test(eduLines[i + 1] || '')
-          )
-        ) {
-          // If next two lines look like institution + year, stop collecting
-          if (
-            !YEAR_RX.test(eduLines[i]) &&
-            i + 2 < eduLines.length &&
-            YEAR_RX.test(eduLines[i + 1] || '')
-          ) break;
-          if (
-            !YEAR_RX.test(eduLines[i]) &&
-            i + 1 < eduLines.length &&
-            !YEAR_RX.test(eduLines[i + 1] || '') &&
-            i + 2 < eduLines.length &&
-            YEAR_RX.test(eduLines[i + 2] || '')
-          ) break;
-          i++;
-        }
-
-        if (institution) {
-          education.push({ institution, degree, duration });
-        }
-      }
-    }
-
-    return { about, experiences, education };
-  }
-
 
   parseJobsFromExtension(data: LinkedInResponse): Job[] {
     return this.parseJobs(data);

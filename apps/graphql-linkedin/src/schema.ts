@@ -1,4 +1,5 @@
 export const typeDefs = `#graphql
+  # ─── Jobs ──────────────────────────────────────────────────────────────────
   type Job {
     id: ID!
     title: String!
@@ -17,6 +18,7 @@ export const typeDefs = `#graphql
     companyLogo: String
   }
 
+  # ─── Apply Form ────────────────────────────────────────────────────────────
   type FormQuestion {
     urn: String!
     required: Boolean!
@@ -37,41 +39,40 @@ export const typeDefs = `#graphql
     questions: [FormQuestion!]
   }
 
+  # ─── Resume / Profile ──────────────────────────────────────────────────────
+
+  """
+  Raw PDF download response. Parsing (about, experiences, education)
+  is done on the backend by the AI service — NOT here.
+  """
   type ResumePdfResponse {
     success: Boolean!
     text: String!
     pdfBase64: String!
   }
 
-  type WorkExperience {
-    company: String!
-    role: String!
-    duration: String!
-    description: String!
-  }
-
-  type Education {
-    institution: String!
-    degree: String!
-    duration: String!
-  }
-
+  """
+  Minimal identity fetched from /voyager/api/me.
+  Structural parsing lives in the backend AI service.
+  """
   type LinkedInProfile {
     success: Boolean!
     profileId: String!
     name: String!
     headline: String!
     photoUrl: String
-    about: String
-    experiences: [WorkExperience!]!
-    education: [Education!]!
   }
 
+  # ─── Queries ───────────────────────────────────────────────────────────────
   type Query {
     jobs(cookie: String!, csrf: String!, headersJson: String): [Job!]!
     jobDetail(id: ID!, cookie: String!, csrf: String!, headersJson: String): JobDetail!
     applyForm(id: ID!, cookie: String!, csrf: String!, headersJson: String): ApplyForm!
+
+    """Downloads the LinkedIn profile PDF and returns raw text + base64."""
     resumePdf(profileId: String!, cookie: String!, csrf: String!, headersJson: String): ResumePdfResponse!
+
+    """Returns minimal LinkedIn identity (name, headline, photoUrl, profileId)."""
     profileInfo(cookie: String!, csrf: String!, headersJson: String): LinkedInProfile!
   }
 `;
