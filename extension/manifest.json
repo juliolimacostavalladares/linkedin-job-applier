@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "JobFinder Sync",
+  "version": "1.0",
+  "description": "Busca vagas do LinkedIn de forma invisível e segura (com a sua própria sessão) para evitar bloqueios.",
+  "permissions": ["cookies"],
+  "host_permissions": [
+    "https://www.linkedin.com/*",
+    "http://localhost:3000/*",
+    "*://*.run.app/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Sincronizar Vagas"
+  }
+}
