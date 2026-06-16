@@ -18,12 +18,18 @@ model Credentials {
 }
 
 model Resume {
-  id         String   @id @default(uuid())
-  profileId  String?  @unique
-  text       String
-  filename   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id             String   @id @default(uuid())
+  profileId      String?  @unique
+  name           String?
+  headline       String?
+  photoUrl       String?
+  text           String
+  filename       String?
+  about          String?
+  experienceJson String?  // Store experiences as JSON string
+  educationJson  String?  // Store education as JSON string
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@map("resumes")
 }

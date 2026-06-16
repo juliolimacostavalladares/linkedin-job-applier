@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { credentialsService } from '../services/credentialsService';
+import { resumeService } from '../services/resumeService';
 import { logger } from '../utils/logger';
 
 const router = Router();
@@ -30,6 +31,11 @@ router.post('/', async (req, res, next) => {
 
     const saved = await credentialsService.getOrCreate(cookie, csrf);
     logger.info('Credentials saved via extension', { id: saved.id });
+
+    // Trigger background sync for LinkedIn profile and resume parsing
+    resumeService.syncProfile(cookie, csrf).catch((err: unknown) => {
+      logger.error('Error in background profile sync:', err);
+    });
 
     res.json({ success: true, id: saved.id, updatedAt: saved.updatedAt });
   } catch (error) {
