@@ -120,45 +120,6 @@ router.get('/:id', async (req, res, next) => {
 
     if (formRes.status === 'fulfilled' && formRes.value.applyForm) {
       applyForm = formRes.value.applyForm;
-
-      // If form exists and has questions, try to pre-fill it with AI using user's latest resume
-      if (applyForm.success && applyForm.questions && applyForm.questions.length > 0) {
-        try {
-          const latestResume = await resumeService.getLatest();
-          if (latestResume && latestResume.text && latestResume.text.trim()) {
-            const aiService = new AIService();
-            const aiRes = await aiService.generateAnswers(applyForm.questions, latestResume.text);
-            
-            const answerMap = new Map<string, string>();
-            if (aiRes && aiRes.answers) {
-              aiRes.answers.forEach((ans) => {
-                if (ans.urn && ans.answer) {
-                  answerMap.set(ans.urn, ans.answer);
-                }
-              });
-            }
-
-            // Map suggestions back to questions
-            applyForm.questions = applyForm.questions.map((q) => ({
-              ...q,
-              suggestedAnswer: answerMap.get(q.urn) || undefined,
-            }));
-
-            if (applyForm.steps) {
-              applyForm.steps = applyForm.steps.map((step) => ({
-                ...step,
-                questions: step.questions.map((q) => ({
-                  ...q,
-                  suggestedAnswer: answerMap.get(q.urn) || undefined,
-                })),
-              }));
-            }
-            logger.info(`Successfully pre-filled apply form with AI suggestions for job ${id}`);
-          }
-        } catch (aiErr) {
-          logger.error(`Failed to pre-fill apply form with AI for job ${id}:`, aiErr);
-        }
-      }
     }
 
     let applied = false;
