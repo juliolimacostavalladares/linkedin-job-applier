@@ -1,4 +1,4 @@
-import { Briefcase, RefreshCw } from 'lucide-react';
+import { Briefcase, FileText } from 'lucide-react';
 
 interface SidebarProps {
   activeView: 'jobs' | 'resume';
@@ -18,10 +18,8 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
           active={activeView === 'jobs'}
           onClick={() => onViewChange('jobs')}
         />
-        <NavButton icon={<RefreshCw size={20} />} active={false} onClick={() => {}} />
-        <NavButton icon={<Briefcase size={20} />} active={false} onClick={() => {}} />
         <NavButton
-          icon={<Briefcase size={20} />}
+          icon={<FileText size={20} />}
           active={activeView === 'resume'}
           onClick={() => onViewChange('resume')}
         />
