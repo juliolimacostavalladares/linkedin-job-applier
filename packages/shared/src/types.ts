@@ -14,6 +14,7 @@ export interface JobDetail {
   employmentStatus: string;
   companyName: string;
   companyLogo?: string;
+  applyForm?: ApplyForm;
 }
 
 export interface FormQuestion {
@@ -22,6 +23,7 @@ export interface FormQuestion {
   title: string;
   type: string;
   options?: string[];
+  suggestedAnswer?: string;
 }
 
 export interface ApplyForm {

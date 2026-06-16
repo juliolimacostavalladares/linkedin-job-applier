@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { AlertCircle, RefreshCw, CheckCircle, FileText, Sparkles, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input, Textarea } from '../ui/Input';
@@ -12,22 +13,35 @@ interface ApplyModalProps {
 
 export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
   const {
-    aiAnswers,
-    generatingAnswers,
     formValues,
     updateFormValue,
-    generateAnswers,
     currentStep,
     setCurrentStep,
   } = useApplyFormStore();
 
   const { resumeText, isEditingResume, setIsEditingResume, saveResume, setResumeText } = useResumeStore();
 
+  // Prefill form values with suggested answers from AI if available
+  useEffect(() => {
+    if (applyForm.questions) {
+      applyForm.questions.forEach((q) => {
+        if (q.suggestedAnswer && formValues[q.urn] === undefined) {
+          updateFormValue(q.urn, q.suggestedAnswer);
+        }
+      });
+    }
+  }, [applyForm, updateFormValue, formValues]);
+
   const currentStepQuestions = applyForm.steps?.[currentStep]?.questions || [];
 
-  const handleGenerateAnswers = async () => {
-    if (!applyForm.questions || applyForm.questions.length === 0) return;
-    await generateAnswers(applyForm.questions, resumeText);
+  const handleGenerateAnswers = () => {
+    if (applyForm.questions) {
+      applyForm.questions.forEach((q) => {
+        if (q.suggestedAnswer) {
+          updateFormValue(q.urn, q.suggestedAnswer);
+        }
+      });
+    }
   };
 
   const handleSubmit = () => {
@@ -46,8 +60,6 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
           currentStepQuestions={currentStepQuestions}
           formValues={formValues}
           updateFormValue={updateFormValue}
-          aiAnswers={aiAnswers}
-          generatingAnswers={generatingAnswers}
           onGenerateAnswers={handleGenerateAnswers}
           resumeText={resumeText}
           isEditingResume={isEditingResume}
@@ -93,8 +105,6 @@ interface ModalBodyProps {
   currentStepQuestions: FormQuestion[];
   formValues: Record<string, string>;
   updateFormValue: (urn: string, value: string) => void;
-  aiAnswers: AIAnswer[];
-  generatingAnswers: boolean;
   onGenerateAnswers: () => void;
   resumeText: string;
   isEditingResume: boolean;
@@ -109,8 +119,6 @@ function ModalBody({
   currentStepQuestions,
   formValues,
   updateFormValue,
-  aiAnswers,
-  generatingAnswers,
   onGenerateAnswers,
   resumeText,
   isEditingResume,
@@ -128,8 +136,6 @@ function ModalBody({
           
           <StepHeader
             title={applyForm.steps[currentStep].title}
-            generatingAnswers={generatingAnswers}
-            hasAiAnswers={aiAnswers.length > 0}
             onGenerateAnswers={onGenerateAnswers}
           />
 
@@ -153,7 +159,7 @@ function ModalBody({
                 question={q}
                 value={formValues[q.urn] || ''}
                 onChange={(value) => updateFormValue(q.urn, value)}
-                hasAiAnswer={!!aiAnswers.find((ans) => ans.urn === q.urn)?.answer}
+                hasAiAnswer={!!q.suggestedAnswer}
               />
             ))}
           </div>
@@ -196,22 +202,19 @@ function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
 
 interface StepHeaderProps {
   title: string;
-  generatingAnswers: boolean;
-  hasAiAnswers: boolean;
   onGenerateAnswers: () => void;
 }
 
-function StepHeader({ title, generatingAnswers, hasAiAnswers, onGenerateAnswers }: StepHeaderProps) {
+function StepHeader({ title, onGenerateAnswers }: StepHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-1">
       <h4 className="font-bold text-xs text-text-primary uppercase tracking-wide">{title}</h4>
       <button
         onClick={onGenerateAnswers}
-        disabled={generatingAnswers || hasAiAnswers}
-        className="bg-transparent border border-border-color text-brand-blue px-2.5 py-1 rounded font-bold text-[11px] hover:bg-bg-hover hover:border-brand-blue flex items-center gap-1 disabled:opacity-50 transition-colors shadow-sm"
+        className="bg-transparent border border-border-color text-brand-blue px-2.5 py-1 rounded font-bold text-[11px] hover:bg-bg-hover hover:border-brand-blue flex items-center gap-1 transition-colors shadow-sm"
       >
-        {generatingAnswers ? <RefreshCw size={11} className="animate-spin" /> : <Sparkles size={11} />}
-        Auto-preencher
+        <Sparkles size={11} />
+        Restaurar IA
       </button>
     </div>
   );

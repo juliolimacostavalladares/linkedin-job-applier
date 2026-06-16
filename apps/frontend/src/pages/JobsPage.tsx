@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, FileText, Sun, Moon } from 'lucide-react';
-import { useJobsStore, useJobDetailStore, useApplyFormStore, useThemeStore } from '../stores';
+import { useJobsStore, useApplyFormStore, useThemeStore } from '../stores';
 import { Sidebar } from '../components/jobs/Sidebar';
 import { SearchBar } from '../components/jobs/SearchBar';
 import { JobList } from '../components/jobs/JobList';
@@ -11,8 +11,7 @@ import type { Job } from '@linkedin-job-applier/shared';
 
 export default function JobsPage() {
   const navigate = useNavigate();
-  const { jobs, loadingList, fetchJobs, selectJob } = useJobsStore();
-  const { selectedJob, applyForm } = useJobDetailStore();
+  const { jobs, loadingList, fetchJobs, selectJob, selectedJob } = useJobsStore();
   const { isApplyModalOpen, setIsApplyModalOpen, setCurrentStep, closeModal } = useApplyFormStore();
   const { theme, toggleTheme } = useThemeStore();
 
@@ -85,10 +84,10 @@ export default function JobsPage() {
         </div>
       </div>
 
-      {isApplyModalOpen && applyForm && selectedJob && (
+      {isApplyModalOpen && selectedJob?.applyForm && (
         <ApplyModal
           job={selectedJob}
-          applyForm={applyForm}
+          applyForm={selectedJob.applyForm}
           onClose={() => closeModal()}
         />
       )}

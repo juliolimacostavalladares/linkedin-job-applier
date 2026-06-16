@@ -25,6 +25,7 @@ export const typeDefs = `#graphql
     title: String!
     type: String!
     options: [String!]!
+    suggestedAnswer: String
   }
 
   type ApplyFormStep {
