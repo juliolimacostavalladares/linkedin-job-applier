@@ -1,8 +1,9 @@
+import { useEffect, useState } from 'react';
 import { AlertCircle, RefreshCw, CheckCircle, FileText, Sparkles, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input, Textarea } from '../ui/Input';
 import type { JobDetail, ApplyForm, FormQuestion, AIAnswer } from '../../types';
-import { useApplyFormStore, useResumeStore } from '../../stores';
+import { useApplyFormStore, useResumeStore, useJobsStore } from '../../stores';
 
 interface ApplyModalProps {
   job: JobDetail;
@@ -12,16 +13,18 @@ interface ApplyModalProps {
 
 export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
   const {
-    aiAnswers,
-    generatingAnswers,
     formValues,
     updateFormValue,
-    generateAnswers,
     currentStep,
     setCurrentStep,
+    generateAnswers,
+    generatingAnswers,
+    aiAnswers,
   } = useApplyFormStore();
 
   const { resumeText, isEditingResume, setIsEditingResume, saveResume, setResumeText } = useResumeStore();
+  const { applyJob } = useJobsStore();
+  const [submitting, setSubmitting] = useState(false);
 
   const currentStepQuestions = applyForm.steps?.[currentStep]?.questions || [];
 
@@ -30,9 +33,22 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
     await generateAnswers(applyForm.questions, resumeText);
   };
 
-  const handleSubmit = () => {
-    alert('Candidatura finalizada (simulada).\n\nRespostas enviadas:\n' + JSON.stringify(formValues, null, 2));
-    onClose();
+  const handleSubmit = async () => {
+    setSubmitting(true);
+    try {
+      await applyJob(job.id, formValues, {
+        jobTitle: job.title,
+        companyName: job.companyName,
+        companyLogo: job.companyLogo,
+        jobUrl: job.url,
+      });
+      alert('Candidatura finalizada com sucesso!');
+      onClose();
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Erro ao enviar candidatura');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -46,9 +62,9 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
           currentStepQuestions={currentStepQuestions}
           formValues={formValues}
           updateFormValue={updateFormValue}
+          onGenerateAnswers={handleGenerateAnswers}
           aiAnswers={aiAnswers}
           generatingAnswers={generatingAnswers}
-          onGenerateAnswers={handleGenerateAnswers}
           resumeText={resumeText}
           isEditingResume={isEditingResume}
           setIsEditingResume={setIsEditingResume}
@@ -62,6 +78,7 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
           setCurrentStep={setCurrentStep}
           onClose={onClose}
           onSubmit={handleSubmit}
+          submitting={submitting}
         />
       </div>
     </div>
@@ -93,9 +110,9 @@ interface ModalBodyProps {
   currentStepQuestions: FormQuestion[];
   formValues: Record<string, string>;
   updateFormValue: (urn: string, value: string) => void;
+  onGenerateAnswers: () => void;
   aiAnswers: AIAnswer[];
   generatingAnswers: boolean;
-  onGenerateAnswers: () => void;
   resumeText: string;
   isEditingResume: boolean;
   setIsEditingResume: (value: boolean) => void;
@@ -109,9 +126,9 @@ function ModalBody({
   currentStepQuestions,
   formValues,
   updateFormValue,
+  onGenerateAnswers,
   aiAnswers,
   generatingAnswers,
-  onGenerateAnswers,
   resumeText,
   isEditingResume,
   setIsEditingResume,
@@ -277,7 +294,7 @@ function FormField({ question, value, onChange, hasAiAnswer }: FormFieldProps) {
   const { urn, required, title, type, options } = question;
 
   return (
-    <div className="flex flex-col gap-1 relative">
+    <div className="flex flex-col gap-1">
       <label className="text-[11px] font-bold text-text-primary flex items-center justify-between">
         <span>
           {title}
@@ -285,58 +302,72 @@ function FormField({ question, value, onChange, hasAiAnswer }: FormFieldProps) {
         </span>
       </label>
 
-      {type === 'dropdown' || type === 'checkbox' ? (
-        <select
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="border border-border-color rounded bg-bg-input text-text-primary p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue w-full transition-all duration-150"
-        >
-          <option value="">Selecione uma opção...</option>
-          {options?.map((opt: string, j: number) => (
-            <option key={j} value={opt}>
-              {opt}
-            </option>
-          ))}
-        </select>
-      ) : type === 'file' ? (
-        <label className="border border-dashed border-border-color hover:border-brand-blue hover:bg-bg-hover transition-colors rounded p-3 bg-bg-input flex items-center justify-center flex-col gap-1.5 cursor-pointer relative">
-          <input
-            type="file"
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                onChange(file.name);
-              }
-            }}
-          />
-          {value ? (
-            <div className="flex flex-col items-center gap-1 text-brand-blue">
-              <CheckCircle size={20} />
-              <span className="text-xs font-semibold">{value}</span>
-            </div>
-          ) : (
-            <>
-              <FileText size={20} className="text-text-secondary/60" />
-              <span className="text-xs text-text-secondary font-medium">
-                Carregar documento ({options?.join(', ') || 'PDF, DOCX'})
-              </span>
-            </>
+      {type === 'file' ? (
+        <div className="relative w-full">
+          <label className="border border-dashed border-border-color hover:border-brand-blue hover:bg-bg-hover transition-colors rounded p-3 bg-bg-input flex items-center justify-center flex-col gap-1.5 cursor-pointer relative">
+            <input
+              type="file"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  onChange(file.name);
+                }
+              }}
+            />
+            {value ? (
+              <div className="flex flex-col items-center gap-1 text-brand-blue">
+                <CheckCircle size={20} />
+                <span className="text-xs font-semibold">{value}</span>
+              </div>
+            ) : (
+              <>
+                <FileText size={20} className="text-text-secondary/60" />
+                <span className="text-xs text-text-secondary font-medium">
+                  Carregar documento ({options?.join(', ') || 'PDF, DOCX'})
+                </span>
+              </>
+            )}
+          </label>
+          {hasAiAnswer && (
+            <span className="absolute right-3 top-3 text-brand-blue flex items-center pointer-events-none animate-pulse" title="Sugerido por IA">
+              <Sparkles size={13} className="fill-brand-blue/20" />
+            </span>
           )}
-        </label>
+        </div>
       ) : (
-        <Input
-          value={value}
-          onChange={onChange}
-          placeholder="Sua resposta..."
-          className="py-2 px-2.5 text-xs"
-        />
-      )}
+        <div className="relative flex items-center w-full">
+          {type === 'dropdown' || type === 'checkbox' ? (
+            <select
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              className="border border-border-color rounded bg-bg-input text-text-primary p-2 pr-8 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue w-full transition-all duration-150"
+            >
+              <option value="">Selecione uma opção...</option>
+              {options?.map((opt: string, j: number) => (
+                <option key={j} value={opt}>
+                  {opt}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <Input
+              value={value}
+              onChange={onChange}
+              placeholder="Sua resposta..."
+              className="py-2 pl-2.5 pr-8 text-xs w-full"
+            />
+          )}
 
-      {hasAiAnswer && (
-        <span className="absolute right-3.5 top-7 text-brand-blue" title="Preenchido por IA">
-          ✨
-        </span>
+          {hasAiAnswer && (
+            <span 
+              className={`absolute ${type === 'dropdown' || type === 'checkbox' ? 'right-7.5' : 'right-3'} text-brand-blue flex items-center pointer-events-none animate-pulse`} 
+              title="Sugerido por IA"
+            >
+              <Sparkles size={13} className="fill-brand-blue/20" />
+            </span>
+          )}
+        </div>
       )}
     </div>
   );
@@ -348,9 +379,10 @@ interface ModalFooterProps {
   setCurrentStep: (value: number) => void;
   onClose: () => void;
   onSubmit: () => void;
+  submitting?: boolean;
 }
 
-function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit }: ModalFooterProps) {
+function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit, submitting }: ModalFooterProps) {
   const hasSteps = applyForm.success && applyForm.steps && applyForm.steps.length > 0;
   const isLastStep = hasSteps && currentStep === applyForm.steps!.length - 1;
   const isFirstStep = currentStep === 0;
@@ -359,7 +391,8 @@ function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit
     <div className="px-4 py-3 border-t border-border-color bg-bg-card flex justify-end gap-2 transition-colors">
       <button
         onClick={onClose}
-        className="px-3.5 py-1.5 text-xs font-semibold text-text-secondary hover:bg-bg-hover hover:text-text-primary rounded-md transition-colors"
+        disabled={submitting}
+        className="px-3.5 py-1.5 text-xs font-semibold text-text-secondary hover:bg-bg-hover hover:text-text-primary rounded-md transition-colors disabled:opacity-50"
       >
         Cancelar
       </button>
@@ -369,7 +402,8 @@ function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit
           {!isFirstStep && (
             <button
               onClick={() => setCurrentStep(currentStep - 1)}
-              className="px-3.5 py-1.5 text-xs font-semibold border border-border-color bg-transparent text-text-primary hover:bg-bg-hover rounded-md transition-colors shadow-sm"
+              disabled={submitting}
+              className="px-3.5 py-1.5 text-xs font-semibold border border-border-color bg-transparent text-text-primary hover:bg-bg-hover rounded-md transition-colors shadow-sm disabled:opacity-50"
             >
               Voltar
             </button>
@@ -378,15 +412,18 @@ function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit
           {!isLastStep ? (
             <button
               onClick={() => setCurrentStep(currentStep + 1)}
-              className="px-4 py-1.5 text-xs font-bold bg-brand-blue text-white hover:bg-brand-blue-hover rounded-md transition-colors shadow-sm"
+              disabled={submitting}
+              className="px-4 py-1.5 text-xs font-bold bg-brand-blue text-white hover:bg-brand-blue-hover rounded-md transition-colors shadow-sm disabled:opacity-50"
             >
               Avançar
             </button>
           ) : (
             <button
               onClick={onSubmit}
-              className="px-4 py-1.5 text-xs font-bold bg-brand-blue text-white hover:bg-brand-blue-hover rounded-md transition-colors shadow-sm"
+              disabled={submitting}
+              className="px-4 py-1.5 text-xs font-bold bg-brand-blue text-white hover:bg-brand-blue-hover rounded-md transition-colors shadow-sm disabled:opacity-50 flex items-center gap-1.5"
             >
+              {submitting && <RefreshCw size={11} className="animate-spin" />}
               Finalizar Candidatura
             </button>
           )}

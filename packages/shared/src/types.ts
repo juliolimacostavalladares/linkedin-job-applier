@@ -3,6 +3,7 @@ export interface Job {
   title: string;
   companyInfo: string;
   companyLogo?: string;
+  applied?: boolean;
 }
 
 export interface JobDetail {
@@ -14,6 +15,9 @@ export interface JobDetail {
   employmentStatus: string;
   companyName: string;
   companyLogo?: string;
+  applyForm?: ApplyForm;
+  applied?: boolean;
+  appliedAt?: string;
 }
 
 export interface FormQuestion {
@@ -22,6 +26,7 @@ export interface FormQuestion {
   title: string;
   type: string;
   options?: string[];
+  suggestedAnswer?: string;
 }
 
 export interface ApplyForm {
