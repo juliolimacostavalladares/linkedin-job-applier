@@ -25,11 +25,27 @@ document.getElementById('syncBtn').addEventListener('click', async () => {
   syncBtn.disabled = true;
   setStatus(statusEl, '1/2 Coletando credenciais do LinkedIn...');
 
-  chrome.cookies.getAll({ domain: '.linkedin.com' }, async (cookies) => {
-    const liAt     = cookies.find(c => c.name === 'li_at');
-    const jsession = cookies.find(c => c.name === 'JSESSIONID');
+  chrome.cookies.getAll({ url: 'https://www.linkedin.com/' }, async (cookies) => {
+    // Sort cookies so that more specific domains (www.linkedin.com) and paths (/) overwrite generic/wildcard ones
+    const sortedCookies = [...cookies].sort((a, b) => {
+      const aDomainSec = a.domain === 'www.linkedin.com' ? 1 : 0;
+      const bDomainSec = b.domain === 'www.linkedin.com' ? 1 : 0;
+      if (aDomainSec !== bDomainSec) return aDomainSec - bDomainSec;
+      
+      const aPathSec = a.path === '/' ? 1 : 0;
+      const bPathSec = b.path === '/' ? 1 : 0;
+      return aPathSec - bPathSec;
+    });
 
-    if (!liAt || !jsession) {
+    const cookieMap = new Map();
+    sortedCookies.forEach(c => {
+      cookieMap.set(c.name, c.value);
+    });
+
+    const liAtVal = cookieMap.get('li_at');
+    const jsessionVal = cookieMap.get('JSESSIONID');
+
+    if (!liAtVal || !jsessionVal) {
       setStatus(
         statusEl,
         'Erro: Você precisa estar logado no LinkedIn no Chrome.\nAbra linkedin.com, faça login e tente novamente.',
@@ -39,10 +55,11 @@ document.getElementById('syncBtn').addEventListener('click', async () => {
       return;
     }
 
-    // String de cookie completa para headers HTTP
-    const fullCookie = cookies.map(c => `${c.name}=${c.value}`).join('; ');
-    // CSRF token = JSESSIONID sem aspas duplas
-    const csrfToken  = jsession.value.replace(/"/g, '');
+    const fullCookie = Array.from(cookieMap.entries())
+      .map(([name, val]) => `${name}=${val}`)
+      .join('; ');
+
+    const csrfToken  = jsessionVal.replace(/"/g, '');
 
     try {
       setStatus(statusEl, '2/2 Salvando credenciais no servidor...');

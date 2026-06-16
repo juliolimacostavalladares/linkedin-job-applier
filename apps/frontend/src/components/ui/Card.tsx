@@ -8,11 +8,11 @@ interface CardProps {
 }
 
 export function Card({ children, className = '', onClick, active = false }: CardProps) {
-  const baseStyles = 'rounded-3xl p-5 transition-all';
-  const interactiveStyles = onClick ? 'cursor-pointer' : '';
+  const baseStyles = 'rounded-lg p-4 transition-all duration-150 border';
+  const interactiveStyles = onClick ? 'cursor-pointer select-none' : '';
   const activeStyles = active
-    ? 'bg-gradient-to-r from-blue-900/40 to-[#121620] shadow-[0_8px_30px_rgb(0,0,0,0.2)] scale-[1.02] border border-blue-500/30'
-    : 'bg-[#1a1f2e]/50 hover:bg-[#1a1f2e] shadow-sm border border-transparent hover:border-white/10';
+    ? 'bg-bg-active-card border-border-active-card shadow-sm'
+    : 'bg-bg-card border-border-color hover:bg-bg-hover';
 
   return (
     <div

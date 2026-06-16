@@ -1,4 +1,4 @@
-import { AlertCircle, RefreshCw, CheckCircle, FileText } from 'lucide-react';
+import { AlertCircle, RefreshCw, CheckCircle, FileText, Sparkles, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input, Textarea } from '../ui/Input';
 import type { JobDetail, ApplyForm, FormQuestion, AIAnswer } from '../../types';
@@ -31,13 +31,13 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
   };
 
   const handleSubmit = () => {
-    alert('A função de POST real para o LinkedIn pode ser adicionada pelo endpoint /api/jobs/:id/submit futuramente!\n\nDados preenchidos:\n' + JSON.stringify(formValues, null, 2));
+    alert('Candidatura finalizada (simulada).\n\nRespostas enviadas:\n' + JSON.stringify(formValues, null, 2));
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md px-4">
-      <div className="bg-[#121620] border border-white/10 max-w-2xl w-full rounded-2xl shadow-xl flex flex-col max-h-[85vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+      <div className="bg-bg-card border border-border-color max-w-lg w-full rounded-lg shadow-lg flex flex-col max-h-[85vh] overflow-hidden transition-all duration-200">
         <ModalHeader job={job} onClose={onClose} />
         
         <ModalBody
@@ -75,13 +75,13 @@ interface ModalHeaderProps {
 
 function ModalHeader({ job, onClose }: ModalHeaderProps) {
   return (
-    <div className="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-[#0a0d14]">
+    <div className="px-4 py-3 border-b border-border-color flex justify-between items-center bg-bg-card transition-colors">
       <div>
-        <h3 className="font-bold text-lg text-white">Candidatura Simplificada</h3>
-        <p className="text-sm text-slate-400">{job.title} • {job.companyName}</p>
+        <h3 className="font-bold text-sm text-text-primary">Candidatura Simplificada</h3>
+        <p className="text-xs text-text-secondary">{job.title} • {job.companyName}</p>
       </div>
-      <button onClick={onClose} className="text-slate-400 hover:text-white p-2 transition-colors">
-        ✕
+      <button onClick={onClose} className="text-text-secondary hover:text-text-primary p-1.5 rounded hover:bg-bg-hover transition-colors">
+        <X size={16} />
       </button>
     </div>
   );
@@ -119,11 +119,11 @@ function ModalBody({
   onSaveResume,
 }: ModalBodyProps) {
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-6 bg-transparent">
+    <div className="flex-1 overflow-y-auto p-4 bg-transparent">
       {!applyForm.success ? (
         <ErrorMessage message={applyForm.message || 'Erro no formulário'} />
       ) : applyForm.steps && applyForm.steps.length > 0 ? (
-        <div className="space-y-6">
+        <div className="space-y-4">
           <StepIndicator steps={applyForm.steps} currentStep={currentStep} />
           
           <StepHeader
@@ -146,7 +146,7 @@ function ModalBody({
             <ResumePrompt onClick={() => setIsEditingResume(true)} />
           )}
 
-          <div className="space-y-5">
+          <div className="space-y-3.5">
             {currentStepQuestions.map((q, i) => (
               <FormField
                 key={i}
@@ -167,9 +167,9 @@ function ModalBody({
 
 function ErrorMessage({ message }: { message: string }) {
   return (
-    <div className="text-amber-400 bg-amber-500/10 p-4 rounded-lg flex items-start gap-2 border border-amber-500/20 text-sm">
-      <AlertCircle size={18} className="shrink-0 mt-0.5" />
-      <p className="font-medium">{message}</p>
+    <div className="text-red-500 bg-red-500/10 p-3 rounded-md flex items-start gap-1.5 border border-red-500/20 text-xs">
+      <AlertCircle size={14} className="shrink-0 mt-0.5" />
+      <p className="font-semibold">{message}</p>
     </div>
   );
 }
@@ -181,11 +181,11 @@ interface StepIndicatorProps {
 
 function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
   return (
-    <div className="flex items-center gap-2 mb-6">
+    <div className="flex items-center gap-2 mb-3">
       {steps.map((_, idx: number) => (
-        <div key={idx} className="flex-1 flex flex-col gap-2">
-          <div className={`h-1.5 w-full rounded-full ${idx <= currentStep ? 'bg-blue-500' : 'bg-white/10'}`} />
-          <span className={`text-[10px] uppercase font-bold tracking-wider truncate ${idx === currentStep ? 'text-blue-400' : 'text-slate-500'}`}>
+        <div key={idx} className="flex-1 flex flex-col gap-1">
+          <div className={`h-1 w-full rounded-full ${idx <= currentStep ? 'bg-brand-blue' : 'bg-border-color'}`} />
+          <span className={`text-[9px] uppercase font-bold tracking-wider truncate ${idx === currentStep ? 'text-brand-blue' : 'text-text-secondary/50'}`}>
             {steps[idx].title}
           </span>
         </div>
@@ -203,15 +203,15 @@ interface StepHeaderProps {
 
 function StepHeader({ title, generatingAnswers, hasAiAnswers, onGenerateAnswers }: StepHeaderProps) {
   return (
-    <div className="flex items-center justify-between mb-2">
-      <h3 className="font-bold text-lg text-white">{title}</h3>
+    <div className="flex items-center justify-between mb-1">
+      <h4 className="font-bold text-xs text-text-primary uppercase tracking-wide">{title}</h4>
       <button
         onClick={onGenerateAnswers}
         disabled={generatingAnswers || hasAiAnswers}
-        className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-3 py-1.5 rounded font-bold text-xs hover:bg-purple-500/30 flex items-center gap-1.5 disabled:opacity-50 transition-colors"
+        className="bg-transparent border border-border-color text-brand-blue px-2.5 py-1 rounded font-bold text-[11px] hover:bg-bg-hover hover:border-brand-blue flex items-center gap-1 disabled:opacity-50 transition-colors shadow-sm"
       >
-        {generatingAnswers && <RefreshCw size={12} className="animate-spin" />}
-        ✨ Auto-preencher Etapa
+        {generatingAnswers ? <RefreshCw size={11} className="animate-spin" /> : <Sparkles size={11} />}
+        Auto-preencher
       </button>
     </div>
   );
@@ -226,20 +226,20 @@ interface ResumeEditorProps {
 
 function ResumeEditor({ resumeText, onChange, onSave, onHide }: ResumeEditorProps) {
   return (
-    <div className="bg-[#0a0d14] p-4 border border-white/10 rounded-lg mb-4">
-      <h3 className="font-bold text-sm text-slate-200 mb-2">Seu Currículo (Base para IA)</h3>
+    <div className="bg-bg-hover p-3 border border-border-color rounded-md mb-3">
+      <h4 className="font-bold text-xs text-text-primary mb-1.5">Editar Currículo Base</h4>
       <Textarea
         value={resumeText}
         onChange={onChange}
         placeholder="Cole seu currículo em texto aqui..."
-        className="w-full h-24 border border-white/10 bg-[#1a1f2e] text-white rounded p-2 text-sm focus:outline-none focus:border-blue-500 mb-2"
+        className="w-full h-24 mb-2 p-2 min-h-[80px]"
       />
-      <div className="flex gap-2 justify-end">
-        <button onClick={onHide} className="text-xs px-3 py-1.5 text-slate-400 font-medium hover:text-white">
-          Ocultar
+      <div className="flex gap-1.5 justify-end">
+        <button onClick={onHide} className="text-xs px-2.5 py-1 text-text-secondary font-semibold hover:text-text-primary">
+          Cancelar
         </button>
-        <button onClick={onSave} className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded font-bold hover:bg-blue-700">
-          Salvar Currículo
+        <button onClick={onSave} className="text-xs bg-brand-blue text-white px-3 py-1 rounded font-bold hover:bg-brand-blue-hover">
+          Salvar
         </button>
       </div>
     </div>
@@ -250,17 +250,18 @@ function ResumePrompt({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="text-xs bg-amber-500/10 text-amber-400 px-3 py-2 rounded-md font-medium border border-amber-500/20 w-full mb-4 hover:bg-amber-500/20 transition-colors text-left flex items-center gap-2"
+      className="text-[11px] bg-amber-500/10 text-amber-600 dark:text-amber-400 px-3 py-2 rounded border border-amber-500/20 w-full mb-3 hover:bg-amber-500/20 transition-colors text-left flex items-center gap-1.5"
     >
-      <AlertCircle size={14} /> Nenhum currículo cadastrado. Clique para adicionar e usar a IA.
+      <AlertCircle size={13} />
+      <span>Nenhum currículo cadastrado. Clique para cadastrar e usar IA.</span>
     </button>
   );
 }
 
 function EmptyFormMessage() {
   return (
-    <div className="py-12 flex flex-col items-center justify-center text-center text-slate-500">
-      <p>Esta vaga não possui formulário estruturado para candidatura simplificada ou já foi aplicada.</p>
+    <div className="py-12 flex flex-col items-center justify-center text-center text-text-secondary">
+      <p className="text-xs">Esta vaga não possui formulário estruturado para candidatura simplificada.</p>
     </div>
   );
 }
@@ -276,17 +277,19 @@ function FormField({ question, value, onChange, hasAiAnswer }: FormFieldProps) {
   const { urn, required, title, type, options } = question;
 
   return (
-    <div className="flex flex-col gap-1.5 relative">
-      <label className="text-sm font-semibold text-slate-200 flex items-center justify-between">
-        {title}
-        {required && <span className="text-xs font-normal text-red-400">*Obrigatório</span>}
+    <div className="flex flex-col gap-1 relative">
+      <label className="text-[11px] font-bold text-text-primary flex items-center justify-between">
+        <span>
+          {title}
+          {required && <span className="text-red-500 ml-0.5">*</span>}
+        </span>
       </label>
 
       {type === 'dropdown' || type === 'checkbox' ? (
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="border border-white/10 rounded-md p-2.5 text-sm bg-[#0a0d14] text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+          className="border border-border-color rounded bg-bg-input text-text-primary p-2 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue w-full transition-all duration-150"
         >
           <option value="">Selecione uma opção...</option>
           {options?.map((opt: string, j: number) => (
@@ -296,7 +299,7 @@ function FormField({ question, value, onChange, hasAiAnswer }: FormFieldProps) {
           ))}
         </select>
       ) : type === 'file' ? (
-        <label className="border border-dashed border-white/20 hover:border-blue-500/50 hover:bg-white/5 transition-colors rounded-md p-4 bg-[#0a0d14] flex items-center justify-center flex-col gap-2 cursor-pointer relative">
+        <label className="border border-dashed border-border-color hover:border-brand-blue hover:bg-bg-hover transition-colors rounded p-3 bg-bg-input flex items-center justify-center flex-col gap-1.5 cursor-pointer relative">
           <input
             type="file"
             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -308,14 +311,14 @@ function FormField({ question, value, onChange, hasAiAnswer }: FormFieldProps) {
             }}
           />
           {value ? (
-            <div className="flex flex-col items-center gap-2 text-blue-400">
-              <CheckCircle size={24} />
-              <span className="text-sm font-medium">{value}</span>
+            <div className="flex flex-col items-center gap-1 text-brand-blue">
+              <CheckCircle size={20} />
+              <span className="text-xs font-semibold">{value}</span>
             </div>
           ) : (
             <>
-              <FileText size={24} className="text-slate-500" />
-              <span className="text-sm text-slate-400 font-medium">
+              <FileText size={20} className="text-text-secondary/60" />
+              <span className="text-xs text-text-secondary font-medium">
                 Carregar documento ({options?.join(', ') || 'PDF, DOCX'})
               </span>
             </>
@@ -326,11 +329,12 @@ function FormField({ question, value, onChange, hasAiAnswer }: FormFieldProps) {
           value={value}
           onChange={onChange}
           placeholder="Sua resposta..."
+          className="py-2 px-2.5 text-xs"
         />
       )}
 
       {hasAiAnswer && (
-        <span className="absolute right-3 top-9 text-purple-400" title="Preenchido por IA">
+        <span className="absolute right-3.5 top-7 text-brand-blue" title="Preenchido por IA">
           ✨
         </span>
       )}
@@ -352,10 +356,10 @@ function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit
   const isFirstStep = currentStep === 0;
 
   return (
-    <div className="px-6 py-4 border-t border-white/5 bg-[#0a0d14] flex justify-end gap-3">
+    <div className="px-4 py-3 border-t border-border-color bg-bg-card flex justify-end gap-2 transition-colors">
       <button
         onClick={onClose}
-        className="px-5 py-2.5 text-sm font-semibold text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+        className="px-3.5 py-1.5 text-xs font-semibold text-text-secondary hover:bg-bg-hover hover:text-text-primary rounded-md transition-colors"
       >
         Cancelar
       </button>
@@ -365,7 +369,7 @@ function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit
           {!isFirstStep && (
             <button
               onClick={() => setCurrentStep(currentStep - 1)}
-              className="px-5 py-2.5 text-sm font-semibold border border-white/20 bg-transparent text-slate-300 hover:bg-white/5 rounded-lg transition-colors shadow-sm"
+              className="px-3.5 py-1.5 text-xs font-semibold border border-border-color bg-transparent text-text-primary hover:bg-bg-hover rounded-md transition-colors shadow-sm"
             >
               Voltar
             </button>
@@ -374,14 +378,14 @@ function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit
           {!isLastStep ? (
             <button
               onClick={() => setCurrentStep(currentStep + 1)}
-              className="px-6 py-2.5 text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
+              className="px-4 py-1.5 text-xs font-bold bg-brand-blue text-white hover:bg-brand-blue-hover rounded-md transition-colors shadow-sm"
             >
-              Avançar Etapa
+              Avançar
             </button>
           ) : (
             <button
               onClick={onSubmit}
-              className="px-6 py-2.5 text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-500 hover:to-purple-500 rounded-lg transition-all shadow-sm border-0"
+              className="px-4 py-1.5 text-xs font-bold bg-brand-blue text-white hover:bg-brand-blue-hover rounded-md transition-colors shadow-sm"
             >
               Finalizar Candidatura
             </button>
