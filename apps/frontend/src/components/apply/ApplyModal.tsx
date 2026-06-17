@@ -2,24 +2,24 @@ import { useEffect, useState } from 'react';
 import { AlertCircle, RefreshCw, CheckCircle, FileText, Sparkles, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input, Textarea } from '../ui/Input';
-import type { JobDetail, ApplyForm, FormQuestion, AIAnswer } from '../../types';
+import type { JobDetail, ApplyForm, FormQuestion } from '../../types';
 import { useApplyFormStore, useResumeStore, useJobsStore } from '../../stores';
 
 interface ApplyModalProps {
   job: JobDetail;
-  applyForm: ApplyForm;
   onClose: () => void;
 }
 
-export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
+export function ApplyModal({ job, onClose }: ApplyModalProps) {
   const {
+    applyForm,
+    loadingForm,
+    errorForm,
+    fetchApplyForm,
     formValues,
     updateFormValue,
     currentStep,
     setCurrentStep,
-    generateAnswers,
-    generatingAnswers,
-    aiAnswers,
   } = useApplyFormStore();
 
   const { resumeText, isEditingResume, setIsEditingResume, saveResume, setResumeText } = useResumeStore();
@@ -27,11 +27,11 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const currentStepQuestions = applyForm.steps?.[currentStep]?.questions || [];
+  const currentStepQuestions = applyForm?.steps?.[currentStep]?.questions || [];
 
-  const handleGenerateAnswers = async () => {
-    if (!applyForm.questions || applyForm.questions.length === 0) return;
-    await generateAnswers(applyForm.questions, resumeText);
+  const handleSaveResume = async () => {
+    await saveResume();
+    await fetchApplyForm(job.id);
   };
 
   const handleSubmit = async () => {
@@ -61,23 +61,23 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
         
         <ModalBody
           applyForm={applyForm}
+          loadingForm={loadingForm}
+          errorForm={errorForm}
           currentStep={currentStep}
           currentStepQuestions={currentStepQuestions}
           formValues={formValues}
           updateFormValue={updateFormValue}
-          onGenerateAnswers={handleGenerateAnswers}
-          aiAnswers={aiAnswers}
-          generatingAnswers={generatingAnswers}
           resumeText={resumeText}
           isEditingResume={isEditingResume}
           setIsEditingResume={setIsEditingResume}
           onChangeResumeText={setResumeText}
-          onSaveResume={saveResume}
+          onSaveResume={handleSaveResume}
           submitError={submitError}
         />
 
         <ModalFooter
           applyForm={applyForm}
+          loadingForm={loadingForm}
           currentStep={currentStep}
           setCurrentStep={setCurrentStep}
           onClose={onClose}
@@ -109,14 +109,13 @@ function ModalHeader({ job, onClose }: ModalHeaderProps) {
 }
 
 interface ModalBodyProps {
-  applyForm: ApplyForm;
+  applyForm: ApplyForm | null;
+  loadingForm: boolean;
+  errorForm: string | null;
   currentStep: number;
   currentStepQuestions: FormQuestion[];
   formValues: Record<string, string>;
   updateFormValue: (urn: string, value: string) => void;
-  onGenerateAnswers: () => void;
-  aiAnswers: AIAnswer[];
-  generatingAnswers: boolean;
   resumeText: string;
   isEditingResume: boolean;
   setIsEditingResume: (value: boolean) => void;
@@ -127,13 +126,12 @@ interface ModalBodyProps {
 
 function ModalBody({
   applyForm,
+  loadingForm,
+  errorForm,
   currentStep,
   currentStepQuestions,
   formValues,
   updateFormValue,
-  onGenerateAnswers,
-  aiAnswers,
-  generatingAnswers,
   resumeText,
   isEditingResume,
   setIsEditingResume,
@@ -141,6 +139,25 @@ function ModalBody({
   onSaveResume,
   submitError,
 }: ModalBodyProps) {
+  if (loadingForm) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center py-12 gap-3 text-text-secondary">
+        <RefreshCw size={24} className="animate-spin text-brand-blue" />
+        <p className="text-xs font-semibold">Carregando formulário e gerando respostas com IA...</p>
+      </div>
+    );
+  }
+
+  if (errorForm) {
+    return (
+      <div className="flex-1 overflow-y-auto p-4 bg-transparent">
+        <ErrorMessage message={errorForm} />
+      </div>
+    );
+  }
+
+  if (!applyForm) return null;
+
   return (
     <div className="flex-1 overflow-y-auto p-4 bg-transparent">
       {submitError && <ErrorMessage message={submitError} />}
@@ -152,9 +169,6 @@ function ModalBody({
           
           <StepHeader
             title={applyForm.steps[currentStep].title}
-            generatingAnswers={generatingAnswers}
-            hasAiAnswers={aiAnswers.length > 0}
-            onGenerateAnswers={onGenerateAnswers}
           />
 
           {isEditingResume && (
@@ -177,7 +191,7 @@ function ModalBody({
                 question={q}
                 value={formValues[q.urn] || ''}
                 onChange={(value) => updateFormValue(q.urn, value)}
-                hasAiAnswer={!!aiAnswers.find((ans) => ans.urn === q.urn)?.answer}
+                hasAiAnswer={!!q.suggestedAnswer}
               />
             ))}
           </div>
@@ -220,23 +234,12 @@ function StepIndicator({ steps, currentStep }: StepIndicatorProps) {
 
 interface StepHeaderProps {
   title: string;
-  generatingAnswers: boolean;
-  hasAiAnswers: boolean;
-  onGenerateAnswers: () => void;
 }
 
-function StepHeader({ title, generatingAnswers, hasAiAnswers, onGenerateAnswers }: StepHeaderProps) {
+function StepHeader({ title }: StepHeaderProps) {
   return (
     <div className="flex items-center justify-between mb-1">
       <h4 className="font-bold text-xs text-text-primary uppercase tracking-wide">{title}</h4>
-      <button
-        onClick={onGenerateAnswers}
-        disabled={generatingAnswers || hasAiAnswers}
-        className="bg-transparent border border-border-color text-brand-blue px-2.5 py-1 rounded font-bold text-[11px] hover:bg-bg-hover hover:border-brand-blue flex items-center gap-1 disabled:opacity-50 transition-colors shadow-sm"
-      >
-        {generatingAnswers ? <RefreshCw size={11} className="animate-spin" /> : <Sparkles size={11} />}
-        Auto-preencher
-      </button>
     </div>
   );
 }
@@ -289,6 +292,7 @@ function EmptyFormMessage() {
     </div>
   );
 }
+
 
 function DateRangePicker({ value, onChange }: { value: string; onChange: (val: string) => void }) {
   let startYear = '';
@@ -493,7 +497,8 @@ function FormField({ question, value, onChange, hasAiAnswer }: FormFieldProps) {
 }
 
 interface ModalFooterProps {
-  applyForm: ApplyForm;
+  applyForm: ApplyForm | null;
+  loadingForm: boolean;
   currentStep: number;
   setCurrentStep: (value: number) => void;
   onClose: () => void;
@@ -501,7 +506,8 @@ interface ModalFooterProps {
   submitting?: boolean;
 }
 
-function ModalFooter({ applyForm, currentStep, setCurrentStep, onClose, onSubmit, submitting }: ModalFooterProps) {
+function ModalFooter({ applyForm, loadingForm, currentStep, setCurrentStep, onClose, onSubmit, submitting }: ModalFooterProps) {
+  if (loadingForm || !applyForm) return null;
   const hasSteps = applyForm.success && applyForm.steps && applyForm.steps.length > 0;
   const isLastStep = hasSteps && currentStep === applyForm.steps!.length - 1;
   const isFirstStep = currentStep === 0;

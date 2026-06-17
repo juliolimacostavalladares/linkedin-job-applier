@@ -117,6 +117,20 @@ export interface LinkedInIncludedItem {
   };
   lastUsedAt?: number;
   jobApplicationForms?: Array<Record<string, unknown>>;
+  input?: {
+    formElementInputValuesResolutionResults?: Array<{
+      textInputValue?: string | null;
+      entityInputValue?: {
+        inputEntityName?: string | null;
+        inputEntityUrn?: string | null;
+        optionEnumString?: string | null;
+      } | null;
+      dateRangeInputValue?: {
+        start?: { year: number; month: number; day?: number | null } | null;
+        end?: { year: number; month: number; day?: number | null } | null;
+      } | null;
+    }>;
+  };
 }
 
 export interface LinkedInJobDetailRaw {

@@ -6,7 +6,7 @@ import { resumeService } from '../services/resumeService';
 import { aiService } from '../services/aiService';
 import { applicationService } from '../services/applicationService';
 import { logger } from '../utils/logger';
-import type { Job, JobDetail, ApplyForm } from '../types';
+import type { Job, JobDetail, ApplyForm, FormQuestion } from '../types';
 
 const router = Router();
 
@@ -197,6 +197,7 @@ router.get('/:id', async (req, res, next) => {
               options
               optionUrns
               optionEnumStrings
+              prefilledValue
             }
           }
           questions {
@@ -207,6 +208,7 @@ router.get('/:id', async (req, res, next) => {
             options
             optionUrns
             optionEnumStrings
+            prefilledValue
           }
         }
       }
@@ -325,6 +327,7 @@ router.get('/:id/apply-form', async (req, res, next) => {
               options
               optionUrns
               optionEnumStrings
+              prefilledValue
             }
           }
           questions {
@@ -335,6 +338,7 @@ router.get('/:id/apply-form', async (req, res, next) => {
             options
             optionUrns
             optionEnumStrings
+            prefilledValue
           }
         }
       }
@@ -347,7 +351,43 @@ router.get('/:id/apply-form', async (req, res, next) => {
       headersJson: creds.headersJson,
     });
 
-    res.json(data.applyForm);
+    const applyForm = data.applyForm;
+
+    // AI suggestions generation on the backend:
+    if (applyForm && applyForm.success && applyForm.questions && applyForm.questions.length > 0) {
+      const latestResume = await resumeService.getLatest();
+      if (latestResume && latestResume.text.trim()) {
+        try {
+          const aiRes = await aiService.generateAnswers(applyForm.questions, latestResume.text);
+          const answerMap = new Map<string, string>();
+          aiRes.answers.forEach((ans) => {
+            if (ans.answer) {
+              answerMap.set(ans.urn, ans.answer);
+            }
+          });
+
+          // Helper to map suggestedAnswer to questions
+          const enrichQuestion = (q: FormQuestion) => {
+            if (answerMap.has(q.urn)) {
+              q.suggestedAnswer = answerMap.get(q.urn);
+            }
+          };
+
+          applyForm.questions.forEach(enrichQuestion);
+          if (applyForm.steps) {
+            applyForm.steps.forEach((step) => {
+              if (step.questions) {
+                step.questions.forEach(enrichQuestion);
+              }
+            });
+          }
+        } catch (aiError) {
+          logger.error('Failed to generate AI answers on backend for apply-form:', aiError);
+        }
+      }
+    }
+
+    res.json(applyForm);
   } catch (error) {
     next(error);
   }

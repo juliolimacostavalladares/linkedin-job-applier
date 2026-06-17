@@ -33,6 +33,7 @@ export const typeDefs = `#graphql
     """Parallel to options[]: enum string identifier for multipleChoice fields that lack a URN (e.g. Yes/No)."""
     optionEnumStrings: [String!]
     suggestedAnswer: String
+    prefilledValue: String
   }
 
   type ApplyFormStep {

@@ -34,6 +34,7 @@ export interface FormQuestion {
   /** For multipleChoice fields without a URN: the raw enum string for each option */
   optionEnumStrings?: string[];
   suggestedAnswer?: string;
+  prefilledValue?: string;
 }
 
 // ─── LinkedIn REST Submission Types ──────────────────────────────────────────

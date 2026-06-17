@@ -256,6 +256,8 @@ function parseField(el: LinkedInIncludedItem): FormQuestion {
     (typeof el.title === 'object' ? el.title?.text : el.title) ??
     fallbackTitle;
 
+  const prefilledValue = extractPrefilledValue(el);
+
   return {
     urn: el.urn ?? '',
     required: Boolean(el.required),
@@ -264,5 +266,36 @@ function parseField(el: LinkedInIncludedItem): FormQuestion {
     options,
     ...(optionUrns.length > 0 ? { optionUrns } : {}),
     ...(optionEnumStrings.length > 0 ? { optionEnumStrings } : {}),
+    ...(prefilledValue !== undefined ? { prefilledValue } : {}),
   };
+}
+
+function extractPrefilledValue(el: LinkedInIncludedItem): string | undefined {
+  const resResults = el.input?.formElementInputValuesResolutionResults;
+  if (!resResults || resResults.length === 0) return undefined;
+
+  for (const res of resResults) {
+    if (res.textInputValue !== undefined && res.textInputValue !== null) {
+      return String(res.textInputValue);
+    } else if (res.entityInputValue !== undefined && res.entityInputValue !== null) {
+      const name = res.entityInputValue.inputEntityName;
+      const urnVal = res.entityInputValue.inputEntityUrn;
+      const enumVal = res.entityInputValue.optionEnumString;
+      if (urnVal) {
+        return `${name}|${urnVal}`;
+      } else if (enumVal) {
+        return `${name}||${enumVal}`;
+      } else {
+        return String(name);
+      }
+    } else if (res.dateRangeInputValue !== undefined && res.dateRangeInputValue !== null) {
+      const start = res.dateRangeInputValue.start;
+      const end = res.dateRangeInputValue.end;
+      return JSON.stringify({
+        start: start ? { year: start.year, month: start.month, day: start.day ?? 1 } : undefined,
+        end: end ? { year: end.year, month: end.month, day: end.day ?? 1 } : undefined
+      });
+    }
+  }
+  return undefined;
 }
