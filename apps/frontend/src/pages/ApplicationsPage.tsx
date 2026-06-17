@@ -382,18 +382,53 @@ export default function ApplicationsPage() {
                 {selectedApp.answers && (
                   <div className="space-y-2">
                     <h4 className="font-bold text-xs uppercase tracking-wider text-text-secondary">Respostas Enviadas</h4>
-                    <div className="p-4 bg-bg-card border border-border-color rounded-xl text-xs space-y-2 max-h-[180px] overflow-y-auto">
+                    <div className="p-4 bg-bg-card border border-border-color rounded-xl text-xs space-y-3 max-h-[220px] overflow-y-auto">
                       {(() => {
                         try {
                           const parsed = JSON.parse(selectedApp.answers || '{}');
                           const entries = Object.entries(parsed);
                           if (entries.length === 0) return <span className="text-text-secondary italic">Nenhuma pergunta customizada foi feita.</span>;
-                          return entries.map(([qUrn, answer]) => (
-                            <div key={qUrn} className="border-b border-border-color/30 pb-2 last:border-0 last:pb-0">
-                              <span className="font-semibold text-text-primary block mb-0.5">Resposta:</span>
-                              <span className="text-text-secondary block font-mono bg-bg-app px-2 py-1 rounded">{String(answer)}</span>
-                            </div>
-                          ));
+                          return entries.map(([qUrn, answer]) => {
+                            let questionTitle = '';
+                            if (jobDetail?.applyForm) {
+                              const directMatch = jobDetail.applyForm.questions?.find((q) => q.urn === qUrn);
+                              if (directMatch?.title) {
+                                questionTitle = directMatch.title;
+                              } else if (jobDetail.applyForm.steps) {
+                                for (const step of jobDetail.applyForm.steps) {
+                                  const stepMatch = step.questions?.find((q) => q.urn === qUrn);
+                                  if (stepMatch?.title) {
+                                    questionTitle = stepMatch.title;
+                                    break;
+                                  }
+                                }
+                              }
+                            }
+
+                            if (!questionTitle) {
+                              const match = qUrn.match(/,(\d+),/);
+                              if (match && match[1]) {
+                                questionTitle = `Pergunta #${match[1]}`;
+                              } else {
+                                questionTitle = qUrn;
+                              }
+                            }
+
+                            const displayQuestion = loadingDetail 
+                              ? 'Carregando pergunta...' 
+                              : questionTitle;
+
+                            return (
+                              <div key={qUrn} className="border-b border-border-color/30 pb-3 last:border-0 last:pb-0 space-y-1">
+                                <span className="font-bold text-text-primary block leading-tight">
+                                  {displayQuestion}
+                                </span>
+                                <div className="bg-bg-app px-2.5 py-1.5 rounded-lg border border-border-color/50 text-[11px] font-mono text-text-secondary break-words whitespace-pre-wrap">
+                                  {String(answer)}
+                                </div>
+                              </div>
+                            );
+                          });
                         } catch {
                           return <span className="text-text-secondary">{selectedApp.answers}</span>;
                         }
