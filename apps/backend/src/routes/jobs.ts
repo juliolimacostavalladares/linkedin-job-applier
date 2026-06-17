@@ -10,6 +10,44 @@ import type { Job, JobDetail, ApplyForm } from '../types';
 const router = Router();
 const queryCache = new Map<string, string>();
 
+function getProgrammaticFallbackQuery(headline?: string | null): string {
+  if (!headline) return 'React';
+  const lower = headline.toLowerCase();
+  
+  let seniority = '';
+  if (lower.includes('senior') || lower.includes('sênior')) {
+    seniority = '(senior OR sênior)';
+  } else if (lower.includes('pleno') || lower.includes('mid')) {
+    seniority = 'pleno';
+  } else if (lower.includes('junior') || lower.includes('júnior')) {
+    seniority = 'júnior';
+  }
+
+  let roles = '';
+  if (lower.includes('front-end') || lower.includes('frontend') || lower.includes('front end')) {
+    roles = '("Front-end" OR "Frontend" OR "Desenvolvedor Front-end")';
+  } else if (lower.includes('back-end') || lower.includes('backend') || lower.includes('back end')) {
+    roles = '("Back-end" OR "Backend" OR "Desenvolvedor Backend")';
+  } else if (lower.includes('fullstack') || lower.includes('full stack')) {
+    roles = '("Fullstack" OR "Full Stack" OR "Desenvolvedor Fullstack")';
+  } else {
+    roles = '("Desenvolvedor" OR "Programador")';
+  }
+
+  const skills: string[] = [];
+  if (lower.includes('react')) skills.push('React');
+  if (lower.includes('next.js') || lower.includes('nextjs')) skills.push('Next.js');
+  if (lower.includes('typescript')) skills.push('TypeScript');
+  if (lower.includes('vue')) skills.push('Vue');
+  if (lower.includes('angular')) skills.push('Angular');
+  if (lower.includes('node')) skills.push('Node.js');
+  if (lower.includes('java')) skills.push('Java');
+  if (lower.includes('python')) skills.push('Python');
+
+  const skillsGroup = skills.length > 0 ? ` AND (${skills.join(' OR ')})` : '';
+  return `${seniority ? seniority + ' ' : ''}${roles}${skillsGroup}`.trim();
+}
+
 // GET /api/jobs – Fetch recommended jobs using stored credentials via LinkedIn GraphQL Service
 router.get('/', async (req, res, next) => {
   try {
@@ -40,7 +78,8 @@ router.get('/', async (req, res, next) => {
             queryCache.set(cacheKey, cached);
           } catch (err) {
             logger.error('Failed to generate search query using AI, using fallback', err);
-            cached = '';
+            cached = getProgrammaticFallbackQuery(latestResume.headline);
+            queryCache.set(cacheKey, cached);
           }
         }
         activeQuery = cached || '';

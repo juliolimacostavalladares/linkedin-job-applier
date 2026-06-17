@@ -34,8 +34,7 @@ export async function fetchJobs(
 
     let queryVal = '';
     if (hasKeywords) {
-      const escapedKeywords = `"${keywords!.replace(/"/g, '\\"')}"`;
-      const encodedKeywords = encodeURIComponent(escapedKeywords)
+      const encodedKeywords = encodeURIComponent(keywords!)
         .replace(/\(/g, '%28')
         .replace(/\)/g, '%29');
       queryVal = `(origin:JOB_SEARCH_PAGE_SEARCH_BUTTON,keywords:${encodedKeywords},selectedFilters:(${filters.join(',')}))`;
