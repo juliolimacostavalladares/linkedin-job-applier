@@ -72,7 +72,7 @@ router.get('/', async (req, res, next) => {
         const cacheKey = `${latestResume.id}-${latestResume.updatedAt.getTime()}`;
         let cached = queryCache.get(cacheKey);
         if (!cached) {
-          logger.info('Generating job search query from resume using Gemini AI...');
+          logger.info('Generating job search query from resume using 9Router...');
           try {
             cached = await aiService.generateSearchQuery(latestResume.text);
             queryCache.set(cacheKey, cached);

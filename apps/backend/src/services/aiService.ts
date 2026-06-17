@@ -2,39 +2,57 @@ import { config } from '../config';
 import type { AIResponse, FormQuestion, ParsedResume } from '../types';
 
 export class AIService {
-  async generateAnswers(questions: FormQuestion[], resume: string): Promise<AIResponse> {
-    if (!config.gemini.apiKey) {
-      throw new Error('GEMINI_API_KEY não configurada');
-    }
-
-    const { GoogleGenAI } = await import('@google/genai');
-    const ai = new GoogleGenAI({ apiKey: config.gemini.apiKey });
-
-    const prompt = this.buildPrompt(questions, resume);
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
+  private async call9Router(prompt: string): Promise<string> {
+    const response = await fetch(`${config.nineRouter.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(config.nineRouter.apiKey ? { 'Authorization': `Bearer ${config.nineRouter.apiKey}` } : {}),
       },
+      body: JSON.stringify({
+        model: config.nineRouter.model,
+        messages: [
+          { role: 'user', content: prompt }
+        ],
+      }),
     });
 
-    const text = response.text;
-    if (!text) {
-      throw new Error('Resposta vazia do Gemini');
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`9Router API error: ${response.status} ${response.statusText} - ${text}`);
     }
-    return JSON.parse(text);
+
+    const data = await response.json() as {
+      choices?: Array<{
+        message?: {
+          content?: string;
+        };
+      }>;
+    };
+
+    const content = data.choices?.[0]?.message?.content?.trim();
+    if (!content) {
+      throw new Error('9Router returned an empty response');
+    }
+
+    return content;
+  }
+
+  private cleanAndParseJson<T>(text: string): T {
+    const cleaned = text
+      .replace(/^```[a-z]*\n/i, '')
+      .replace(/\n```$/, '')
+      .trim();
+    return JSON.parse(cleaned) as T;
+  }
+
+  async generateAnswers(questions: FormQuestion[], resume: string): Promise<AIResponse> {
+    const prompt = this.buildPrompt(questions, resume);
+    const text = await this.call9Router(prompt);
+    return this.cleanAndParseJson<AIResponse>(text);
   }
 
   async parseResume(resumeText: string): Promise<ParsedResume> {
-    if (!config.gemini.apiKey) {
-      throw new Error('GEMINI_API_KEY não configurada');
-    }
-
-    const { GoogleGenAI } = await import('@google/genai');
-    const ai = new GoogleGenAI({ apiKey: config.gemini.apiKey });
-
     const prompt = `
 Você é um assistente especialista em recrutamento. Extraia e estruture as informações do currículo do usuário (geralmente gerado a partir do perfil do LinkedIn) nas seguintes seções:
 1. "about": Um resumo profissional conciso.
@@ -72,19 +90,8 @@ Retorne um JSON válido e estrito no formato abaixo, sem tags markdown ou explic
 }
 `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        responseMimeType: 'application/json',
-      },
-    });
-
-    const text = response.text;
-    if (!text) {
-      throw new Error('Resposta vazia do Gemini ao analisar o currículo');
-    }
-    return JSON.parse(text) as ParsedResume;
+    const text = await this.call9Router(prompt);
+    return this.cleanAndParseJson<ParsedResume>(text);
   }
 
   private buildPrompt(questions: FormQuestion[], resume: string): string {
@@ -112,13 +119,6 @@ Regras:
   }
 
   async generateSearchQuery(resumeText: string): Promise<string> {
-    if (!config.gemini.apiKey) {
-      throw new Error('GEMINI_API_KEY não configurada');
-    }
-
-    const { GoogleGenAI } = await import('@google/genai');
-    const ai = new GoogleGenAI({ apiKey: config.gemini.apiKey });
-
     const prompt = `
 Você é um assistente especialista em recrutamento. Com base no currículo do usuário, gere uma query booleana otimizada para pesquisa de vagas no LinkedIn.
 A query deve ser estruturada com operadores booleanos (AND, OR, NOT) e parênteses, seguindo exatamente o estilo abaixo de acordo com a senioridade e a área do usuário:
@@ -137,18 +137,8 @@ Texto do currículo do usuário:
 ${resumeText}
 `;
 
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
-
-    const text = response.text?.trim();
-    if (!text) {
-      throw new Error('Resposta de query vazia do Gemini');
-    }
-
-    // Strip any markdown quotes if Gemini returned them
-    return text.replace(/^```[a-z]*\n/, '').replace(/\n```$/, '').trim();
+    const text = await this.call9Router(prompt);
+    return text.replace(/^```[a-z]*\n/i, '').replace(/\n```$/, '').trim();
   }
 }
 

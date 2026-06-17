@@ -11,8 +11,10 @@ export const config = {
     csrf: process.env.LINKEDIN_CSRF || '',
   },
 
-  gemini: {
-    apiKey: process.env.GEMINI_API_KEY || '',
+  nineRouter: {
+    apiKey: process.env.NINE_ROUTER_API_KEY || '',
+    baseUrl: process.env.NINE_ROUTER_BASE_URL || 'http://localhost:20128/v1',
+    model: process.env.NINE_ROUTER_MODEL || 'kr/claude-sonnet-4.5',
   },
 
   cors: {
