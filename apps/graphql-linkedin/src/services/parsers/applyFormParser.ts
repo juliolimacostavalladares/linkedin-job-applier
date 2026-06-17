@@ -112,6 +112,18 @@ export function parseApplyForm(jsonData: LinkedInGraphQLResponse): ApplyForm {
       'com.linkedin.voyager.dash.jobs.JobApplicationFormSection',
   );
 
+  if (sections.length === 0 && onsiteApp) {
+    const forms = (onsiteApp.jobApplicationForms as Array<Record<string, unknown>> | undefined) ?? [];
+    for (const form of forms) {
+      const groupings = (form['questionGroupings'] as Array<Record<string, unknown>> | undefined) ?? [];
+      for (const g of groupings) {
+        if (g['$type'] === 'com.linkedin.voyager.dash.jobs.JobApplicationFormSection') {
+          sections.push(g as LinkedInIncludedItem);
+        }
+      }
+    }
+  }
+
   for (const section of sections) {
     const stepQuestions: FormQuestion[] = [];
     let title = 'Seção';
