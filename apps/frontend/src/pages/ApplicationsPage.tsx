@@ -479,9 +479,25 @@ export default function ApplicationsPage() {
                       <Sparkles size={12} className="text-brand-blue" />
                       Currículo Otimizado para esta Vaga
                     </h4>
-                    <div className="p-4 bg-bg-card border border-border-color rounded-xl text-xs max-h-[200px] overflow-y-auto font-mono whitespace-pre-wrap text-text-primary bg-brand-blue/5 border-brand-blue/10">
-                      {selectedApp.optimizedResume}
-                    </div>
+                    {selectedApp.resumePdfPath || selectedApp.resumePdfBase64 ? (
+                      <div className="border border-border-color rounded-xl overflow-hidden bg-bg-input">
+                        <object
+                          data={apiService.getResumePdfUrl(selectedApp.id)}
+                          type="application/pdf"
+                          className="w-full h-[450px]"
+                        >
+                          <iframe
+                            src={apiService.getResumePdfUrl(selectedApp.id)}
+                            className="w-full h-[450px] border-0"
+                            title="Preview do Currículo Otimizado"
+                          />
+                        </object>
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-bg-card border border-border-color rounded-xl text-xs max-h-[200px] overflow-y-auto font-mono whitespace-pre-wrap text-text-primary bg-brand-blue/5 border-brand-blue/10">
+                        {selectedApp.optimizedResume}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -489,7 +505,7 @@ export default function ApplicationsPage() {
 
               {/* Detail footer actions */}
               <div className="px-5 py-4 border-t border-border-color bg-bg-card flex gap-2 shrink-0">
-                {selectedApp.resumePdfPath && (
+                {(selectedApp.resumePdfPath || selectedApp.resumePdfBase64) && (
                   <a
                     href={apiService.getResumePdfUrl(selectedApp.id)}
                     target="_blank"

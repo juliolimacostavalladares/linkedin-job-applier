@@ -523,6 +523,7 @@ router.post('/:id/apply', async (req, res, next) => {
 
     // ── Generate & Upload Resume PDF if optimizedResume text is provided ────────
     let resumePdfPath: string | undefined = undefined;
+    let resumePdfBase64: string | undefined = undefined;
 
     if (optimizedResume && optimizedResume.trim()) {
       try {
@@ -551,6 +552,7 @@ router.post('/:id/apply', async (req, res, next) => {
         // 1. Generate PDF buffer
         logger.info(`[apply] Generating PDF resume buffer from optimized markdown`);
         const pdfBuffer = await pdfService.generateFromMarkdownToBuffer(optimizedResume);
+        resumePdfBase64 = pdfBuffer.toString('base64');
 
         // 2. Upload to LinkedIn and get new URN (if job application form has an upload field)
         if (resumeUploadFormElementUrn) {
@@ -668,6 +670,7 @@ router.post('/:id/apply', async (req, res, next) => {
       jobUrl,
       optimizedResume,
       resumePdfPath,
+      resumePdfBase64,
     });
 
     res.json({

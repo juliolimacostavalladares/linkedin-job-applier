@@ -118,26 +118,39 @@ router.get('/:id/resume.pdf', async (req, res, next) => {
     const { id } = req.params;
     const application = await applicationService.findById(id);
     
-    if (!application || !application.resumePdfPath) {
-      res.status(404).json({ error: 'Currículo PDF não encontrado para esta candidatura.' });
-      return;
-    }
-
-    const fullPdfPath = path.isAbsolute(application.resumePdfPath) 
-      ? application.resumePdfPath 
-      : path.join(process.cwd(), application.resumePdfPath);
-
-    if (!fs.existsSync(fullPdfPath)) {
-      res.status(404).json({ error: 'O arquivo de currículo PDF correspondente não existe no servidor.' });
+    if (!application) {
+      res.status(404).json({ error: 'Candidatura não encontrada.' });
       return;
     }
 
     res.setHeader('Content-Type', 'application/pdf');
-    const filename = path.basename(application.resumePdfPath);
-    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-    
-    const stream = fs.createReadStream(fullPdfPath);
-    stream.pipe(res);
+    // Set disposition to inline so it displays inside browser/iframe rather than downloading
+    const rawFilename = application.resumePdfPath 
+      ? path.basename(application.resumePdfPath)
+      : (application.jobTitle ? `${application.jobTitle.replace(/[^a-zA-Z0-9]/g, '_')}_resume.pdf` : 'optimized_resume.pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${rawFilename}"`);
+
+    // 1. Prefer database base64 field
+    if (application.resumePdfBase64) {
+      const pdfBuffer = Buffer.from(application.resumePdfBase64, 'base64');
+      res.send(pdfBuffer);
+      return;
+    }
+
+    // 2. Fallback to file path on disk
+    if (application.resumePdfPath) {
+      const fullPdfPath = path.isAbsolute(application.resumePdfPath) 
+        ? application.resumePdfPath 
+        : path.join(process.cwd(), application.resumePdfPath);
+
+      if (fs.existsSync(fullPdfPath)) {
+        const stream = fs.createReadStream(fullPdfPath);
+        stream.pipe(res);
+        return;
+      }
+    }
+
+    res.status(404).json({ error: 'Currículo PDF não encontrado para esta candidatura.' });
   } catch (error) {
     logger.error('Failed to download resume PDF', error);
     next(error);

@@ -13,6 +13,7 @@ export class ApplicationService {
       jobUrl?: string;
       optimizedResume?: string;
       resumePdfPath?: string;
+      resumePdfBase64?: string;
     }
   ) {
     return await prisma.application.create({
@@ -27,6 +28,7 @@ export class ApplicationService {
         jobUrl: metadata?.jobUrl,
         optimizedResume: metadata?.optimizedResume,
         resumePdfPath: metadata?.resumePdfPath,
+        resumePdfBase64: metadata?.resumePdfBase64,
       },
     });
   }

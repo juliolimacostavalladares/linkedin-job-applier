@@ -163,6 +163,7 @@ export interface Application {
   jobUrl?: string | null;
   optimizedResume?: string | null;
   resumePdfPath?: string | null;
+  resumePdfBase64?: string | null;
   createdAt: string;
   updatedAt: string;
 }
