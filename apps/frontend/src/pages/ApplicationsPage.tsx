@@ -423,9 +423,20 @@ export default function ApplicationsPage() {
                           const parsed = JSON.parse(selectedApp.answers || '{}');
                           const entries = Object.entries(parsed);
                           if (entries.length === 0) return <span className="text-text-secondary italic">Nenhuma pergunta customizada foi feita.</span>;
-                          return entries.map(([qUrn, answer]) => {
+                          return entries.map(([qUrn, rawAnswer]) => {
+                            const answerValue = typeof rawAnswer === 'object' && rawAnswer !== null && 'value' in rawAnswer 
+                              ? (rawAnswer as { value: string }).value 
+                              : String(rawAnswer);
+
                             let questionTitle = '';
-                            if (jobDetail?.applyForm) {
+
+                            // 1. Check if the saved answer has a title stored with it
+                            if (typeof rawAnswer === 'object' && rawAnswer !== null && 'title' in rawAnswer && (rawAnswer as { title?: string }).title) {
+                              questionTitle = (rawAnswer as { title: string }).title;
+                            }
+
+                            // 2. Fallback to matching with active applyForm questions
+                            if (!questionTitle && jobDetail?.applyForm) {
                               const directMatch = jobDetail.applyForm.questions?.find((q) => q.urn === qUrn);
                               if (directMatch?.title) {
                                 questionTitle = directMatch.title;
@@ -440,6 +451,7 @@ export default function ApplicationsPage() {
                               }
                             }
 
+                            // 3. Last fallback: parse the URN id
                             if (!questionTitle) {
                               const match = qUrn.match(/,(\d+),/);
                               if (match && match[1]) {
@@ -459,7 +471,7 @@ export default function ApplicationsPage() {
                                   {displayQuestion}
                                 </span>
                                 <div className="bg-bg-app px-2.5 py-1.5 rounded-lg border border-border-color/50 text-[11px] font-mono text-text-secondary break-words whitespace-pre-wrap">
-                                  {String(answer)}
+                                  {String(answerValue)}
                                 </div>
                               </div>
                             );

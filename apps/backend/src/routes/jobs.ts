@@ -450,6 +450,7 @@ router.post('/:id/apply', async (req, res, next) => {
       companyLogo,
       jobUrl,
       optimizedResume,
+      questionTitles,
       // Pre-typed payload from the frontend (preferred)
       formResponses,
       referenceId: bodyReferenceId,
@@ -464,6 +465,7 @@ router.post('/:id/apply', async (req, res, next) => {
       companyLogo?: string;
       jobUrl?: string;
       optimizedResume?: string;
+      questionTitles?: Record<string, string>;
       formResponses?: unknown[];
       referenceId?: string;
       fileUploadResponses?: unknown[];
@@ -663,7 +665,16 @@ router.post('/:id/apply', async (req, res, next) => {
     }
 
     // 3. Only if LinkedIn accepted, save locally
-    const application = await applicationService.save(id, answers || {}, 'applied', {
+    const answersWithTitles: Record<string, string | { value: string; title?: string }> = {};
+    if (answers) {
+      for (const [urn, value] of Object.entries(answers)) {
+        answersWithTitles[urn] = questionTitles?.[urn]
+          ? { value, title: questionTitles[urn] }
+          : value;
+      }
+    }
+
+    const application = await applicationService.save(id, answersWithTitles, 'applied', {
       jobTitle,
       companyName,
       companyLogo,

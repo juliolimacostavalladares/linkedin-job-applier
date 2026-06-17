@@ -40,12 +40,31 @@ export function ApplyModal({ job, onClose }: ApplyModalProps) {
     setSubmitting(true);
     setSubmitError(null);
     try {
+      const questionTitles: Record<string, string> = {};
+      if (applyForm) {
+        if (applyForm.questions) {
+          applyForm.questions.forEach((q) => {
+            questionTitles[q.urn] = q.title;
+          });
+        }
+        if (applyForm.steps) {
+          applyForm.steps.forEach((step) => {
+            if (step.questions) {
+              step.questions.forEach((q) => {
+                questionTitles[q.urn] = q.title;
+              });
+            }
+          });
+        }
+      }
+
       await applyJob(job.id, formValues, {
         jobTitle: job.title,
         companyName: job.companyName,
         companyLogo: job.companyLogo,
         jobUrl: job.url,
         optimizedResume,
+        questionTitles,
       });
       alert('Candidatura finalizada com sucesso!');
       onClose();

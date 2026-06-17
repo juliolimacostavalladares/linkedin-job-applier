@@ -27,7 +27,14 @@ export const apiService = {
   applyJob: (
     id: string, 
     answers: Record<string, string>, 
-    metadata?: { jobTitle?: string; companyName?: string; companyLogo?: string; jobUrl?: string; optimizedResume?: string }
+    metadata?: { 
+      jobTitle?: string; 
+      companyName?: string; 
+      companyLogo?: string; 
+      jobUrl?: string; 
+      optimizedResume?: string;
+      questionTitles?: Record<string, string>;
+    }
   ) =>
     api.post(`/api/jobs/${id}/apply`, { answers, ...metadata }),
   
