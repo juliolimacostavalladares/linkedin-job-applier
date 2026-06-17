@@ -31,7 +31,7 @@ export class ApplicationService {
 
   async listAppliedJobIds(): Promise<string[]> {
     const apps = await prisma.application.findMany({
-      where: { status: { in: ['applied', 'viewed'] } },
+      where: { status: { in: ['applied', 'viewed', 'closed'] } },
       select: { jobId: true }
     });
     return apps.map(app => app.jobId);

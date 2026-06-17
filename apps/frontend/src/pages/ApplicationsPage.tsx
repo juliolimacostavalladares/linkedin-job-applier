@@ -29,7 +29,7 @@ export default function ApplicationsPage() {
   const { applications, loading, fetchApplications } = useApplicationsStore();
   const { theme, toggleTheme } = useThemeStore();
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'applied' | 'viewed'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'applied' | 'viewed' | 'closed'>('all');
   
   // Job detail panel state
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
@@ -74,7 +74,8 @@ export default function ApplicationsPage() {
   // Calculate stats
   const totalCount = applications.length;
   const viewedCount = applications.filter(a => a.status === 'viewed').length;
-  const pendingCount = totalCount - viewedCount;
+  const closedCount = applications.filter(a => a.status === 'closed').length;
+  const pendingCount = totalCount - viewedCount - closedCount;
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full bg-bg-app font-sans text-text-primary overflow-hidden p-0 md:p-4 lg:p-5 transition-colors duration-200">
@@ -143,24 +144,31 @@ export default function ApplicationsPage() {
             </div>
 
             {/* Stats Dashboard cards */}
-            <div className="grid grid-cols-3 gap-4 mb-6 shrink-0">
-              <div className="bg-bg-app border border-border-color rounded-xl p-4 flex flex-col justify-between shadow-xs">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-text-secondary">Enviadas</span>
-                <span className="text-xl md:text-2xl font-black mt-2 text-text-primary">{totalCount}</span>
+            <div className="grid grid-cols-4 gap-3 mb-6 shrink-0">
+              <div className="bg-bg-app border border-border-color rounded-xl p-3 flex flex-col justify-between shadow-xs">
+                <span className="text-[9px] uppercase font-bold tracking-wider text-text-secondary">Enviadas</span>
+                <span className="text-lg md:text-xl font-black mt-1 text-text-primary">{totalCount}</span>
               </div>
-              <div className="bg-bg-app border border-border-color rounded-xl p-4 flex flex-col justify-between shadow-xs border-l-4 border-l-blue-500">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-blue-500 flex items-center gap-1">
+              <div className="bg-bg-app border border-border-color rounded-xl p-3 flex flex-col justify-between shadow-xs border-l-4 border-l-blue-500">
+                <span className="text-[9px] uppercase font-bold tracking-wider text-blue-500 flex items-center gap-1">
                   <Eye size={12} />
                   Visualizadas
                 </span>
-                <span className="text-xl md:text-2xl font-black mt-2 text-text-primary">{viewedCount}</span>
+                <span className="text-lg md:text-xl font-black mt-1 text-text-primary">{viewedCount}</span>
               </div>
-              <div className="bg-bg-app border border-border-color rounded-xl p-4 flex flex-col justify-between shadow-xs border-l-4 border-l-green-500">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-green-500 flex items-center gap-1">
+              <div className="bg-bg-app border border-border-color rounded-xl p-3 flex flex-col justify-between shadow-xs border-l-4 border-l-green-500">
+                <span className="text-[9px] uppercase font-bold tracking-wider text-green-500 flex items-center gap-1">
                   <CheckCircle size={12} />
                   Em Análise
                 </span>
-                <span className="text-xl md:text-2xl font-black mt-2 text-text-primary">{pendingCount}</span>
+                <span className="text-lg md:text-xl font-black mt-1 text-text-primary">{pendingCount}</span>
+              </div>
+              <div className="bg-bg-app border border-border-color rounded-xl p-3 flex flex-col justify-between shadow-xs border-l-4 border-l-gray-400">
+                <span className="text-[9px] uppercase font-bold tracking-wider text-gray-500 flex items-center gap-1">
+                  <X size={12} />
+                  Encerradas
+                </span>
+                <span className="text-lg md:text-xl font-black mt-1 text-text-primary">{closedCount}</span>
               </div>
             </div>
 
@@ -196,6 +204,12 @@ export default function ApplicationsPage() {
                   className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${statusFilter === 'viewed' ? 'bg-bg-card text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
                 >
                   Visualizadas
+                </button>
+                <button
+                  onClick={() => setStatusFilter('closed')}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${statusFilter === 'closed' ? 'bg-bg-card text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
+                >
+                  Encerradas
                 </button>
               </div>
             </div>
@@ -242,6 +256,11 @@ export default function ApplicationsPage() {
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-full text-[10px] font-bold uppercase tracking-wider">
                           <Eye size={10} />
                           Visualizada
+                        </span>
+                      ) : app.status === 'closed' ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-500/10 text-gray-600 dark:text-gray-400 border border-gray-500/20 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                          <X size={10} />
+                          Encerrada
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 rounded-full text-[10px] font-bold uppercase tracking-wider">
@@ -306,6 +325,10 @@ export default function ApplicationsPage() {
                       {selectedApp.status === 'viewed' ? (
                         <span className="font-bold text-blue-500 flex items-center gap-1">
                           <Eye size={12} /> Visualizada pelo recrutador
+                        </span>
+                      ) : selectedApp.status === 'closed' ? (
+                        <span className="font-bold text-gray-500 flex items-center gap-1">
+                          <X size={12} /> Vaga Encerrada no LinkedIn
                         </span>
                       ) : (
                         <span className="font-bold text-green-500 flex items-center gap-1">

@@ -174,6 +174,7 @@ router.get('/:id', async (req, res, next) => {
           companyLogo
           appliedOnLinkedIn
           viewedByJobPosterAt
+          closed
         }
       }
     `;
@@ -236,7 +237,7 @@ router.get('/:id', async (req, res, next) => {
     let applicationStatus = 'applied';
 
     if (appDbRes.status === 'fulfilled' && appDbRes.value && appDbRes.value.length > 0) {
-      const activeApp = appDbRes.value.find((app) => ['applied', 'viewed'].includes(app.status));
+      const activeApp = appDbRes.value.find((app) => ['applied', 'viewed', 'closed'].includes(app.status));
       if (activeApp) {
         applied = true;
         appliedAt = activeApp.createdAt.toISOString();
@@ -246,7 +247,11 @@ router.get('/:id', async (req, res, next) => {
 
     if (jobDetail.appliedOnLinkedIn) {
       applied = true;
-      const targetStatus = jobDetail.viewedByJobPosterAt ? 'viewed' : 'applied';
+      let targetStatus = jobDetail.viewedByJobPosterAt ? 'viewed' : 'applied';
+      if (jobDetail.closed) {
+        targetStatus = 'closed';
+      }
+      
       if (!appliedAt) {
         const app = await applicationService.save(id, {}, targetStatus, {
           jobTitle: jobDetail.title,
@@ -277,6 +282,7 @@ router.get('/:id', async (req, res, next) => {
       appliedAt,
       applicationStatus,
       viewedByJobPosterAt: jobDetail.viewedByJobPosterAt,
+      closed: jobDetail.closed || false,
     });
   } catch (error) {
     next(error);

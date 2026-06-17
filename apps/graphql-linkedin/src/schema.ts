@@ -19,6 +19,7 @@ export const typeDefs = `#graphql
     companyLogo: String
     appliedOnLinkedIn: Boolean
     viewedByJobPosterAt: String
+    closed: Boolean
   }
 
   # ─── Apply Form ────────────────────────────────────────────────────────────

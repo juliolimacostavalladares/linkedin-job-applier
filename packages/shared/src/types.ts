@@ -20,6 +20,7 @@ export interface JobDetail {
   appliedAt?: string;
   appliedOnLinkedIn?: boolean;
   viewedByJobPosterAt?: string | null;
+  closed?: boolean;
 }
 
 export interface FormQuestion {
