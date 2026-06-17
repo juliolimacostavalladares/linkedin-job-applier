@@ -44,6 +44,8 @@ export const apiService = {
     api.post('/api/resume', { text }),
 
   getApplications: () => api.get('/api/applications'),
+  
+  syncApplications: () => api.post('/api/applications/sync'),
 };
 
 export default api;

@@ -12,7 +12,7 @@ import type { Job } from '@linkedin-job-applier/shared';
 export default function JobsPage() {
   const navigate = useNavigate();
   const { jobs, loadingList, fetchJobs, selectJob, selectedJob } = useJobsStore();
-  const { isApplyModalOpen, setIsApplyModalOpen, setCurrentStep, closeModal } = useApplyFormStore();
+  const { isApplyModalOpen, setIsApplyModalOpen, fetchApplyForm, closeModal } = useApplyFormStore();
   const { theme, toggleTheme } = useThemeStore();
 
   useEffect(() => {
@@ -25,8 +25,10 @@ export default function JobsPage() {
   };
 
   const handleOpenApplyModal = () => {
-    setIsApplyModalOpen(true);
-    setCurrentStep(0);
+    if (selectedJob) {
+      setIsApplyModalOpen(true);
+      fetchApplyForm(selectedJob.id);
+    }
   };
 
   return (
@@ -91,10 +93,9 @@ export default function JobsPage() {
         </div>
       </div>
 
-      {isApplyModalOpen && selectedJob?.applyForm && (
+      {isApplyModalOpen && selectedJob && (
         <ApplyModal
           job={selectedJob}
-          applyForm={selectedJob.applyForm}
           onClose={() => closeModal()}
         />
       )}

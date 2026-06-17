@@ -88,6 +88,19 @@ export interface LinkedInIncludedItem {
     };
     singleTypeaheadEntityFormComponent?: unknown;
     dateRangeFormComponent?: unknown;
+    phoneNumberFormComponent?: unknown;
+    numericFormComponent?: unknown;
+    radioButtonFormComponent?: {
+      selectableOptionsResolutionResults?: Array<{
+        textSelectableOption?: {
+          option?: {
+            optionUrn?: string | null;
+            optionEnumString?: string | null;
+          };
+          optionText?: { text?: string };
+        };
+      }>;
+    };
   };
   questionGroupingType?: 'RESUME' | 'COVER_LETTER' | string;
   customizedFormSection?: {
@@ -100,6 +113,22 @@ export interface LinkedInIncludedItem {
     title?: { text?: string };
     formElementGroups?: Array<{
       '*formElements'?: string[];
+    }>;
+  };
+  lastUsedAt?: number;
+  jobApplicationForms?: Array<Record<string, unknown>>;
+  input?: {
+    formElementInputValuesResolutionResults?: Array<{
+      textInputValue?: string | null;
+      entityInputValue?: {
+        inputEntityName?: string | null;
+        inputEntityUrn?: string | null;
+        optionEnumString?: string | null;
+      } | null;
+      dateRangeInputValue?: {
+        start?: { year: number; month: number; day?: number | null } | null;
+        end?: { year: number; month: number; day?: number | null } | null;
+      } | null;
     }>;
   };
 }

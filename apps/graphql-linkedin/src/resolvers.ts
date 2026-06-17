@@ -78,4 +78,57 @@ export const resolvers = {
       return svc.fetchProfileInfo();
     },
   },
+  Mutation: {
+    submitApplication: async (
+      _: unknown,
+      {
+        id,
+        formValues,
+        cookie,
+        csrf,
+        headersJson,
+        formResponsesJson,
+        referenceId,
+        fileUploadResponsesJson,
+        resumeUrn,
+        resumeUploadFormElementUrn,
+      }: {
+        id: string;
+        formValues: string;
+        cookie: string;
+        csrf: string;
+        headersJson?: string | null;
+        formResponsesJson?: string | null;
+        referenceId?: string | null;
+        fileUploadResponsesJson?: string | null;
+        resumeUrn?: string | null;
+        resumeUploadFormElementUrn?: string | null;
+      }
+    ) => {
+      const svc = new LinkedInService(cookie, csrf, headersJson);
+      const parsedValues = JSON.parse(formValues) as Record<string, string>;
+
+      const formResponses = formResponsesJson
+        ? (JSON.parse(formResponsesJson) as import('@linkedin-job-applier/shared').FormResponse[])
+        : undefined;
+
+      // Build fileUploadResponses: prefer explicit JSON, else auto-build from resumeUrn shortcut
+      let fileUploadResponses: import('@linkedin-job-applier/shared').FileUploadResponse[] | undefined;
+      if (fileUploadResponsesJson) {
+        fileUploadResponses = JSON.parse(fileUploadResponsesJson) as import('@linkedin-job-applier/shared').FileUploadResponse[];
+      } else if (resumeUrn && resumeUploadFormElementUrn) {
+        fileUploadResponses = [{
+          inputUrn: resumeUrn,
+          formElementUrn: resumeUploadFormElementUrn,
+        }];
+      }
+
+      return svc.submitApplyForm(id, parsedValues, {
+        formResponses,
+        referenceId: referenceId ?? undefined,
+        fileUploadResponses,
+      });
+    },
+  },
 };
+

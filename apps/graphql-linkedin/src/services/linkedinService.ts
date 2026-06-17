@@ -9,6 +9,7 @@
 import { parseDynamicHeaders } from './http/linkedinHttpClient';
 import { fetchJobs, fetchJobDetail, parseJobsFromExtension } from './fetchers/jobsFetcher';
 import { fetchApplyForm } from './fetchers/applyFormFetcher';
+import { submitApplyForm, type ApplySubmissionResult } from './fetchers/submitApplyFormFetcher';
 import { fetchResumePdf } from './fetchers/pdfFetcher';
 import { fetchProfileInfo } from './fetchers/profileFetcher';
 
@@ -36,6 +37,18 @@ export class LinkedInService {
 
   fetchApplyForm(jobId: string): Promise<ApplyForm> {
     return fetchApplyForm(jobId, this.cookie, this.csrf, this.dynamicHeaders);
+  }
+
+  submitApplyForm(
+    jobId: string,
+    formValues: Record<string, string>,
+    options?: {
+      formResponses?: import('@linkedin-job-applier/shared').FormResponse[];
+      referenceId?: string;
+      fileUploadResponses?: import('@linkedin-job-applier/shared').FileUploadResponse[];
+    },
+  ): Promise<ApplySubmissionResult> {
+    return submitApplyForm(jobId, formValues, this.cookie, this.csrf, this.dynamicHeaders, options);
   }
 
   fetchResumePdf(profileId: string): Promise<ArrayBuffer> {
