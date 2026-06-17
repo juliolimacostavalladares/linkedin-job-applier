@@ -88,6 +88,8 @@ export interface LinkedInIncludedItem {
     };
     singleTypeaheadEntityFormComponent?: unknown;
     dateRangeFormComponent?: unknown;
+    phoneNumberFormComponent?: unknown;
+    numericFormComponent?: unknown;
   };
   questionGroupingType?: 'RESUME' | 'COVER_LETTER' | string;
   customizedFormSection?: {
@@ -102,6 +104,8 @@ export interface LinkedInIncludedItem {
       '*formElements'?: string[];
     }>;
   };
+  lastUsedAt?: number;
+  jobApplicationForms?: Array<Record<string, unknown>>;
 }
 
 export interface LinkedInJobDetailRaw {

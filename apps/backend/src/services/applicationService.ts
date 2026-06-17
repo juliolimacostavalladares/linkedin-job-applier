@@ -55,6 +55,12 @@ export class ApplicationService {
     }
     return null;
   }
+
+  async deleteByJobId(jobId: string) {
+    return await prisma.application.deleteMany({
+      where: { jobId },
+    });
+  }
 }
 
 export const applicationService = new ApplicationService();

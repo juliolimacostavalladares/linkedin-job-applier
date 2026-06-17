@@ -25,6 +25,7 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
   const { resumeText, isEditingResume, setIsEditingResume, saveResume, setResumeText } = useResumeStore();
   const { applyJob } = useJobsStore();
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const currentStepQuestions = applyForm.steps?.[currentStep]?.questions || [];
 
@@ -35,6 +36,7 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
 
   const handleSubmit = async () => {
     setSubmitting(true);
+    setSubmitError(null);
     try {
       await applyJob(job.id, formValues, {
         jobTitle: job.title,
@@ -45,7 +47,8 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
       alert('Candidatura finalizada com sucesso!');
       onClose();
     } catch (err: unknown) {
-      alert(err instanceof Error ? err.message : 'Erro ao enviar candidatura');
+      const message = err instanceof Error ? err.message : 'Erro ao enviar candidatura';
+      setSubmitError(message);
     } finally {
       setSubmitting(false);
     }
@@ -70,6 +73,7 @@ export function ApplyModal({ job, applyForm, onClose }: ApplyModalProps) {
           setIsEditingResume={setIsEditingResume}
           onChangeResumeText={setResumeText}
           onSaveResume={saveResume}
+          submitError={submitError}
         />
 
         <ModalFooter
@@ -118,6 +122,7 @@ interface ModalBodyProps {
   setIsEditingResume: (value: boolean) => void;
   onChangeResumeText: (value: string) => void;
   onSaveResume: () => void;
+  submitError?: string | null;
 }
 
 function ModalBody({
@@ -134,9 +139,11 @@ function ModalBody({
   setIsEditingResume,
   onChangeResumeText,
   onSaveResume,
+  submitError,
 }: ModalBodyProps) {
   return (
     <div className="flex-1 overflow-y-auto p-4 bg-transparent">
+      {submitError && <ErrorMessage message={submitError} />}
       {!applyForm.success ? (
         <ErrorMessage message={applyForm.message || 'Erro no formulário'} />
       ) : applyForm.steps && applyForm.steps.length > 0 ? (

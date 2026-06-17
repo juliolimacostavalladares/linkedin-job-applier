@@ -29,7 +29,48 @@ export interface FormQuestion {
   title: string;
   type: string;
   options?: string[];
+  /** For entity/typeahead fields: the URN of each option (parallel array with options[]) */
+  optionUrns?: string[];
+  /** For multipleChoice fields without a URN: the raw enum string for each option */
+  optionEnumStrings?: string[];
   suggestedAnswer?: string;
+}
+
+// ─── LinkedIn REST Submission Types ──────────────────────────────────────────
+
+export interface EntityInputValue {
+  inputEntityName: string;
+  inputEntityUrn?: string;
+  optionEnumString?: string;
+}
+
+export interface DateBoundary {
+  year: number;
+  month: number;
+  day: number;
+}
+
+export interface DateRangeInputValue {
+  start: DateBoundary;
+  end: DateBoundary;
+}
+
+/** Discriminated union matching LinkedIn's `formElementInputValues` wire format */
+export type FormElementInputValue =
+  | { textInputValue: string }
+  | { entityInputValue: EntityInputValue }
+  | { dateRangeInputValue: DateRangeInputValue };
+
+export interface FormResponse {
+  formElementUrn: string;
+  formElementInputValues: FormElementInputValue[];
+}
+
+export interface FileUploadResponse {
+  /** URN of the uploaded resume (e.g. "urn:li:fsd_resume:/...") */
+  inputUrn: string;
+  /** The form element URN for the file upload field */
+  formElementUrn: string;
 }
 
 export interface ApplyForm {
@@ -40,7 +81,23 @@ export interface ApplyForm {
     questions: FormQuestion[];
   }>;
   questions?: FormQuestion[];
+  /**
+   * Client-generated base64(16 bytes) token.
+   * Created fresh at parse time and forwarded verbatim in the POST submitApplication body.
+   */
+  referenceId?: string;
+  /**
+   * The form element URN for the resume/CV file upload field.
+   * Used to build the fileUploadResponses in the submit payload.
+   */
+  resumeUploadFormElementUrn?: string;
+  /**
+   * All available resume URNs (entityUrn of Resume items), sorted by lastUsedAt desc.
+   * Use the first one as the preferred resume for this application.
+   */
+  resumeUrns?: string[];
 }
+
 
 export interface Config {
   hasCredentials: boolean;

@@ -184,6 +184,9 @@ router.get('/:id', async (req, res, next) => {
         applyForm(id: $id, cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
           success
           message
+          referenceId
+          resumeUploadFormElementUrn
+          resumeUrns
           steps {
             title
             questions {
@@ -192,6 +195,8 @@ router.get('/:id', async (req, res, next) => {
               title
               type
               options
+              optionUrns
+              optionEnumStrings
             }
           }
           questions {
@@ -200,6 +205,8 @@ router.get('/:id', async (req, res, next) => {
             title
             type
             options
+            optionUrns
+            optionEnumStrings
           }
         }
       }
@@ -305,6 +312,9 @@ router.get('/:id/apply-form', async (req, res, next) => {
         applyForm(id: $id, cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
           success
           message
+          referenceId
+          resumeUploadFormElementUrn
+          resumeUrns
           steps {
             title
             questions {
@@ -313,6 +323,8 @@ router.get('/:id/apply-form', async (req, res, next) => {
               title
               type
               options
+              optionUrns
+              optionEnumStrings
             }
           }
           questions {
@@ -321,6 +333,8 @@ router.get('/:id/apply-form', async (req, res, next) => {
             title
             type
             options
+            optionUrns
+            optionEnumStrings
           }
         }
       }
@@ -339,12 +353,150 @@ router.get('/:id/apply-form', async (req, res, next) => {
   }
 });
 
-// POST /api/jobs/:id/apply – Submit Easy Apply form (locally and update status)
+// POST /api/jobs/:id/apply – Submit Easy Apply form to LinkedIn, then save locally
 router.post('/:id/apply', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { answers, jobTitle, companyName, companyLogo, jobUrl } = req.body;
+    const {
+      answers,
+      jobTitle,
+      companyName,
+      companyLogo,
+      jobUrl,
+      // Pre-typed payload from the frontend (preferred)
+      formResponses,
+      referenceId: bodyReferenceId,
+      fileUploadResponses,
+      // Shortcut resume fields (can come from the frontend after fetching apply-form)
+      resumeUrn: bodyResumeUrn,
+      resumeUploadFormElementUrn: bodyResumeFormElementUrn,
+    } = req.body as {
+      answers?: Record<string, string>;
+      jobTitle?: string;
+      companyName?: string;
+      companyLogo?: string;
+      jobUrl?: string;
+      formResponses?: unknown[];
+      referenceId?: string;
+      fileUploadResponses?: unknown[];
+      resumeUrn?: string;
+      resumeUploadFormElementUrn?: string;
+    };
 
+    // Get credentials to call LinkedIn API
+    const creds = await credentialsService.getCookieAndCsrf();
+    if (!creds) {
+      res.status(401).json({ error: 'Credenciais ausentes. Use a extensão para sincronizar.' });
+      return;
+    }
+
+    // ── Resolve referenceId, resumeUrn, resumeUploadFormElementUrn ──────────────
+    // If not provided by the caller, fetch the apply form to capture them.
+    let referenceId = bodyReferenceId;
+    let resumeUrn = bodyResumeUrn;
+    let resumeUploadFormElementUrn = bodyResumeFormElementUrn;
+
+    const needsFormFetch = !referenceId || !resumeUrn || !resumeUploadFormElementUrn;
+    if (needsFormFetch) {
+      try {
+        const formQuery = `
+          query GetApplyForm($id: ID!, $cookie: String!, $csrf: String!, $headersJson: String) {
+            applyForm(id: $id, cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
+              success
+              referenceId
+              resumeUploadFormElementUrn
+              resumeUrns
+            }
+          }
+        `;
+        const formData = await queryGraphQL<{ applyForm: { success: boolean; referenceId?: string; resumeUploadFormElementUrn?: string; resumeUrns?: string[] } }>(formQuery, {
+          id,
+          cookie: creds.cookie,
+          csrf: creds.csrf,
+          headersJson: creds.headersJson,
+        });
+        const form = formData.applyForm;
+        if (!referenceId) referenceId = form?.referenceId;
+        if (!resumeUploadFormElementUrn) resumeUploadFormElementUrn = form?.resumeUploadFormElementUrn;
+        // Pick the most-recently-used resume (already sorted desc by parser)
+        if (!resumeUrn && form?.resumeUrns && form.resumeUrns.length > 0) {
+          resumeUrn = form.resumeUrns[0];
+        }
+        logger.info(
+          `[apply] From GET apply-form — referenceId: ${referenceId ?? '(missing)'}, ` +
+          `resumeUrn: ${resumeUrn ?? '(missing)'}, resumeFormEl: ${resumeUploadFormElementUrn ?? '(missing)'}`,
+        );
+      } catch (err) {
+        logger.warn('[apply] Failed to fetch apply-form context, proceeding without it', err);
+      }
+    }
+
+    // ── Build mutation variables ───────────────────────────────────────────────
+    const submitMutation = `
+      mutation SubmitApplication(
+        $id: ID!
+        $formValues: String!
+        $cookie: String!
+        $csrf: String!
+        $headersJson: String
+        $formResponsesJson: String
+        $referenceId: String
+        $fileUploadResponsesJson: String
+        $resumeUrn: String
+        $resumeUploadFormElementUrn: String
+      ) {
+        submitApplication(
+          id: $id
+          formValues: $formValues
+          cookie: $cookie
+          csrf: $csrf
+          headersJson: $headersJson
+          formResponsesJson: $formResponsesJson
+          referenceId: $referenceId
+          fileUploadResponsesJson: $fileUploadResponsesJson
+          resumeUrn: $resumeUrn
+          resumeUploadFormElementUrn: $resumeUploadFormElementUrn
+        ) {
+          success
+          message
+        }
+      }
+    `;
+
+    const variables: Record<string, string | null | undefined> = {
+      id,
+      formValues: JSON.stringify(answers || {}),
+      cookie: creds.cookie,
+      csrf: creds.csrf,
+      headersJson: creds.headersJson,
+      referenceId,
+      resumeUrn,
+      resumeUploadFormElementUrn,
+    };
+
+    if (formResponses && formResponses.length > 0) {
+      variables['formResponsesJson'] = JSON.stringify(formResponses);
+    }
+    if (fileUploadResponses && fileUploadResponses.length > 0) {
+      variables['fileUploadResponsesJson'] = JSON.stringify(fileUploadResponses);
+    }
+
+
+    const linkedInResult = await queryGraphQL<{ submitApplication: { success: boolean; message?: string } }>(
+      submitMutation,
+      variables,
+    );
+
+    // 2. If LinkedIn submission failed, return error without saving locally
+    if (!linkedInResult.submitApplication.success) {
+      res.status(400).json({
+        success: false,
+        message: linkedInResult.submitApplication.message || 'Erro ao enviar candidatura para o LinkedIn',
+      });
+      return;
+    }
+
+    // 3. Only if LinkedIn accepted, save locally
     const application = await applicationService.save(id, answers || {}, 'applied', {
       jobTitle,
       companyName,
@@ -361,5 +513,6 @@ router.post('/:id/apply', async (req, res, next) => {
     next(error);
   }
 });
+
 
 export default router;

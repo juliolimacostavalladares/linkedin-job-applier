@@ -15,7 +15,8 @@ import {
   Calendar,
   AlertCircle,
   X,
-  Loader2
+  Loader2,
+  RefreshCw
 } from 'lucide-react';
 import { useApplicationsStore, useThemeStore, useJobsStore } from '../stores';
 import { Sidebar } from '../components/jobs/Sidebar';
@@ -26,10 +27,11 @@ import { apiService } from '../services/apiService';
 
 export default function ApplicationsPage() {
   const navigate = useNavigate();
-  const { applications, loading, fetchApplications } = useApplicationsStore();
+  const { applications, loading, syncing, fetchApplications, syncWithLinkedIn } = useApplicationsStore();
   const { theme, toggleTheme } = useThemeStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'applied' | 'viewed' | 'closed'>('all');
+  const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   
   // Job detail panel state
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
@@ -40,6 +42,16 @@ export default function ApplicationsPage() {
   useEffect(() => {
     fetchApplications();
   }, [fetchApplications]);
+
+  const handleSync = async () => {
+    const result = await syncWithLinkedIn();
+    setSyncMessage({
+      type: result.success ? 'success' : 'error',
+      text: result.message
+    });
+    // Clear message after 5 seconds
+    setTimeout(() => setSyncMessage(null), 5000);
+  };
 
   // Handle clicking on an application card to show job details
   const handleSelectApp = async (app: Application) => {
@@ -138,10 +150,32 @@ export default function ApplicationsPage() {
                 </h1>
                 <p className="text-xs text-text-secondary mt-1">Acompanhe as candidaturas que foram enviadas pelo LinkedIn</p>
               </div>
-              <Button size="sm" onClick={() => fetchApplications()} disabled={loading} className="self-start md:self-auto">
-                {loading ? <Loader2 size={14} className="animate-spin" /> : 'Atualizar Lista'}
-              </Button>
+              <div className="flex gap-2 self-start md:self-auto">
+                <Button 
+                  size="sm" 
+                  onClick={handleSync} 
+                  disabled={syncing || loading}
+                  variant="secondary"
+                  className="flex items-center gap-2"
+                >
+                  {syncing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+                  Sincronizar com LinkedIn
+                </Button>
+                <Button size="sm" onClick={() => fetchApplications()} disabled={loading} className="self-start md:self-auto">
+                  {loading ? <Loader2 size={14} className="animate-spin" /> : 'Atualizar Lista'}
+                </Button>
+              </div>
             </div>
+
+            {syncMessage && (
+              <div className={`p-3 rounded-lg mb-4 ${
+                syncMessage.type === 'success' 
+                  ? 'bg-green-50 border border-green-200 text-green-800' 
+                  : 'bg-red-50 border border-red-200 text-red-800'
+              }`}>
+                {syncMessage.text}
+              </div>
+            )}
 
             {/* Stats Dashboard cards */}
             <div className="grid grid-cols-4 gap-3 mb-6 shrink-0">
