@@ -2,15 +2,16 @@ import { Router } from 'express';
 import { credentialsService } from '../services/credentialsService';
 import { queryGraphQL } from '../utils/graphqlClient';
 import { resumeService } from '../services/resumeService';
-import { AIService } from '../services/aiService';
+import { aiService } from '../services/aiService';
 import { applicationService } from '../services/applicationService';
 import { logger } from '../utils/logger';
 import type { Job, JobDetail, ApplyForm } from '../types';
 
 const router = Router();
+const queryCache = new Map<string, string>();
 
 // GET /api/jobs – Fetch recommended jobs using stored credentials via LinkedIn GraphQL Service
-router.get('/', async (_req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
     const creds = await credentialsService.getCookieAndCsrf();
     if (!creds) {
@@ -20,9 +21,35 @@ router.get('/', async (_req, res, next) => {
       return;
     }
 
+    const { q, remote, past24h } = req.query;
+    const isRemote = remote !== 'false';
+    const isPast24h = past24h !== 'false';
+
+    let activeQuery = typeof q === 'string' ? q : '';
+
+    if (!q) {
+      // By default, build the query from the resume profile using AI
+      const latestResume = await resumeService.getLatest();
+      if (latestResume) {
+        const cacheKey = `${latestResume.id}-${latestResume.updatedAt.getTime()}`;
+        let cached = queryCache.get(cacheKey);
+        if (!cached) {
+          logger.info('Generating job search query from resume using Gemini AI...');
+          try {
+            cached = await aiService.generateSearchQuery(latestResume.text);
+            queryCache.set(cacheKey, cached);
+          } catch (err) {
+            logger.error('Failed to generate search query using AI, using fallback', err);
+            cached = '';
+          }
+        }
+        activeQuery = cached || '';
+      }
+    }
+
     const query = `
-      query GetJobs($cookie: String!, $csrf: String!, $headersJson: String) {
-        jobs(cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
+      query GetJobs($cookie: String!, $csrf: String!, $headersJson: String, $keywords: String, $remote: Boolean, $past24h: Boolean) {
+        jobs(cookie: $cookie, csrf: $csrf, headersJson: $headersJson, keywords: $keywords, remote: $remote, past24h: $past24h) {
           id
           title
           companyInfo
@@ -35,6 +62,9 @@ router.get('/', async (_req, res, next) => {
       cookie: creds.cookie,
       csrf: creds.csrf,
       headersJson: creds.headersJson,
+      keywords: activeQuery || null,
+      remote: isRemote,
+      past24h: isPast24h,
     });
 
     const appliedIds = await applicationService.listAppliedJobIds();
@@ -45,7 +75,15 @@ router.get('/', async (_req, res, next) => {
       applied: appliedSet.has(job.id),
     }));
 
-    res.json({ jobs: enrichedJobs, source: 'linkedin-graphql' });
+    res.json({
+      jobs: enrichedJobs,
+      searchQuery: activeQuery,
+      filters: {
+        remote: isRemote,
+        past24h: isPast24h,
+      },
+      source: 'linkedin-graphql',
+    });
   } catch (error) {
     next(error);
   }

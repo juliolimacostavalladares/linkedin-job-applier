@@ -66,7 +66,7 @@ export const typeDefs = `#graphql
 
   # ─── Queries ───────────────────────────────────────────────────────────────
   type Query {
-    jobs(cookie: String!, csrf: String!, headersJson: String): [Job!]!
+    jobs(cookie: String!, csrf: String!, headersJson: String, keywords: String, remote: Boolean, past24h: Boolean): [Job!]!
     jobDetail(id: ID!, cookie: String!, csrf: String!, headersJson: String): JobDetail!
     applyForm(id: ID!, cookie: String!, csrf: String!, headersJson: String): ApplyForm!
 

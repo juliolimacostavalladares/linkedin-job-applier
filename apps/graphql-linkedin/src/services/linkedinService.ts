@@ -26,8 +26,8 @@ export class LinkedInService {
     this.dynamicHeaders = parseDynamicHeaders(headersJson);
   }
 
-  fetchJobs(): Promise<Job[]> {
-    return fetchJobs(this.cookie, this.csrf, this.dynamicHeaders);
+  fetchJobs(keywords?: string | null, remote?: boolean | null, past24h?: boolean | null): Promise<Job[]> {
+    return fetchJobs(this.cookie, this.csrf, this.dynamicHeaders, keywords, remote, past24h);
   }
 
   fetchJobDetail(jobId: string): Promise<JobDetail> {

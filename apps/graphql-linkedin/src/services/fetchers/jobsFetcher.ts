@@ -13,11 +13,40 @@ export async function fetchJobs(
   cookie: string,
   csrf: string,
   dynamicHeaders: Record<string, string>,
+  keywords?: string | null,
+  remote?: boolean | null,
+  past24h?: boolean | null,
 ): Promise<Job[]> {
-  const apiUrl =
+  const hasKeywords = typeof keywords === 'string' && keywords.trim().length > 0;
+  const hasFilters = !!(remote || past24h);
+
+  let apiUrl =
     'https://www.linkedin.com/voyager/api/graphql?includeWebMetadata=true&variables=(count:24,jobCollectionSlug:easy-apply,query:(origin:GENERIC_JOB_COLLECTIONS_LANDING),start:0)&queryId=voyagerJobsDashJobCards.e5b6b761ede078dabe8ad857aa42c220';
 
-  logger.debug('Fetching jobs from LinkedIn API');
+  if (hasKeywords || hasFilters) {
+    const filters: string[] = ['easyApply:List(true)'];
+    if (remote) {
+      filters.push('workplaceTypes:List(2)');
+    }
+    if (past24h) {
+      filters.push('timePostedRange:List(r86400)');
+    }
+
+    let queryVal = '';
+    if (hasKeywords) {
+      const escapedKeywords = `"${keywords!.replace(/"/g, '\\"')}"`;
+      const encodedKeywords = encodeURIComponent(escapedKeywords)
+        .replace(/\(/g, '%28')
+        .replace(/\)/g, '%29');
+      queryVal = `(origin:JOB_SEARCH_PAGE_SEARCH_BUTTON,keywords:${encodedKeywords},selectedFilters:(${filters.join(',')}))`;
+    } else {
+      queryVal = `(origin:JOB_SEARCH_PAGE_SEARCH_BUTTON,selectedFilters:(${filters.join(',')}))`;
+    }
+
+    apiUrl = `https://www.linkedin.com/voyager/api/voyagerJobsDashJobCards?decorationId=com.linkedin.voyager.dash.deco.jobs.search.JobSearchCardsCollection-210&count=24&q=jobSearch&query=${queryVal}&start=0`;
+  }
+
+  logger.debug('Fetching jobs from LinkedIn API', { hasKeywords, hasFilters, apiUrl });
 
   const response = await fetch(apiUrl, {
     headers: getHeaders(cookie, csrf, dynamicHeaders),
