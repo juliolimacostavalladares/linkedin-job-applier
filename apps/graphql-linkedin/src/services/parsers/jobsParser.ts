@@ -43,8 +43,12 @@ export function parseJobs(data: LinkedInResponse): Job[] {
         if (!jobsMap.has(id)) jobsMap.set(id, { id });
         const job = jobsMap.get(id);
         if (job) {
-          job.companyInfo =
-            item.primaryDescription?.text ?? 'Empresa não informada';
+          const compName = item.primaryDescription?.text;
+          if (compName) {
+            job.companyInfo = compName;
+          } else if (!job.companyInfo) {
+            job.companyInfo = 'Empresa não informada';
+          }
 
           // ── Easy Apply detection via footerItems ─────────────────────────
           // The listing endpoint never returns applyMethod on JobPosting.
@@ -106,6 +110,7 @@ function resolveVectorImage(
           return resolved.logoResolutionResult.vectorImage;
         }
         if (resolved?.vectorImage) return resolved.vectorImage;
+        if (resolved?.logo?.vectorImage) return resolved.logo.vectorImage;
         if (
           resolved?.profilePicture?.displayImageReferenceResolutionResult
             ?.vectorImage
@@ -125,6 +130,12 @@ function resolveVectorImage(
           }
         } else if (valObj['vectorImage']) {
           return valObj['vectorImage'] as LinkedInVectorImage;
+        } else if (
+          valObj['logo'] !== null &&
+          typeof valObj['logo'] === 'object' &&
+          (valObj['logo'] as Record<string, unknown>)['vectorImage']
+        ) {
+          return (valObj['logo'] as Record<string, unknown>)['vectorImage'] as LinkedInVectorImage;
         }
       }
     }
@@ -135,6 +146,9 @@ function resolveVectorImage(
     const company = includedMap.get(item.companyDetails['*company']);
     if (company?.logoResolutionResult?.vectorImage) {
       return company.logoResolutionResult.vectorImage;
+    }
+    if (company?.logo?.vectorImage) {
+      return company.logo.vectorImage;
     }
   }
 

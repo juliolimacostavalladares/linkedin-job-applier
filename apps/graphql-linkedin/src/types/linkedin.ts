@@ -39,6 +39,7 @@ export interface LinkedInIncludedItem {
     attributes?: Array<{
       detailData?: Record<string, unknown>;
     }>;
+    vectorImage?: LinkedInVectorImage;
   };
   companyDetails?: {
     company?: string;
