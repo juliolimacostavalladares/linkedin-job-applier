@@ -5,6 +5,7 @@ export const typeDefs = `#graphql
     title: String!
     companyInfo: String!
     companyLogo: String
+    applied: Boolean
   }
 
   type JobDetail {
@@ -17,6 +18,8 @@ export const typeDefs = `#graphql
     companyName: String!
     companyLogo: String
     appliedOnLinkedIn: Boolean
+    viewedByJobPosterAt: String
+    closed: Boolean
   }
 
   # ─── Apply Form ────────────────────────────────────────────────────────────

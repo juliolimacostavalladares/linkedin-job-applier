@@ -92,6 +92,10 @@ export async function fetchJobDetail(
     (item) => item.$type === 'com.linkedin.voyager.entities.shared.JobApplyingInfo'
   );
   const appliedOnLinkedIn = applyingInfo ? applyingInfo.applied === true : false;
+  const viewedByJobPosterAt = applyingInfo?.viewedByJobPosterAt
+    ? new Date(applyingInfo.viewedByJobPosterAt).toISOString()
+    : null;
+  const closed = applyingInfo ? applyingInfo.closed === true : false;
 
   const vectorImage = data.companyDetails?.logoResolutionResult?.vectorImage;
   let companyLogo: string | undefined;
@@ -115,6 +119,8 @@ export async function fetchJobDetail(
     companyName: data.companyDetails?.company?.split(':').pop() ?? '',
     companyLogo,
     appliedOnLinkedIn,
+    viewedByJobPosterAt,
+    closed,
   };
 
   logger.info('Fetched job detail', { jobId, title: jobDetail.title });

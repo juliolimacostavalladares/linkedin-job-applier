@@ -4,6 +4,7 @@ import credentialsRouter from './credentials';
 import jobsRouter        from './jobs';
 import resumeRouter      from './resume';
 import aiRouter          from './ai';
+import applicationsRouter from './applications';
 
 const router = Router();
 
@@ -15,6 +16,9 @@ router.use('/credentials', credentialsRouter);
 
 // GET /api/jobs  |  GET /api/jobs/:id  |  GET /api/jobs/:id/apply-form
 router.use('/jobs', jobsRouter);
+
+// GET /api/applications
+router.use('/applications', applicationsRouter);
 
 // POST /api/resume/from-linkedin
 router.use('/resume', resumeRouter);

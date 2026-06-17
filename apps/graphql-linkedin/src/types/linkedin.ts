@@ -37,6 +37,9 @@ export interface LinkedInIncludedItem {
   footerItems?: LinkedInFooterItem[];
   applied?: boolean;
   appliedAt?: number;
+  jobSeekerJobStateActions?: Array<{ jobSeekerJobStateEnums?: string }>;
+  viewedByJobPosterAt?: number | null;
+  closed?: boolean;
   logo?: {
     attributes?: Array<{
       detailData?: Record<string, unknown>;

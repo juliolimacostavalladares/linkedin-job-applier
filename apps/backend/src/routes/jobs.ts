@@ -99,6 +99,7 @@ router.get('/', async (req, res, next) => {
           title
           companyInfo
           companyLogo
+          applied
         }
       }
     `;
@@ -115,10 +116,25 @@ router.get('/', async (req, res, next) => {
     const appliedIds = await applicationService.listAppliedJobIds();
     const appliedSet = new Set(appliedIds);
 
-    const enrichedJobs = (data.jobs || []).map((job) => ({
-      ...job,
-      applied: appliedSet.has(job.id),
-    }));
+    const enrichedJobs = (data.jobs || []).map((job) => {
+      const isApplied = job.applied || appliedSet.has(job.id);
+
+      if (job.applied && !appliedSet.has(job.id)) {
+        applicationService.save(job.id, {}, 'applied', {
+          jobTitle: job.title,
+          companyName: job.companyInfo,
+          companyLogo: job.companyLogo,
+          jobUrl: `https://www.linkedin.com/jobs/view/${job.id}`,
+        }).catch(err => {
+          logger.error('Failed to auto-sync applied status from search list:', err);
+        });
+      }
+
+      return {
+        ...job,
+        applied: isApplied,
+      };
+    });
 
     res.json({
       jobs: enrichedJobs,
@@ -157,6 +173,8 @@ router.get('/:id', async (req, res, next) => {
           companyName
           companyLogo
           appliedOnLinkedIn
+          viewedByJobPosterAt
+          closed
         }
       }
     `;
@@ -216,25 +234,36 @@ router.get('/:id', async (req, res, next) => {
 
     let applied = false;
     let appliedAt: string | undefined;
+    let applicationStatus = 'applied';
 
     if (appDbRes.status === 'fulfilled' && appDbRes.value && appDbRes.value.length > 0) {
-      const activeApp = appDbRes.value.find((app) => app.status === 'applied');
+      const activeApp = appDbRes.value.find((app) => ['applied', 'viewed', 'closed'].includes(app.status));
       if (activeApp) {
         applied = true;
         appliedAt = activeApp.createdAt.toISOString();
+        applicationStatus = activeApp.status;
       }
     }
 
     if (jobDetail.appliedOnLinkedIn) {
       applied = true;
+      let targetStatus = jobDetail.viewedByJobPosterAt ? 'viewed' : 'applied';
+      if (jobDetail.closed) {
+        targetStatus = 'closed';
+      }
+      
       if (!appliedAt) {
-        const app = await applicationService.save(id, {}, 'applied', {
+        const app = await applicationService.save(id, {}, targetStatus, {
           jobTitle: jobDetail.title,
           companyName: jobDetail.companyName,
           companyLogo: jobDetail.companyLogo,
           jobUrl: jobDetail.url,
         });
         appliedAt = app.createdAt.toISOString();
+        applicationStatus = targetStatus;
+      } else if (applicationStatus !== targetStatus) {
+        await applicationService.updateStatus(id, targetStatus);
+        applicationStatus = targetStatus;
       }
     }
 
@@ -251,6 +280,9 @@ router.get('/:id', async (req, res, next) => {
       applyForm,
       applied,
       appliedAt,
+      applicationStatus,
+      viewedByJobPosterAt: jobDetail.viewedByJobPosterAt,
+      closed: jobDetail.closed || false,
     });
   } catch (error) {
     next(error);
