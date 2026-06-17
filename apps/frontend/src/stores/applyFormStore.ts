@@ -5,13 +5,14 @@ import type { FormQuestion, ApplyForm } from '../types';
 interface ApplyFormState {
   applyForm: ApplyForm | null;
   optimizedResume: string;
+  optimizedResumePdfBase64: string;
   loadingForm: boolean;
   errorForm: string | null;
   formValues: Record<string, string>;
   isApplyModalOpen: boolean;
   currentStep: number;
   updateFormValue: (urn: string, value: string) => void;
-  fetchApplyForm: (jobId: string) => Promise<void>;
+  fetchApplyForm: (jobId: string, jobTitle?: string, companyName?: string, userName?: string) => Promise<void>;
   setIsApplyModalOpen: (open: boolean) => void;
   setCurrentStep: (step: number) => void;
   closeModal: () => void;
@@ -20,6 +21,7 @@ interface ApplyFormState {
 export const useApplyFormStore = create<ApplyFormState>((set, get) => ({
   applyForm: null,
   optimizedResume: '',
+  optimizedResumePdfBase64: '',
   loadingForm: false,
   errorForm: null,
   formValues: {},
@@ -30,19 +32,58 @@ export const useApplyFormStore = create<ApplyFormState>((set, get) => ({
       formValues: { ...state.formValues, [urn]: value },
     }));
   },
-  fetchApplyForm: async (jobId) => {
-    set({ loadingForm: true, errorForm: null, applyForm: null, optimizedResume: '' });
+  fetchApplyForm: async (jobId, jobTitle, companyName, userName) => {
+    set({ loadingForm: true, errorForm: null, applyForm: null, optimizedResume: '', optimizedResumePdfBase64: '' });
     try {
       const { data } = await apiService.getApplyForm(jobId);
       const initialValues: Record<string, string> = {};
+
+      const cleanString = (str?: string) => {
+        if (!str) return '';
+        return str
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '') // remove accents
+          .replace(/[^a-zA-Z0-9]/g, '_') // replace non-alphanumeric with underscore
+          .replace(/_+/g, '_') // collapse multiple underscores
+          .replace(/(^_|_$)/g, ''); // trim leading/trailing underscores
+      };
+
+      const parts: string[] = [];
+      if (userName) parts.push(cleanString(userName));
+      
+      const companyOrTitle = companyName ? companyName : jobTitle;
+      if (companyOrTitle) parts.push(cleanString(companyOrTitle));
+      
+      const filename = parts.length > 0 ? `${parts.join('_')}.pdf` : 'curriculo_otimizado.pdf';
+
       if (data.questions) {
         data.questions.forEach((q: FormQuestion) => {
-          initialValues[q.urn] = q.prefilledValue || q.suggestedAnswer || '';
+          if (q.type === 'file' && data.optimizedResume) {
+            initialValues[q.urn] = filename;
+          } else {
+            initialValues[q.urn] = q.prefilledValue || q.suggestedAnswer || '';
+          }
+        });
+      }
+      if (data.steps) {
+        data.steps.forEach((step) => {
+          if (step.questions) {
+            step.questions.forEach((q: FormQuestion) => {
+              if (initialValues[q.urn] === undefined) {
+                if (q.type === 'file' && data.optimizedResume) {
+                  initialValues[q.urn] = filename;
+                } else {
+                  initialValues[q.urn] = q.prefilledValue || q.suggestedAnswer || '';
+                }
+              }
+            });
+          }
         });
       }
       set({
         applyForm: data,
         optimizedResume: data.optimizedResume || '',
+        optimizedResumePdfBase64: data.optimizedResumePdfBase64 || '',
         formValues: initialValues,
         loadingForm: false,
       });
@@ -63,6 +104,7 @@ export const useApplyFormStore = create<ApplyFormState>((set, get) => ({
     isApplyModalOpen: false,
     applyForm: null,
     optimizedResume: '',
+    optimizedResumePdfBase64: '',
     errorForm: null,
     formValues: {},
     currentStep: 0,

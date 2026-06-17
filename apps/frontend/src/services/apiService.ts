@@ -46,6 +46,11 @@ export const apiService = {
   getApplications: () => api.get('/api/applications'),
   
   syncApplications: () => api.post('/api/applications/sync'),
+
+  getResumePdfUrl: (applicationId: string) => {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    return `${baseUrl}/api/applications/${applicationId}/resume.pdf`;
+  },
 };
 
 export default api;

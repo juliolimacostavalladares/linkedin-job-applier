@@ -488,8 +488,20 @@ export default function ApplicationsPage() {
               </div>
 
               {/* Detail footer actions */}
-              {selectedApp.jobUrl && (
-                <div className="px-5 py-4 border-t border-border-color bg-bg-card flex gap-2 shrink-0">
+              <div className="px-5 py-4 border-t border-border-color bg-bg-card flex gap-2 shrink-0">
+                {selectedApp.resumePdfPath && (
+                  <a
+                    href={apiService.getResumePdfUrl(selectedApp.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-bg-app border border-border-color text-text-primary hover:bg-bg-hover py-2 rounded-lg font-semibold transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm"
+                    title="Baixar Currículo Otimizado em PDF"
+                  >
+                    <FileText size={14} className="text-brand-blue" />
+                    <span>Baixar PDF</span>
+                  </a>
+                )}
+                {selectedApp.jobUrl && (
                   <a
                     href={selectedApp.jobUrl}
                     target="_blank"
@@ -499,8 +511,8 @@ export default function ApplicationsPage() {
                     <span>Ver no LinkedIn</span>
                     <ExternalLink size={12} />
                   </a>
-                </div>
-              )}
+                )}
+              </div>
 
             </aside>
           )}

@@ -21,9 +21,10 @@ export function ApplyModal({ job, onClose }: ApplyModalProps) {
     currentStep,
     setCurrentStep,
     optimizedResume,
+    optimizedResumePdfBase64,
   } = useApplyFormStore();
 
-  const { resumeText, isEditingResume, setIsEditingResume, saveResume, setResumeText } = useResumeStore();
+  const { resumeText, isEditingResume, setIsEditingResume, saveResume, setResumeText, name: userName } = useResumeStore();
   const { applyJob } = useJobsStore();
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -32,7 +33,7 @@ export function ApplyModal({ job, onClose }: ApplyModalProps) {
 
   const handleSaveResume = async () => {
     await saveResume();
-    await fetchApplyForm(job.id);
+    await fetchApplyForm(job.id, job.title, job.companyName || job.companyInfo, userName || undefined);
   };
 
   const handleSubmit = async () => {
@@ -76,6 +77,7 @@ export function ApplyModal({ job, onClose }: ApplyModalProps) {
            onSaveResume={handleSaveResume}
            submitError={submitError}
            optimizedResume={optimizedResume}
+           optimizedResumePdfBase64={optimizedResumePdfBase64}
          />
 
         <ModalFooter
@@ -126,6 +128,7 @@ interface ModalBodyProps {
   onSaveResume: () => void;
   submitError?: string | null;
   optimizedResume: string;
+  optimizedResumePdfBase64: string;
 }
 
 function ModalBody({
@@ -143,6 +146,7 @@ function ModalBody({
   onSaveResume,
   submitError,
   optimizedResume,
+  optimizedResumePdfBase64,
 }: ModalBodyProps) {
   if (loadingForm) {
     return (
@@ -186,12 +190,28 @@ function ModalBody({
                 Um currículo sob medida para esta vaga foi gerado para preencher as perguntas e será salvo caso a candidatura seja concluída.
               </p>
               <details className="cursor-pointer group">
-                <summary className="text-[10px] font-bold text-brand-blue/80 hover:text-brand-blue uppercase tracking-wider select-none">
+                <summary className="text-[10px] font-bold text-brand-blue/80 hover:text-brand-blue uppercase tracking-wider select-none mb-2 block">
                   Visualizar Currículo Otimizado
                 </summary>
-                <pre className="mt-2 p-2 bg-bg-input rounded border border-border-color font-mono text-[10px] max-h-36 overflow-y-auto whitespace-pre-wrap text-text-primary">
-                  {optimizedResume}
-                </pre>
+                {optimizedResumePdfBase64 ? (
+                  <div className="mt-2 border border-border-color rounded-md overflow-hidden bg-bg-input">
+                    <object
+                      data={`data:application/pdf;base64,${optimizedResumePdfBase64}`}
+                      type="application/pdf"
+                      className="w-full h-96"
+                    >
+                      <iframe
+                        src={`data:application/pdf;base64,${optimizedResumePdfBase64}`}
+                        className="w-full h-96 border-0"
+                        title="Preview do Currículo Otimizado"
+                      />
+                    </object>
+                  </div>
+                ) : (
+                  <pre className="mt-2 p-2 bg-bg-input rounded border border-border-color font-mono text-[10px] max-h-36 overflow-y-auto whitespace-pre-wrap text-text-primary">
+                    {optimizedResume}
+                  </pre>
+                )}
               </details>
             </div>
           )}

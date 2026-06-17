@@ -98,6 +98,7 @@ export interface ApplyForm {
    */
   resumeUrns?: string[];
   optimizedResume?: string;
+  optimizedResumePdfBase64?: string;
 }
 
 
@@ -161,6 +162,7 @@ export interface Application {
   companyLogo?: string | null;
   jobUrl?: string | null;
   optimizedResume?: string | null;
+  resumePdfPath?: string | null;
   createdAt: string;
   updatedAt: string;
 }

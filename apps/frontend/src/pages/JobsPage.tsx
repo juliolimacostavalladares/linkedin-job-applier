@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, FileText, ClipboardList, Sun, Moon } from 'lucide-react';
-import { useJobsStore, useApplyFormStore, useThemeStore } from '../stores';
+import { useJobsStore, useApplyFormStore, useThemeStore, useResumeStore } from '../stores';
 import { Sidebar } from '../components/jobs/Sidebar';
 import { SearchBar } from '../components/jobs/SearchBar';
 import { JobList } from '../components/jobs/JobList';
@@ -14,6 +14,7 @@ export default function JobsPage() {
   const { jobs, loadingList, fetchJobs, selectJob, selectedJob } = useJobsStore();
   const { isApplyModalOpen, setIsApplyModalOpen, fetchApplyForm, closeModal } = useApplyFormStore();
   const { theme, toggleTheme } = useThemeStore();
+  const { name: userName } = useResumeStore();
 
   useEffect(() => {
     fetchJobs();
@@ -27,7 +28,7 @@ export default function JobsPage() {
   const handleOpenApplyModal = () => {
     if (selectedJob) {
       setIsApplyModalOpen(true);
-      fetchApplyForm(selectedJob.id);
+      fetchApplyForm(selectedJob.id, selectedJob.title, selectedJob.companyName || selectedJob.companyInfo, userName || undefined);
     }
   };
 

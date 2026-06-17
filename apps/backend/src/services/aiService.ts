@@ -172,6 +172,7 @@ Diretrizes de Otimização:
 4. Mantenha uma estrutura profissional organizada e legível (de preferência usando Markdown).
 5. O resultado deve ser o currículo completo otimizado em português ou inglês (combine com a língua original do currículo/vaga).
 6. Retorne APENAS o texto do currículo otimizado final, sem explicações, introduções ou blocos de código markdown desnecessários (não use \`\`\`markdown ou \`\`\`, apenas retorne o texto puro formatado em markdown).
+7. NÃO use emojis de forma alguma no currículo (como ✅, 🌟, 💼, etc.). O conteúdo deve ser puramente textual, formal e adequado para leitura por ATS e recrutadores humanos.
 `;
 
     const text = await this.call9Router(prompt);

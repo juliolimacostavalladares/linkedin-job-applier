@@ -165,6 +165,102 @@ export class ResumeService {
   async getLatest() {
     return prisma.resume.findFirst({ orderBy: { updatedAt: 'desc' } });
   }
+
+  /**
+   * Uploads a resume PDF buffer to LinkedIn using the Ambry flow and returns the fsd_resume URN.
+   */
+  async uploadResumeToLinkedIn(
+    cookie: string,
+    csrf: string,
+    pdfBuffer: Buffer,
+    filename: string,
+    headersJson?: string | null
+  ): Promise<string> {
+    logger.info(`Starting Ambry resume upload to LinkedIn: ${filename} (${pdfBuffer.length} bytes)`);
+
+    const dynamicHeaders = headersJson ? (JSON.parse(headersJson) as Record<string, string>) : {};
+    const baseHeaders = {
+      'accept': 'application/vnd.linkedin.normalized+json+2.1',
+      'csrf-token': csrf,
+      'cookie': cookie,
+      'x-restli-protocol-version': '2.0.0',
+      'content-type': 'application/json; charset=UTF-8',
+      'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36',
+    };
+
+    const headers = {
+      ...baseHeaders,
+      ...dynamicHeaders,
+      'csrf-token': csrf,
+      'cookie': cookie,
+    };
+
+    const initUrl = 'https://www.linkedin.com/voyager/api/voyagerJobsDashAmbryUploadUrls?action=requestUrl';
+
+    // Step 1: Request upload URL
+    const registerResponse = await fetch(initUrl, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        contentType: 'PDF',
+        filename,
+        maxSizeBytes: pdfBuffer.length,
+      }),
+    });
+
+    if (!registerResponse.ok) {
+      const errorText = await registerResponse.text();
+      logger.error(`Failed to request Ambry upload URL. Status: ${registerResponse.status}`, { errorText });
+      throw new Error(`LinkedIn Ambry upload URL request failed: ${registerResponse.statusText}`);
+    }
+
+    const registerData = (await registerResponse.json()) as {
+      data?: {
+        value?: string;
+      };
+    };
+
+    const uploadUrl = registerData?.data?.value;
+    if (!uploadUrl) {
+      logger.error('No upload URL returned from LinkedIn requestUrl endpoint', { registerData });
+      throw new Error('Invalid upload URL response from LinkedIn');
+    }
+
+    logger.info(`Ambry upload URL obtained successfully. Uploading binary buffer...`);
+
+    // Step 2: POST binary content to Ambry upload URL
+    const uploadHeaders: Record<string, string> = {
+      'cookie': cookie,
+      'csrf-token': csrf,
+      'user-agent': headers['user-agent'],
+      'content-type': 'application/pdf',
+    };
+
+    const uploadRes = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: uploadHeaders,
+      body: pdfBuffer,
+    });
+
+    if (!uploadRes.ok) {
+      const uploadText = await uploadRes.text();
+      logger.error(`Failed to upload PDF binary via POST to Ambry. Status: ${uploadRes.status}`, { uploadText });
+      throw new Error(`LinkedIn Ambry PDF upload failed: ${uploadRes.statusText}`);
+    }
+
+    // Step 3: Extract location header and construct the fsd_resume URN
+    const locationHeader = uploadRes.headers.get('location');
+    if (!locationHeader) {
+      logger.error('No location header returned from Ambry upload response', {
+        headers: Object.fromEntries(uploadRes.headers.entries()),
+      });
+      throw new Error('Ambry upload response missing location header');
+    }
+
+    const resumeUrn = `urn:li:fsd_resume:${locationHeader}`;
+    logger.info(`Resume successfully uploaded and registered via Ambry. URN: ${resumeUrn}`);
+    return resumeUrn;
+  }
 }
 
 export const resumeService = new ResumeService();

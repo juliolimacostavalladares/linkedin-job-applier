@@ -12,6 +12,7 @@ export class ApplicationService {
       companyLogo?: string; 
       jobUrl?: string;
       optimizedResume?: string;
+      resumePdfPath?: string;
     }
   ) {
     return await prisma.application.create({
@@ -25,6 +26,7 @@ export class ApplicationService {
         companyLogo: metadata?.companyLogo,
         jobUrl: metadata?.jobUrl,
         optimizedResume: metadata?.optimizedResume,
+        resumePdfPath: metadata?.resumePdfPath,
       },
     });
   }
@@ -66,6 +68,12 @@ export class ApplicationService {
   async deleteByJobId(jobId: string) {
     return await prisma.application.deleteMany({
       where: { jobId },
+    });
+  }
+
+  async findById(id: string) {
+    return await prisma.application.findUnique({
+      where: { id },
     });
   }
 }

@@ -3,6 +3,8 @@ import { applicationService } from '../services/applicationService';
 import { credentialsService } from '../services/credentialsService';
 import { queryGraphQL } from '../utils/graphqlClient';
 import { logger } from '../utils/logger';
+import fs from 'fs';
+import path from 'path';
 
 const router = Router();
 
@@ -106,6 +108,38 @@ router.post('/sync', async (req, res, next) => {
     });
   } catch (error) {
     logger.error('Failed to sync applications', error);
+    next(error);
+  }
+});
+
+// GET /api/applications/:id/resume.pdf – Stream the optimized resume PDF
+router.get('/:id/resume.pdf', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const application = await applicationService.findById(id);
+    
+    if (!application || !application.resumePdfPath) {
+      res.status(404).json({ error: 'Currículo PDF não encontrado para esta candidatura.' });
+      return;
+    }
+
+    const fullPdfPath = path.isAbsolute(application.resumePdfPath) 
+      ? application.resumePdfPath 
+      : path.join(process.cwd(), application.resumePdfPath);
+
+    if (!fs.existsSync(fullPdfPath)) {
+      res.status(404).json({ error: 'O arquivo de currículo PDF correspondente não existe no servidor.' });
+      return;
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    const filename = path.basename(application.resumePdfPath);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    
+    const stream = fs.createReadStream(fullPdfPath);
+    stream.pipe(res);
+  } catch (error) {
+    logger.error('Failed to download resume PDF', error);
     next(error);
   }
 });

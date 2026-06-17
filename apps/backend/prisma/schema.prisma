@@ -46,6 +46,7 @@ model Application {
   companyLogo     String?
   jobUrl          String?
   optimizedResume String?
+  resumePdfPath   String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
