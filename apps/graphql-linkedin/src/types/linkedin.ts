@@ -35,6 +35,8 @@ export interface LinkedInIncludedItem {
   applyMethod?: LinkedInApplyMethod;
   /** Present on JobPostingCard – EASY_APPLY_TEXT entry marks Easy Apply jobs */
   footerItems?: LinkedInFooterItem[];
+  applied?: boolean;
+  appliedAt?: number;
   logo?: {
     attributes?: Array<{
       detailData?: Record<string, unknown>;

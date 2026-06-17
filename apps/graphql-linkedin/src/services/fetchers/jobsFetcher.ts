@@ -3,7 +3,7 @@ import { writeFileSync } from 'fs';
 import { getHeaders, handleResponseError } from '../http/linkedinHttpClient';
 import { parseJobs, parseJobsFromExtension } from '../parsers/jobsParser';
 import type { LinkedInResponse, Job, JobDetail } from '@linkedin-job-applier/shared';
-import type { LinkedInJobDetailRaw } from '../../types/linkedin';
+import type { LinkedInJobDetailRaw, LinkedInIncludedItem } from '../../types/linkedin';
 
 /**
  * Fetches the Easy-Apply job listing from the LinkedIn Voyager API.
@@ -84,8 +84,14 @@ export async function fetchJobDetail(
 
   handleResponseError(response);
 
-  const jsonData = (await response.json()) as { data?: LinkedInJobDetailRaw } & LinkedInJobDetailRaw;
-  const data = jsonData.data ?? (jsonData as LinkedInJobDetailRaw);
+  const jsonData = (await response.json()) as { data?: LinkedInJobDetailRaw; included?: LinkedInIncludedItem[] };
+  const data = jsonData.data ?? (jsonData as unknown as LinkedInJobDetailRaw);
+  const included = jsonData.included ?? [];
+
+  const applyingInfo = included.find(
+    (item) => item.$type === 'com.linkedin.voyager.entities.shared.JobApplyingInfo'
+  );
+  const appliedOnLinkedIn = applyingInfo ? applyingInfo.applied === true : false;
 
   const vectorImage = data.companyDetails?.logoResolutionResult?.vectorImage;
   let companyLogo: string | undefined;
@@ -108,6 +114,7 @@ export async function fetchJobDetail(
     employmentStatus: data.employmentStatus?.split(':').pop() ?? 'FULL_TIME',
     companyName: data.companyDetails?.company?.split(':').pop() ?? '',
     companyLogo,
+    appliedOnLinkedIn,
   };
 
   logger.info('Fetched job detail', { jobId, title: jobDetail.title });
