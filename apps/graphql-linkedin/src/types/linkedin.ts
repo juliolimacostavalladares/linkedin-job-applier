@@ -90,6 +90,17 @@ export interface LinkedInIncludedItem {
     dateRangeFormComponent?: unknown;
     phoneNumberFormComponent?: unknown;
     numericFormComponent?: unknown;
+    radioButtonFormComponent?: {
+      selectableOptionsResolutionResults?: Array<{
+        textSelectableOption?: {
+          option?: {
+            optionUrn?: string | null;
+            optionEnumString?: string | null;
+          };
+          optionText?: { text?: string };
+        };
+      }>;
+    };
   };
   questionGroupingType?: 'RESUME' | 'COVER_LETTER' | string;
   customizedFormSection?: {

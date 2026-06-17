@@ -47,7 +47,7 @@ export interface EntityInputValue {
 export interface DateBoundary {
   year: number;
   month: number;
-  day: number;
+  day?: number;
 }
 
 export interface DateRangeInputValue {

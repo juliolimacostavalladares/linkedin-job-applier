@@ -52,10 +52,11 @@ export function parseApplyForm(jsonData: LinkedInGraphQLResponse): ApplyForm {
   );
   if (onsiteApp) {
     const forms = (onsiteApp.jobApplicationForms as Array<Record<string, unknown>> | undefined) ?? [];
+    // Pass 1: Look specifically for RESUME grouping
     outer: for (const form of forms) {
       const groupings = (form['questionGroupings'] as Array<Record<string, unknown>> | undefined) ?? [];
       for (const g of groupings) {
-        // Path 1: customizedFormSection.fileUploadFormSection (confirmed by inspection)
+        if (g['questionGroupingType'] !== 'RESUME') continue;
         const custom = g['customizedFormSection'] as Record<string, unknown> | null | undefined;
         const fileSection = (custom?.['fileUploadFormSection'] ??
           g['fileUploadFormSection']) as Record<string, unknown> | null | undefined;
@@ -69,6 +70,28 @@ export function parseApplyForm(jsonData: LinkedInGraphQLResponse): ApplyForm {
               resumeUrns.push(...usedResumes);
             }
             if (resumeUploadFormElementUrn) break outer;
+          }
+        }
+      }
+    }
+    // Pass 2: Fallback to any file upload if resume upload URN is still not found
+    if (!resumeUploadFormElementUrn) {
+      outer2: for (const form of forms) {
+        const groupings = (form['questionGroupings'] as Array<Record<string, unknown>> | undefined) ?? [];
+        for (const g of groupings) {
+          const custom = g['customizedFormSection'] as Record<string, unknown> | null | undefined;
+          const fileSection = (custom?.['fileUploadFormSection'] ??
+            g['fileUploadFormSection']) as Record<string, unknown> | null | undefined;
+          if (fileSection) {
+            const el = fileSection['fileUploadFormElement'] as Record<string, unknown> | undefined;
+            if (el) {
+              resumeUploadFormElementUrn = (el['formElementUrn'] ?? el['urn']) as string | undefined;
+              const usedResumes = (g['usedResumesResolutionResults'] as string[] | undefined) ?? [];
+              if (usedResumes.length > 0 && resumeUrns.length === 0) {
+                resumeUrns.push(...usedResumes);
+              }
+              if (resumeUploadFormElementUrn) break outer2;
+            }
           }
         }
       }
@@ -209,6 +232,22 @@ function parseField(el: LinkedInIncludedItem): FormQuestion {
   if (component?.dateRangeFormComponent) type = 'date-range';
   if (component?.phoneNumberFormComponent) type = 'phone';
   if (component?.numericFormComponent) type = 'numeric';
+  if (component?.radioButtonFormComponent) {
+    type = 'dropdown';
+    const selectable = component.radioButtonFormComponent.selectableOptionsResolutionResults ?? [];
+    options = selectable
+      .map((r) => r.textSelectableOption?.optionText?.text)
+      .filter((t): t is string => typeof t === 'string');
+    optionUrns = selectable
+      .map((r) => {
+        const urn = r.textSelectableOption?.option?.optionUrn;
+        return urn && urn.startsWith('urn:') ? urn : undefined;
+      })
+      .filter((u): u is string => typeof u === 'string');
+    optionEnumStrings = selectable
+      .map((r) => r.textSelectableOption?.option?.optionEnumString)
+      .filter((e): e is string => typeof e === 'string' && e.length > 0);
+  }
 
   const fallbackTitle =
     component?.textEntityListFormComponent?.placeHolderText?.text ??

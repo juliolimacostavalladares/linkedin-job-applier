@@ -61,12 +61,31 @@ export function convertFlatAnswersToResponses(
       // Format: '{"start":{"year":2022,"month":1,"day":1},"end":{"year":2023,"month":6,"day":1}}'
       try {
         const parsed = JSON.parse(value) as {
-          start: { year: number; month: number; day: number };
-          end: { year: number; month: number; day: number };
+          start: { year: number; month: number; day?: number };
+          end?: { year: number; month: number; day?: number };
+        };
+        const dateRangeInputValue = {
+          $type: 'com.linkedin.common.DateRange',
+          start: {
+            $type: 'com.linkedin.common.Date',
+            year: parsed.start.year,
+            month: parsed.start.month,
+            ...(parsed.start.day !== undefined ? { day: parsed.start.day } : {}),
+          },
+          ...(parsed.end ? {
+            end: {
+              $type: 'com.linkedin.common.Date',
+              year: parsed.end.year,
+              month: parsed.end.month,
+              ...(parsed.end.day !== undefined ? { day: parsed.end.day } : {}),
+            }
+          } : {}),
         };
         responses.push({
           formElementUrn,
-          formElementInputValues: [{ dateRangeInputValue: parsed }],
+          formElementInputValues: [
+            { dateRangeInputValue: dateRangeInputValue as unknown as import('@linkedin-job-applier/shared').DateRangeInputValue }
+          ],
         });
       } catch {
         // If it can't be parsed, skip rather than send malformed data
