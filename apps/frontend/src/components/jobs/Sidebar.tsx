@@ -1,9 +1,9 @@
-import { Briefcase, FileText, Sun, Moon } from 'lucide-react';
+import { Briefcase, FileText, ClipboardList, Sun, Moon } from 'lucide-react';
 import { useThemeStore } from '../../stores';
 
 interface SidebarProps {
-  activeView: 'jobs' | 'resume';
-  onViewChange: (view: 'jobs' | 'resume') => void;
+  activeView: 'jobs' | 'resume' | 'applications';
+  onViewChange: (view: 'jobs' | 'resume' | 'applications') => void;
 }
 
 export function Sidebar({ activeView, onViewChange }: SidebarProps) {
@@ -23,6 +23,12 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
           active={activeView === 'jobs'}
           onClick={() => onViewChange('jobs')}
           tooltip="Vagas"
+        />
+        <NavButton
+          icon={<ClipboardList size={18} />}
+          active={activeView === 'applications'}
+          onClick={() => onViewChange('applications')}
+          tooltip="Candidaturas"
         />
         <NavButton
           icon={<FileText size={18} />}

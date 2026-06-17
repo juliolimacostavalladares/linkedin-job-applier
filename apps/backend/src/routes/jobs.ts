@@ -173,6 +173,7 @@ router.get('/:id', async (req, res, next) => {
           companyName
           companyLogo
           appliedOnLinkedIn
+          viewedByJobPosterAt
         }
       }
     `;
@@ -232,25 +233,32 @@ router.get('/:id', async (req, res, next) => {
 
     let applied = false;
     let appliedAt: string | undefined;
+    let applicationStatus = 'applied';
 
     if (appDbRes.status === 'fulfilled' && appDbRes.value && appDbRes.value.length > 0) {
-      const activeApp = appDbRes.value.find((app) => app.status === 'applied');
+      const activeApp = appDbRes.value.find((app) => ['applied', 'viewed'].includes(app.status));
       if (activeApp) {
         applied = true;
         appliedAt = activeApp.createdAt.toISOString();
+        applicationStatus = activeApp.status;
       }
     }
 
     if (jobDetail.appliedOnLinkedIn) {
       applied = true;
+      const targetStatus = jobDetail.viewedByJobPosterAt ? 'viewed' : 'applied';
       if (!appliedAt) {
-        const app = await applicationService.save(id, {}, 'applied', {
+        const app = await applicationService.save(id, {}, targetStatus, {
           jobTitle: jobDetail.title,
           companyName: jobDetail.companyName,
           companyLogo: jobDetail.companyLogo,
           jobUrl: jobDetail.url,
         });
         appliedAt = app.createdAt.toISOString();
+        applicationStatus = targetStatus;
+      } else if (applicationStatus !== targetStatus) {
+        await applicationService.updateStatus(id, targetStatus);
+        applicationStatus = targetStatus;
       }
     }
 
@@ -267,6 +275,8 @@ router.get('/:id', async (req, res, next) => {
       applyForm,
       applied,
       appliedAt,
+      applicationStatus,
+      viewedByJobPosterAt: jobDetail.viewedByJobPosterAt,
     });
   } catch (error) {
     next(error);

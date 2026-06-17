@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useAuthStore, useJobsStore } from './stores';
 import JobsPage from './pages/JobsPage';
 import ResumePage from './pages/ResumePage';
+import ApplicationsPage from './pages/ApplicationsPage';
 import { ConfigLoading } from './components/ui/ConfigLoading';
 import { WelcomeScreen } from './components/WelcomeScreen';
 
@@ -26,6 +27,7 @@ function AppLayout() {
     <Routes>
       <Route path="/" element={<JobsPage />} />
       <Route path="/resume" element={<ResumePage />} />
+      <Route path="/applications" element={<ApplicationsPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

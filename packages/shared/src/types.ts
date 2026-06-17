@@ -19,6 +19,7 @@ export interface JobDetail {
   applied?: boolean;
   appliedAt?: string;
   appliedOnLinkedIn?: boolean;
+  viewedByJobPosterAt?: string | null;
 }
 
 export interface FormQuestion {
@@ -88,5 +89,18 @@ export interface UserProfileResponse {
   education: Education[];
   text: string;
   filename: string | null;
+}
+
+export interface Application {
+  id: string;
+  jobId: string;
+  status: string;
+  answers?: string | null;
+  jobTitle?: string | null;
+  companyName?: string | null;
+  companyLogo?: string | null;
+  jobUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 

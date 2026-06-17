@@ -38,6 +38,7 @@ export interface LinkedInIncludedItem {
   applied?: boolean;
   appliedAt?: number;
   jobSeekerJobStateActions?: Array<{ jobSeekerJobStateEnums?: string }>;
+  viewedByJobPosterAt?: number | null;
   logo?: {
     attributes?: Array<{
       detailData?: Record<string, unknown>;

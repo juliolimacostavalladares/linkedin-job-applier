@@ -42,6 +42,8 @@ export const apiService = {
     
   saveResumeText: (text: string) =>
     api.post('/api/resume', { text }),
+
+  getApplications: () => api.get('/api/applications'),
 };
 
 export default api;

@@ -31,10 +31,29 @@ export class ApplicationService {
 
   async listAppliedJobIds(): Promise<string[]> {
     const apps = await prisma.application.findMany({
-      where: { status: 'applied' },
+      where: { status: { in: ['applied', 'viewed'] } },
       select: { jobId: true }
     });
     return apps.map(app => app.jobId);
+  }
+
+  async listAll() {
+    return await prisma.application.findMany({
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async updateStatus(jobId: string, status: string) {
+    const existing = await prisma.application.findFirst({
+      where: { jobId },
+    });
+    if (existing) {
+      return await prisma.application.update({
+        where: { id: existing.id },
+        data: { status },
+      });
+    }
+    return null;
   }
 }
 

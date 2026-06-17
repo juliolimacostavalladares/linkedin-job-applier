@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, FileText, Sun, Moon } from 'lucide-react';
+import { Briefcase, FileText, ClipboardList, Sun, Moon } from 'lucide-react';
 import { useJobsStore, useApplyFormStore, useThemeStore } from '../stores';
 import { Sidebar } from '../components/jobs/Sidebar';
 import { SearchBar } from '../components/jobs/SearchBar';
@@ -33,7 +33,7 @@ export default function JobsPage() {
     <div className="flex flex-col md:flex-row h-screen w-full bg-bg-app font-sans text-text-primary overflow-hidden p-0 md:p-4 lg:p-5 transition-colors duration-200">
       <div className="flex flex-col md:flex-row flex-1 bg-bg-card md:rounded-xl overflow-hidden shadow-subtle border border-border-color relative w-full max-w-[1500px] mx-auto transition-colors duration-200">
         
-        <Sidebar activeView="jobs" onViewChange={(v) => navigate(v === 'jobs' ? '/' : '/resume')} />
+        <Sidebar activeView="jobs" onViewChange={(v) => navigate(v === 'jobs' ? '/' : v === 'resume' ? '/resume' : '/applications')} />
 
         {/* Mobile Header */}
         <header className="md:hidden h-14 bg-bg-card border-b border-border-color flex items-center justify-between px-4 shrink-0 z-20 transition-colors duration-200">
@@ -50,6 +50,13 @@ export default function JobsPage() {
               title="Vagas"
             >
               <Briefcase size={16} />
+            </button>
+            <button 
+              onClick={() => navigate('/applications')} 
+              className="w-8 h-8 rounded-md shrink-0 flex items-center justify-center text-text-secondary hover:bg-bg-hover hover:text-text-primary"
+              title="Candidaturas"
+            >
+              <ClipboardList size={16} />
             </button>
             <button 
               onClick={() => navigate('/resume')} 
