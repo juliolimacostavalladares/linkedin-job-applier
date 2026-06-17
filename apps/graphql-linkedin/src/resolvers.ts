@@ -5,10 +5,24 @@ export const resolvers = {
   Query: {
     jobs: async (
       _: unknown,
-      { cookie, csrf, headersJson }: { cookie: string; csrf: string; headersJson?: string | null }
+      {
+        cookie,
+        csrf,
+        headersJson,
+        keywords,
+        remote,
+        past24h,
+      }: {
+        cookie: string;
+        csrf: string;
+        headersJson?: string | null;
+        keywords?: string | null;
+        remote?: boolean | null;
+        past24h?: boolean | null;
+      }
     ) => {
       const svc = new LinkedInService(cookie, csrf, headersJson);
-      return svc.fetchJobs();
+      return svc.fetchJobs(keywords, remote, past24h);
     },
 
     jobDetail: async (

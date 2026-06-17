@@ -2,15 +2,54 @@ import { Router } from 'express';
 import { credentialsService } from '../services/credentialsService';
 import { queryGraphQL } from '../utils/graphqlClient';
 import { resumeService } from '../services/resumeService';
-import { AIService } from '../services/aiService';
+import { aiService } from '../services/aiService';
 import { applicationService } from '../services/applicationService';
 import { logger } from '../utils/logger';
 import type { Job, JobDetail, ApplyForm } from '../types';
 
 const router = Router();
+const queryCache = new Map<string, string>();
+
+function getProgrammaticFallbackQuery(headline?: string | null): string {
+  if (!headline) return 'React';
+  const lower = headline.toLowerCase();
+  
+  let seniority = '';
+  if (lower.includes('senior') || lower.includes('sênior')) {
+    seniority = '(senior OR sênior)';
+  } else if (lower.includes('pleno') || lower.includes('mid')) {
+    seniority = 'pleno';
+  } else if (lower.includes('junior') || lower.includes('júnior')) {
+    seniority = 'júnior';
+  }
+
+  let roles = '';
+  if (lower.includes('front-end') || lower.includes('frontend') || lower.includes('front end')) {
+    roles = '("Front-end" OR "Frontend" OR "Desenvolvedor Front-end")';
+  } else if (lower.includes('back-end') || lower.includes('backend') || lower.includes('back end')) {
+    roles = '("Back-end" OR "Backend" OR "Desenvolvedor Backend")';
+  } else if (lower.includes('fullstack') || lower.includes('full stack')) {
+    roles = '("Fullstack" OR "Full Stack" OR "Desenvolvedor Fullstack")';
+  } else {
+    roles = '("Desenvolvedor" OR "Programador")';
+  }
+
+  const skills: string[] = [];
+  if (lower.includes('react')) skills.push('React');
+  if (lower.includes('next.js') || lower.includes('nextjs')) skills.push('Next.js');
+  if (lower.includes('typescript')) skills.push('TypeScript');
+  if (lower.includes('vue')) skills.push('Vue');
+  if (lower.includes('angular')) skills.push('Angular');
+  if (lower.includes('node')) skills.push('Node.js');
+  if (lower.includes('java')) skills.push('Java');
+  if (lower.includes('python')) skills.push('Python');
+
+  const skillsGroup = skills.length > 0 ? ` AND (${skills.join(' OR ')})` : '';
+  return `${seniority ? seniority + ' ' : ''}${roles}${skillsGroup}`.trim();
+}
 
 // GET /api/jobs – Fetch recommended jobs using stored credentials via LinkedIn GraphQL Service
-router.get('/', async (_req, res, next) => {
+router.get('/', async (req, res, next) => {
   try {
     const creds = await credentialsService.getCookieAndCsrf();
     if (!creds) {
@@ -20,9 +59,36 @@ router.get('/', async (_req, res, next) => {
       return;
     }
 
+    const { q, remote, past24h } = req.query;
+    const isRemote = remote !== 'false';
+    const isPast24h = past24h !== 'false';
+
+    let activeQuery = typeof q === 'string' ? q : '';
+
+    if (!q) {
+      // By default, build the query from the resume profile using AI
+      const latestResume = await resumeService.getLatest();
+      if (latestResume) {
+        const cacheKey = `${latestResume.id}-${latestResume.updatedAt.getTime()}`;
+        let cached = queryCache.get(cacheKey);
+        if (!cached) {
+          logger.info('Generating job search query from resume using Gemini AI...');
+          try {
+            cached = await aiService.generateSearchQuery(latestResume.text);
+            queryCache.set(cacheKey, cached);
+          } catch (err) {
+            logger.error('Failed to generate search query using AI, using fallback', err);
+            cached = getProgrammaticFallbackQuery(latestResume.headline);
+            queryCache.set(cacheKey, cached);
+          }
+        }
+        activeQuery = cached || '';
+      }
+    }
+
     const query = `
-      query GetJobs($cookie: String!, $csrf: String!, $headersJson: String) {
-        jobs(cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
+      query GetJobs($cookie: String!, $csrf: String!, $headersJson: String, $keywords: String, $remote: Boolean, $past24h: Boolean) {
+        jobs(cookie: $cookie, csrf: $csrf, headersJson: $headersJson, keywords: $keywords, remote: $remote, past24h: $past24h) {
           id
           title
           companyInfo
@@ -35,6 +101,9 @@ router.get('/', async (_req, res, next) => {
       cookie: creds.cookie,
       csrf: creds.csrf,
       headersJson: creds.headersJson,
+      keywords: activeQuery || null,
+      remote: isRemote,
+      past24h: isPast24h,
     });
 
     const appliedIds = await applicationService.listAppliedJobIds();
@@ -45,7 +114,15 @@ router.get('/', async (_req, res, next) => {
       applied: appliedSet.has(job.id),
     }));
 
-    res.json({ jobs: enrichedJobs, source: 'linkedin-graphql' });
+    res.json({
+      jobs: enrichedJobs,
+      searchQuery: activeQuery,
+      filters: {
+        remote: isRemote,
+        past24h: isPast24h,
+      },
+      source: 'linkedin-graphql',
+    });
   } catch (error) {
     next(error);
   }

@@ -37,3 +37,7 @@ logs/
 # Database
 *.db
 *.db-journal
+
+# Local test scripts
+apps/graphql-linkedin/test-*.ts
+apps/graphql-linkedin/test-*.js

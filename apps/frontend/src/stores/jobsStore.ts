@@ -12,7 +12,11 @@ interface JobsState {
   loading: boolean;
   error: string;
   credentialError: boolean;
-  fetchJobs: () => Promise<void>;
+  searchQuery: string;
+  remoteFilter: boolean;
+  past24hFilter: boolean;
+  fetchJobs: (q?: string, remote?: boolean, past24h?: boolean) => Promise<void>;
+  setFilters: (filters: { q?: string; remote?: boolean; past24h?: boolean }) => void;
   selectJob: (job: Job) => Promise<void>;
   applyJob: (
     jobId: string, 
@@ -23,7 +27,7 @@ interface JobsState {
   clearError: () => void;
 }
 
-export const useJobsStore = create<JobsState>((set) => ({
+export const useJobsStore = create<JobsState>((set, get) => ({
   jobs: [],
   selectedJob: null,
   selectedJobId: null,
@@ -32,12 +36,34 @@ export const useJobsStore = create<JobsState>((set) => ({
   loading: false,
   error: '',
   credentialError: false,
+  searchQuery: '',
+  remoteFilter: true,
+  past24hFilter: true,
 
-  fetchJobs: async () => {
+  setFilters: (filters) => {
+    set((state) => ({
+      searchQuery: filters.q !== undefined ? filters.q : state.searchQuery,
+      remoteFilter: filters.remote !== undefined ? filters.remote : state.remoteFilter,
+      past24hFilter: filters.past24h !== undefined ? filters.past24h : state.past24hFilter,
+    }));
+  },
+
+  fetchJobs: async (q?: string, remote?: boolean, past24h?: boolean) => {
+    const query = q !== undefined ? q : get().searchQuery;
+    const isRemote = remote !== undefined ? remote : get().remoteFilter;
+    const isPast24h = past24h !== undefined ? past24h : get().past24hFilter;
+
     set({ loadingList: true, loading: true, error: '', credentialError: false });
     try {
-      const { data } = await apiService.getJobs();
-      set({ jobs: data.jobs || [], loadingList: false, loading: false });
+      const { data } = await apiService.getJobs(query, isRemote, isPast24h);
+      set({ 
+        jobs: data.jobs || [], 
+        searchQuery: data.searchQuery !== undefined ? data.searchQuery : query,
+        remoteFilter: data.filters?.remote !== undefined ? data.filters.remote : isRemote,
+        past24hFilter: data.filters?.past24h !== undefined ? data.filters.past24h : isPast24h,
+        loadingList: false, 
+        loading: false 
+      });
     } catch (err: unknown) {
       let message = 'Erro desconhecido';
       if (axios.isAxiosError(err)) {

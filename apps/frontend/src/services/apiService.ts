@@ -11,7 +11,14 @@ const api = axios.create({
 export const apiService = {
   getConfig: () => api.get('/api/config'),
   
-  getJobs: () => api.get('/api/jobs'),
+  getJobs: (q?: string, remote?: boolean, past24h?: boolean) => {
+    const params = new URLSearchParams();
+    if (q !== undefined) params.append('q', q);
+    if (remote !== undefined) params.append('remote', String(remote));
+    if (past24h !== undefined) params.append('past24h', String(past24h));
+    const queryStr = params.toString();
+    return api.get(`/api/jobs${queryStr ? `?${queryStr}` : ''}`);
+  },
   
   getJobDetail: (id: string) => api.get(`/api/jobs/${id}`),
   
