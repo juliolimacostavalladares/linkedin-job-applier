@@ -154,6 +154,30 @@ Regras:
 `;
   }
 
+  async optimizeResume(resumeText: string, jobDescription: string): Promise<string> {
+    const prompt = `
+Você é um assistente especialista em recrutamento e otimização de currículos para sistemas ATS (Applicant Tracking Systems).
+Sua tarefa é analisar o currículo base do usuário e a descrição da vaga fornecida, e gerar um novo currículo otimizado em formato texto/markdown.
+
+Currículo Base do Usuário:
+${resumeText}
+
+Descrição da Vaga:
+${jobDescription}
+
+Diretrizes de Otimização:
+1. Identifique as principais palavras-chave, habilidades técnicas e competências exigidas na descrição da vaga.
+2. Adapte o resumo profissional (About) e as realizações/responsabilidades nas experiências para destacar essas palavras-chave e competências, alinhando a linguagem do currículo com a da vaga.
+3. NÃO invente novas experiências acadêmicas ou profissionais que não existam no currículo original. Apenas otimize a forma de apresentar e destacar o que já existe.
+4. Mantenha uma estrutura profissional organizada e legível (de preferência usando Markdown).
+5. O resultado deve ser o currículo completo otimizado em português ou inglês (combine com a língua original do currículo/vaga).
+6. Retorne APENAS o texto do currículo otimizado final, sem explicações, introduções ou blocos de código markdown desnecessários (não use \`\`\`markdown ou \`\`\`, apenas retorne o texto puro formatado em markdown).
+`;
+
+    const text = await this.call9Router(prompt);
+    return text.trim();
+  }
+
   async generateSearchQuery(resumeText: string): Promise<string> {
     const prompt = `
 Você é um assistente especialista em recrutamento. Com base no currículo do usuário, gere uma query booleana otimizada para pesquisa de vagas no LinkedIn.

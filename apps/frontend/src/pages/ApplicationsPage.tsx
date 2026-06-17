@@ -16,7 +16,8 @@ import {
   AlertCircle,
   X,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  Sparkles
 } from 'lucide-react';
 import { useApplicationsStore, useThemeStore, useJobsStore } from '../stores';
 import { Sidebar } from '../components/jobs/Sidebar';
@@ -467,6 +468,19 @@ export default function ApplicationsPage() {
                           return <span className="text-text-secondary">{selectedApp.answers}</span>;
                         }
                       })()}
+                    </div>
+                  </div>
+                )}
+
+                {/* AI-Optimized Resume */}
+                {selectedApp.optimizedResume && (
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-text-secondary flex items-center gap-1">
+                      <Sparkles size={12} className="text-brand-blue" />
+                      Currículo Otimizado para esta Vaga
+                    </h4>
+                    <div className="p-4 bg-bg-card border border-border-color rounded-xl text-xs max-h-[200px] overflow-y-auto font-mono whitespace-pre-wrap text-text-primary bg-brand-blue/5 border-brand-blue/10">
+                      {selectedApp.optimizedResume}
                     </div>
                   </div>
                 )}

@@ -49,10 +49,17 @@ router.post('/sync', async (req, res, next) => {
       }
     `;
 
+    interface SyncJobDetail {
+      id: string;
+      appliedOnLinkedIn: boolean;
+      viewedByJobPosterAt: string | null;
+      closed: boolean;
+    }
+
     // Check each application against LinkedIn
     for (const app of localApplications) {
       try {
-        const data = await queryGraphQL<{ jobDetail: any }>(detailQuery, {
+        const data = await queryGraphQL<{ jobDetail: SyncJobDetail }>(detailQuery, {
           id: app.jobId,
           cookie: creds.cookie,
           csrf: creds.csrf,

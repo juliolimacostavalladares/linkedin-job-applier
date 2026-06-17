@@ -97,6 +97,7 @@ export interface ApplyForm {
    * Use the first one as the preferred resume for this application.
    */
   resumeUrns?: string[];
+  optimizedResume?: string;
 }
 
 
@@ -159,6 +160,7 @@ export interface Application {
   companyName?: string | null;
   companyLogo?: string | null;
   jobUrl?: string | null;
+  optimizedResume?: string | null;
   createdAt: string;
   updatedAt: string;
 }

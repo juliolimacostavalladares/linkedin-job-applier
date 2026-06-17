@@ -309,6 +309,14 @@ router.get('/:id/apply-form', async (req, res, next) => {
       return;
     }
 
+    const detailQuery = `
+      query GetJobDetail($id: ID!, $cookie: String!, $csrf: String!, $headersJson: String) {
+        jobDetail(id: $id, cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
+          description
+        }
+      }
+    `;
+
     const query = `
       query GetApplyForm($id: ID!, $cookie: String!, $csrf: String!, $headersJson: String) {
         applyForm(id: $id, cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
@@ -344,21 +352,42 @@ router.get('/:id/apply-form', async (req, res, next) => {
       }
     `;
 
-    const data = await queryGraphQL<{ applyForm: ApplyForm }>(query, {
-      id,
-      cookie: creds.cookie,
-      csrf: creds.csrf,
-      headersJson: creds.headersJson,
-    });
+    // Fetch form and job description
+    const [formRes, detailRes] = await Promise.all([
+      queryGraphQL<{ applyForm: ApplyForm }>(query, {
+        id,
+        cookie: creds.cookie,
+        csrf: creds.csrf,
+        headersJson: creds.headersJson,
+      }),
+      queryGraphQL<{ jobDetail?: { description?: string } }>(detailQuery, {
+        id,
+        cookie: creds.cookie,
+        csrf: creds.csrf,
+        headersJson: creds.headersJson,
+      }).catch((err) => {
+        logger.warn('[apply-form] Failed to fetch job description:', err);
+        return { jobDetail: { description: '' } };
+      }),
+    ]);
 
-    const applyForm = data.applyForm;
+    const applyForm = formRes.applyForm;
+    const jobDescription = detailRes.jobDetail?.description || '';
+    let optimizedResume = '';
 
     // AI suggestions generation on the backend:
     if (applyForm && applyForm.success && applyForm.questions && applyForm.questions.length > 0) {
       const latestResume = await resumeService.getLatest();
       if (latestResume && latestResume.text.trim()) {
         try {
-          const aiRes = await aiService.generateAnswers(applyForm.questions, latestResume.text);
+          if (jobDescription.trim()) {
+            logger.info(`[apply-form] Optimizing resume for job: ${id}`);
+            optimizedResume = await aiService.optimizeResume(latestResume.text, jobDescription);
+          } else {
+            optimizedResume = latestResume.text;
+          }
+
+          const aiRes = await aiService.generateAnswers(applyForm.questions, optimizedResume);
           const answerMap = new Map<string, string>();
           aiRes.answers.forEach((ans) => {
             if (ans.answer) {
@@ -387,7 +416,10 @@ router.get('/:id/apply-form', async (req, res, next) => {
       }
     }
 
-    res.json(applyForm);
+    res.json({
+      ...applyForm,
+      optimizedResume,
+    });
   } catch (error) {
     next(error);
   }
@@ -403,6 +435,7 @@ router.post('/:id/apply', async (req, res, next) => {
       companyName,
       companyLogo,
       jobUrl,
+      optimizedResume,
       // Pre-typed payload from the frontend (preferred)
       formResponses,
       referenceId: bodyReferenceId,
@@ -416,6 +449,7 @@ router.post('/:id/apply', async (req, res, next) => {
       companyName?: string;
       companyLogo?: string;
       jobUrl?: string;
+      optimizedResume?: string;
       formResponses?: unknown[];
       referenceId?: string;
       fileUploadResponses?: unknown[];
@@ -542,6 +576,7 @@ router.post('/:id/apply', async (req, res, next) => {
       companyName,
       companyLogo,
       jobUrl,
+      optimizedResume,
     });
 
     res.json({

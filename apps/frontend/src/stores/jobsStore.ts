@@ -21,7 +21,7 @@ interface JobsState {
   applyJob: (
     jobId: string, 
     answers: Record<string, string>,
-    metadata?: { jobTitle?: string; companyName?: string; companyLogo?: string; jobUrl?: string }
+    metadata?: { jobTitle?: string; companyName?: string; companyLogo?: string; jobUrl?: string; optimizedResume?: string }
   ) => Promise<void>;
   clearSelection: () => void;
   clearError: () => void;
@@ -113,7 +113,7 @@ export const useJobsStore = create<JobsState>((set, get) => ({
   applyJob: async (
     jobId: string, 
     answers: Record<string, string>,
-    metadata?: { jobTitle?: string; companyName?: string; companyLogo?: string; jobUrl?: string }
+    metadata?: { jobTitle?: string; companyName?: string; companyLogo?: string; jobUrl?: string; optimizedResume?: string }
   ) => {
     set({ loadingDetail: true, error: '' });
     try {

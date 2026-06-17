@@ -37,16 +37,17 @@ model Resume {
 }
 
 model Application {
-  id          String   @id @default(uuid())
-  jobId       String
-  status      String   @default("draft")
-  answers     String?
-  jobTitle    String?
-  companyName String?
-  companyLogo String?
-  jobUrl      String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(uuid())
+  jobId           String
+  status          String   @default("draft")
+  answers         String?
+  jobTitle        String?
+  companyName     String?
+  companyLogo     String?
+  jobUrl          String?
+  optimizedResume String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([jobId])
   @@map("applications")

@@ -4,6 +4,7 @@ import type { FormQuestion, ApplyForm } from '../types';
 
 interface ApplyFormState {
   applyForm: ApplyForm | null;
+  optimizedResume: string;
   loadingForm: boolean;
   errorForm: string | null;
   formValues: Record<string, string>;
@@ -18,6 +19,7 @@ interface ApplyFormState {
 
 export const useApplyFormStore = create<ApplyFormState>((set, get) => ({
   applyForm: null,
+  optimizedResume: '',
   loadingForm: false,
   errorForm: null,
   formValues: {},
@@ -29,7 +31,7 @@ export const useApplyFormStore = create<ApplyFormState>((set, get) => ({
     }));
   },
   fetchApplyForm: async (jobId) => {
-    set({ loadingForm: true, errorForm: null, applyForm: null });
+    set({ loadingForm: true, errorForm: null, applyForm: null, optimizedResume: '' });
     try {
       const { data } = await apiService.getApplyForm(jobId);
       const initialValues: Record<string, string> = {};
@@ -40,6 +42,7 @@ export const useApplyFormStore = create<ApplyFormState>((set, get) => ({
       }
       set({
         applyForm: data,
+        optimizedResume: data.optimizedResume || '',
         formValues: initialValues,
         loadingForm: false,
       });
@@ -59,6 +62,7 @@ export const useApplyFormStore = create<ApplyFormState>((set, get) => ({
   closeModal: () => set({
     isApplyModalOpen: false,
     applyForm: null,
+    optimizedResume: '',
     errorForm: null,
     formValues: {},
     currentStep: 0,

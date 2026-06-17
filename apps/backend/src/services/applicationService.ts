@@ -4,20 +4,27 @@ import { v4 as uuidv4 } from 'uuid';
 export class ApplicationService {
   async save(
     jobId: string, 
-    answers: any, 
+    answers: unknown, 
     status: string = 'applied',
-    metadata?: { jobTitle?: string; companyName?: string; companyLogo?: string; jobUrl?: string }
+    metadata?: { 
+      jobTitle?: string; 
+      companyName?: string; 
+      companyLogo?: string; 
+      jobUrl?: string;
+      optimizedResume?: string;
+    }
   ) {
     return await prisma.application.create({
       data: {
         id: uuidv4(),
         jobId,
-        answers: typeof answers === 'string' ? answers : JSON.stringify(answers),
+        answers: typeof answers === 'string' ? answers : JSON.stringify(answers || {}),
         status,
         jobTitle: metadata?.jobTitle,
         companyName: metadata?.companyName,
         companyLogo: metadata?.companyLogo,
         jobUrl: metadata?.jobUrl,
+        optimizedResume: metadata?.optimizedResume,
       },
     });
   }
