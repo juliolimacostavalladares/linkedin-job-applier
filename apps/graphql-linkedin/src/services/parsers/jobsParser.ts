@@ -77,12 +77,38 @@ export function parseJobs(data: LinkedInResponse): Job[] {
     }
   }
 
-  return Array.from(jobsMap.values()).filter(
-    (j): j is Job =>
-      typeof j.title === 'string' &&
-      typeof j.companyInfo === 'string' &&
-      j.isEasyApply === true,
-  );
+  // ── 4. Extract applied status from JobSeekerJobState items ──────────────
+  const appliedJobsSet = new Set<string>();
+  for (const item of included) {
+    if (item.$type === 'com.linkedin.voyager.dash.jobs.JobSeekerJobState') {
+      const jobId = item.entityUrn?.split(':').pop();
+      if (jobId) {
+        const actions = item.jobSeekerJobStateActions || [];
+        const hasApplied = actions.some((action) => action.jobSeekerJobStateEnums === 'APPLIED');
+        if (hasApplied) {
+          appliedJobsSet.add(jobId);
+        }
+      }
+    }
+  }
+
+  return Array.from(jobsMap.values())
+    .filter(
+      (j): j is Partial<Job> & { id: string; title: string; companyInfo: string; isEasyApply: boolean } =>
+        typeof j.title === 'string' &&
+        typeof j.companyInfo === 'string' &&
+        j.isEasyApply === true,
+    )
+    .map((j) => {
+      const job: Job = {
+        id: j.id,
+        title: j.title,
+        companyInfo: j.companyInfo,
+        companyLogo: j.companyLogo,
+        applied: appliedJobsSet.has(j.id),
+      };
+      return job;
+    });
 }
 
 /**

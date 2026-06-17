@@ -5,6 +5,7 @@ export const typeDefs = `#graphql
     title: String!
     companyInfo: String!
     companyLogo: String
+    applied: Boolean
   }
 
   type JobDetail {

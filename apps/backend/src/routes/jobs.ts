@@ -99,6 +99,7 @@ router.get('/', async (req, res, next) => {
           title
           companyInfo
           companyLogo
+          applied
         }
       }
     `;
@@ -115,10 +116,25 @@ router.get('/', async (req, res, next) => {
     const appliedIds = await applicationService.listAppliedJobIds();
     const appliedSet = new Set(appliedIds);
 
-    const enrichedJobs = (data.jobs || []).map((job) => ({
-      ...job,
-      applied: appliedSet.has(job.id),
-    }));
+    const enrichedJobs = (data.jobs || []).map((job) => {
+      const isApplied = job.applied || appliedSet.has(job.id);
+
+      if (job.applied && !appliedSet.has(job.id)) {
+        applicationService.save(job.id, {}, 'applied', {
+          jobTitle: job.title,
+          companyName: job.companyInfo,
+          companyLogo: job.companyLogo,
+          jobUrl: `https://www.linkedin.com/jobs/view/${job.id}`,
+        }).catch(err => {
+          logger.error('Failed to auto-sync applied status from search list:', err);
+        });
+      }
+
+      return {
+        ...job,
+        applied: isApplied,
+      };
+    });
 
     res.json({
       jobs: enrichedJobs,
