@@ -63,9 +63,10 @@ router.get('/', async (req, res, next) => {
     const isRemote = remote !== 'false';
     const isPast24h = past24h !== 'false';
 
-    let activeQuery = typeof q === 'string' ? q : '';
+    const rawQuery = typeof q === 'string' ? q.trim() : '';
+    let activeQuery = rawQuery;
 
-    if (!q) {
+    if (!rawQuery) {
       // By default, build the query from the resume profile using AI
       const latestResume = await resumeService.getLatest();
       if (latestResume) {
@@ -121,7 +122,7 @@ router.get('/', async (req, res, next) => {
 
     res.json({
       jobs: enrichedJobs,
-      searchQuery: typeof q === 'string' ? q : '',
+      searchQuery: rawQuery,
       filters: {
         remote: isRemote,
         past24h: isPast24h,

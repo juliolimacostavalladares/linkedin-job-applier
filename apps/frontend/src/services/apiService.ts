@@ -13,7 +13,7 @@ export const apiService = {
   
   getJobs: (q?: string, remote?: boolean, past24h?: boolean) => {
     const params = new URLSearchParams();
-    if (q !== undefined) params.append('q', q);
+    if (q && q.trim()) params.append('q', q.trim());
     if (remote !== undefined) params.append('remote', String(remote));
     if (past24h !== undefined) params.append('past24h', String(past24h));
     const queryStr = params.toString();
