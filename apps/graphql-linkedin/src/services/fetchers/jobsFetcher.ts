@@ -75,7 +75,6 @@ export async function fetchJobDetail(
     description: data.description?.text ?? '<em>Sem descrição detalhada.</em>',
     location: data.formattedLocation ?? '',
     url:
-      data.applyMethod?.companyApplyUrl ??
       data.jobPostingUrl ??
       `https://www.linkedin.com/jobs/view/${jobId}`,
     employmentStatus: data.employmentStatus?.split(':').pop() ?? 'FULL_TIME',
