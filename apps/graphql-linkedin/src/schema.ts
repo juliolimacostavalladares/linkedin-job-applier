@@ -16,6 +16,7 @@ export const typeDefs = `#graphql
     employmentStatus: String!
     companyName: String!
     companyLogo: String
+    appliedOnLinkedIn: Boolean
   }
 
   # ─── Apply Form ────────────────────────────────────────────────────────────

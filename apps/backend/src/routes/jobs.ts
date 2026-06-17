@@ -156,6 +156,7 @@ router.get('/:id', async (req, res, next) => {
           employmentStatus
           companyName
           companyLogo
+          appliedOnLinkedIn
         }
       }
     `;
@@ -221,6 +222,19 @@ router.get('/:id', async (req, res, next) => {
       if (activeApp) {
         applied = true;
         appliedAt = activeApp.createdAt.toISOString();
+      }
+    }
+
+    if (jobDetail.appliedOnLinkedIn) {
+      applied = true;
+      if (!appliedAt) {
+        const app = await applicationService.save(id, {}, 'applied', {
+          jobTitle: jobDetail.title,
+          companyName: jobDetail.companyName,
+          companyLogo: jobDetail.companyLogo,
+          jobUrl: jobDetail.url,
+        });
+        appliedAt = app.createdAt.toISOString();
       }
     }
 

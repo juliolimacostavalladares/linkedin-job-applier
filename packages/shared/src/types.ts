@@ -18,6 +18,7 @@ export interface JobDetail {
   applyForm?: ApplyForm;
   applied?: boolean;
   appliedAt?: string;
+  appliedOnLinkedIn?: boolean;
 }
 
 export interface FormQuestion {
