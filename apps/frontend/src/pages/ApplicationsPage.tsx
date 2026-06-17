@@ -24,7 +24,7 @@ import { Sidebar } from '../components/jobs/Sidebar';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import type { Application, JobDetail } from '../types';
-import { apiService } from '../services/apiService';
+import api, { apiService } from '../services/apiService';
 
 export default function ApplicationsPage() {
   const navigate = useNavigate();
@@ -40,9 +40,42 @@ export default function ApplicationsPage() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [detailError, setDetailError] = useState('');
 
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
   useEffect(() => {
     fetchApplications();
   }, [fetchApplications]);
+
+  useEffect(() => {
+    if (!selectedApp) {
+      setPdfUrl(null);
+      return;
+    }
+
+    if (selectedApp.resumePdfBase64) {
+      setPdfUrl(`data:application/pdf;base64,${selectedApp.resumePdfBase64}`);
+      return;
+    }
+
+    if (selectedApp.resumePdfPath) {
+      const fetchPdf = async () => {
+        try {
+          const response = await api.get(`/api/applications/${selectedApp.id}/resume.pdf`, {
+            responseType: 'blob',
+          });
+          const blob = new Blob([response.data], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          setPdfUrl(url);
+        } catch (err) {
+          console.error('Failed to load PDF blob:', err);
+          setPdfUrl(null);
+        }
+      };
+      fetchPdf();
+    } else {
+      setPdfUrl(null);
+    }
+  }, [selectedApp]);
 
   const handleSync = async () => {
     const result = await syncWithLinkedIn();
@@ -451,6 +484,19 @@ export default function ApplicationsPage() {
                               }
                             }
 
+                            // 2.5. Match common URN suffixes as fallback for older/external entries
+                            if (!questionTitle) {
+                              if (qUrn.endsWith('phoneNumber~country)') || qUrn.includes('phoneNumber~country')) {
+                                questionTitle = 'Código do País (DDI)';
+                              } else if (qUrn.endsWith('phoneNumber~nationalNumber)') || qUrn.includes('phoneNumber~nationalNumber')) {
+                                questionTitle = 'Número de Telefone';
+                              } else if (qUrn.endsWith('emailAddress)') || qUrn.includes('emailAddress')) {
+                                questionTitle = 'Endereço de E-mail';
+                              } else if (qUrn.endsWith('document)') || qUrn.includes('document')) {
+                                questionTitle = 'Currículo / Documento';
+                              }
+                            }
+
                             // 3. Last fallback: parse the URN id
                             if (!questionTitle) {
                               const match = qUrn.match(/,(\d+),/);
@@ -492,19 +538,26 @@ export default function ApplicationsPage() {
                       Currículo Otimizado para esta Vaga
                     </h4>
                     {selectedApp.resumePdfPath || selectedApp.resumePdfBase64 ? (
-                      <div className="border border-border-color rounded-xl overflow-hidden bg-bg-input">
-                        <object
-                          data={apiService.getResumePdfUrl(selectedApp.id)}
-                          type="application/pdf"
-                          className="w-full h-[450px]"
-                        >
-                          <iframe
-                            src={apiService.getResumePdfUrl(selectedApp.id)}
-                            className="w-full h-[450px] border-0"
-                            title="Preview do Currículo Otimizado"
-                          />
-                        </object>
-                      </div>
+                      pdfUrl ? (
+                        <div className="border border-border-color rounded-xl overflow-hidden bg-bg-input">
+                          <object
+                            data={pdfUrl}
+                            type="application/pdf"
+                            className="w-full h-[450px]"
+                          >
+                            <iframe
+                              src={pdfUrl}
+                              className="w-full h-[450px] border-0"
+                              title="Preview do Currículo Otimizado"
+                            />
+                          </object>
+                        </div>
+                      ) : (
+                        <div className="h-[450px] flex items-center justify-center border border-border-color rounded-xl bg-bg-card text-xs text-text-secondary">
+                          <Loader2 className="animate-spin text-brand-blue mr-2" size={16} />
+                          <span>Carregando visualizador de PDF...</span>
+                        </div>
+                      )
                     ) : (
                       <div className="p-4 bg-bg-card border border-border-color rounded-xl text-xs max-h-[200px] overflow-y-auto font-mono whitespace-pre-wrap text-text-primary bg-brand-blue/5 border-brand-blue/10">
                         {selectedApp.optimizedResume}
