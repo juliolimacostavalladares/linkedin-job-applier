@@ -290,6 +290,102 @@ function EmptyFormMessage() {
   );
 }
 
+function DateRangePicker({ value, onChange }: { value: string; onChange: (val: string) => void }) {
+  let startYear = '';
+  let startMonth = '';
+  let endYear = '';
+  let endMonth = '';
+
+  if (value) {
+    try {
+      const parsed = JSON.parse(value);
+      startYear = parsed.start?.year ? String(parsed.start.year) : '';
+      startMonth = parsed.start?.month ? String(parsed.start.month) : '';
+      endYear = parsed.end?.year ? String(parsed.end.year) : '';
+      endMonth = parsed.end?.month ? String(parsed.end.month) : '';
+    } catch {}
+  }
+
+  const months = [
+    { value: '1', label: 'Jan' },
+    { value: '2', label: 'Fev' },
+    { value: '3', label: 'Mar' },
+    { value: '4', label: 'Abr' },
+    { value: '5', label: 'Mai' },
+    { value: '6', label: 'Jun' },
+    { value: '7', label: 'Jul' },
+    { value: '8', label: 'Ago' },
+    { value: '9', label: 'Set' },
+    { value: '10', label: 'Out' },
+    { value: '11', label: 'Nov' },
+    { value: '12', label: 'Dez' },
+  ];
+
+  const update = (sMonth: string, sYear: string, eMonth: string, eYear: string) => {
+    if (sMonth && sYear) {
+      onChange(
+        JSON.stringify({
+          start: { year: parseInt(sYear), month: parseInt(sMonth), day: 1 },
+          ...(eMonth && eYear
+            ? { end: { year: parseInt(eYear), month: parseInt(eMonth), day: 1 } }
+            : {}),
+        })
+      );
+    } else {
+      onChange('');
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-2 p-3 border border-border-color rounded-lg bg-bg-input">
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] uppercase font-bold text-text-secondary/70 w-8">De:</span>
+        <select
+          value={startMonth}
+          onChange={(e) => update(e.target.value, startYear, endMonth, endYear)}
+          className="border border-border-color rounded bg-bg-card text-text-primary p-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue w-24 transition-colors"
+        >
+          <option value="">Mês</option>
+          {months.map((m) => (
+            <option key={m.value} value={m.value}>
+              {m.label}
+            </option>
+          ))}
+        </select>
+        <Input
+          type="number"
+          placeholder="Ano"
+          value={startYear}
+          onChange={(val) => update(startMonth, val, endMonth, endYear)}
+          className="py-1.5 px-2.5 text-xs w-20"
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] uppercase font-bold text-text-secondary/70 w-8">Até:</span>
+        <select
+          value={endMonth}
+          onChange={(e) => update(startMonth, startYear, e.target.value, endYear)}
+          className="border border-border-color rounded bg-bg-card text-text-primary p-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue w-24 transition-colors"
+        >
+          <option value="">Mês</option>
+          {months.map((m) => (
+            <option key={m.value} value={m.value}>
+              {m.label}
+            </option>
+          ))}
+        </select>
+        <Input
+          type="number"
+          placeholder="Ano"
+          value={endYear}
+          onChange={(val) => update(startMonth, startYear, endMonth, val)}
+          className="py-1.5 px-2.5 text-xs w-20"
+        />
+      </div>
+    </div>
+  );
+}
+
 interface FormFieldProps {
   question: FormQuestion;
   value: string;
@@ -342,13 +438,22 @@ function FormField({ question, value, onChange, hasAiAnswer }: FormFieldProps) {
             </span>
           )}
         </div>
+      ) : type === 'date-range' ? (
+        <div className="relative w-full">
+          <DateRangePicker value={value} onChange={onChange} />
+          {hasAiAnswer && (
+            <span className="absolute right-3 top-3 text-brand-blue flex items-center pointer-events-none animate-pulse" title="Sugerido por IA">
+              <Sparkles size={13} className="fill-brand-blue/20" />
+            </span>
+          )}
+        </div>
       ) : (
-        <div className="relative flex items-center w-full">
+        <div className="relative flex items-center w-full bg-transparent">
           {type === 'dropdown' || type === 'checkbox' ? (
             <select
               value={value}
               onChange={(e) => onChange(e.target.value)}
-              className="border border-border-color rounded bg-bg-input text-text-primary p-2 pr-8 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue w-full transition-all duration-150"
+              className="border border-border-color rounded-lg bg-bg-input text-text-primary p-2.5 pr-8 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue w-full transition-all duration-150"
             >
               <option value="">Selecione uma opção...</option>
               {options?.map((opt: string, j: number) => (
@@ -357,12 +462,19 @@ function FormField({ question, value, onChange, hasAiAnswer }: FormFieldProps) {
                 </option>
               ))}
             </select>
+          ) : type === 'multiline-text' ? (
+            <Textarea
+              value={value}
+              onChange={onChange}
+              placeholder="Sua resposta detalhada..."
+              className="py-2 pl-2.5 pr-8 text-xs w-full min-h-[80px]"
+            />
           ) : (
             <Input
               value={value}
               onChange={onChange}
               placeholder="Sua resposta..."
-              className="py-2 pl-2.5 pr-8 text-xs w-full"
+              className="py-2.5 pl-2.5 pr-8 text-xs w-full"
             />
           )}
 
