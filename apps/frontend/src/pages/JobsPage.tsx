@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, FileText, ClipboardList, Sun, Moon } from 'lucide-react';
+import { Briefcase, ClipboardList, Sun, Moon, CircleUser } from 'lucide-react';
 import { useJobsStore, useApplyFormStore, useThemeStore, useResumeStore } from '../stores';
 import { Sidebar } from '../components/jobs/Sidebar';
 import { SearchBar } from '../components/jobs/SearchBar';
@@ -66,7 +66,7 @@ export default function JobsPage() {
               className="w-8 h-8 rounded-md shrink-0 flex items-center justify-center text-text-secondary hover:bg-bg-hover hover:text-text-primary"
               title="Currículo"
             >
-              <FileText size={16} />
+              <CircleUser size={16} />
             </button>
             <button 
               onClick={toggleTheme} 

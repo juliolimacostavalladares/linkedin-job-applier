@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Briefcase, FileText, ClipboardList, Sun, Moon } from 'lucide-react';
+import { Briefcase, ClipboardList, Sun, Moon, CircleUser } from 'lucide-react';
 import { useResumeStore, useThemeStore } from '../stores';
 import { Sidebar } from '../components/jobs/Sidebar';
 import { ResumeView } from '../components/resume/ResumeView';
@@ -43,7 +43,7 @@ export default function ResumePage() {
               className="w-8 h-8 rounded-md shrink-0 flex items-center justify-center bg-brand-blue text-white"
               title="Currículo"
             >
-              <FileText size={16} />
+              <CircleUser size={16} />
             </button>
             <button 
               onClick={toggleTheme} 

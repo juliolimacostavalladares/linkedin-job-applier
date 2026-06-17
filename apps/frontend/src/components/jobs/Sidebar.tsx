@@ -1,4 +1,4 @@
-import { Briefcase, FileText, ClipboardList, Sun, Moon } from 'lucide-react';
+import { Briefcase, ClipboardList, Sun, Moon, CircleUser } from 'lucide-react';
 import { useThemeStore } from '../../stores';
 
 interface SidebarProps {
@@ -30,23 +30,33 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
           onClick={() => onViewChange('applications')}
           tooltip="Candidaturas"
         />
-        <NavButton
-          icon={<FileText size={18} />}
-          active={activeView === 'resume'}
-          onClick={() => onViewChange('resume')}
-          tooltip="Currículo"
-        />
       </div>
 
-      {/* Theme Toggle (Replaces profile) */}
-      <button
-        onClick={toggleTheme}
-        className="w-10 h-10 rounded-lg flex items-center justify-center text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-all border border-border-color shadow-sm mt-auto"
-        aria-label="Alternar Tema"
-        title="Alternar Tema"
-      >
-        {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} />}
-      </button>
+      {/* Footer / Profile and Theme actions */}
+      <div className="mt-auto flex flex-col gap-4 items-center w-full">
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="w-10 h-10 rounded-lg flex items-center justify-center text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-all border border-border-color shadow-sm"
+          aria-label="Alternar Tema"
+          title="Alternar Tema"
+        >
+          {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} />}
+        </button>
+
+        {/* Profile / Resume button */}
+        <button
+          onClick={() => onViewChange('resume')}
+          title="Meu Currículo"
+          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border shadow-sm ${
+            activeView === 'resume'
+              ? 'bg-brand-blue text-white border-brand-blue hover:bg-brand-blue-hover'
+              : 'text-text-secondary bg-transparent border-transparent hover:bg-bg-hover hover:text-text-primary'
+          }`}
+        >
+          <CircleUser size={22} />
+        </button>
+      </div>
     </aside>
   );
 }
