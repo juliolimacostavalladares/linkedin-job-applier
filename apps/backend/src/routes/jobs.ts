@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import prisma from '../lib/prisma';
 import { credentialsService } from '../services/credentialsService';
 import { queryGraphQL } from '../utils/graphqlClient';
 import { resumeService } from '../services/resumeService';
@@ -8,7 +9,6 @@ import { logger } from '../utils/logger';
 import type { Job, JobDetail, ApplyForm } from '../types';
 
 const router = Router();
-const queryCache = new Map<string, string>();
 
 function getProgrammaticFallbackQuery(headline?: string | null): string {
   if (!headline) return 'React';
@@ -69,17 +69,22 @@ router.get('/', async (req, res, next) => {
       // By default, build the query from the resume profile using AI
       const latestResume = await resumeService.getLatest();
       if (latestResume) {
-        const cacheKey = `${latestResume.id}-${latestResume.updatedAt.getTime()}`;
-        let cached = queryCache.get(cacheKey);
+        let cached = latestResume.searchQuery;
         if (!cached) {
           logger.info('Generating job search query from resume using 9Router...');
           try {
             cached = await aiService.generateSearchQuery(latestResume.text);
-            queryCache.set(cacheKey, cached);
+            await prisma.resume.update({
+              where: { id: latestResume.id },
+              data: { searchQuery: cached },
+            });
           } catch (err) {
             logger.error('Failed to generate search query using AI, using fallback', err);
             cached = getProgrammaticFallbackQuery(latestResume.headline);
-            queryCache.set(cacheKey, cached);
+            await prisma.resume.update({
+              where: { id: latestResume.id },
+              data: { searchQuery: cached },
+            });
           }
         }
         activeQuery = cached || '';
@@ -116,7 +121,7 @@ router.get('/', async (req, res, next) => {
 
     res.json({
       jobs: enrichedJobs,
-      searchQuery: activeQuery,
+      searchQuery: typeof q === 'string' ? q : '',
       filters: {
         remote: isRemote,
         past24h: isPast24h,
