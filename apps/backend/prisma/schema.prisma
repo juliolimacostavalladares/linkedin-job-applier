@@ -29,6 +29,7 @@ model Resume {
   about          String?
   experienceJson String?  // Store experiences as JSON string
   educationJson  String?  // Store education as JSON string
+  searchQuery    String?  // Store generated AI search query
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 

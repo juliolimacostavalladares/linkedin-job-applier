@@ -37,6 +37,7 @@ export class ResumeService {
       about: profileInfo?.about,
       experienceJson: profileInfo?.experienceJson,
       educationJson: profileInfo?.educationJson,
+      searchQuery: null, // Reset cached query so it is regenerated on next load
     };
 
     if (profileId) {
