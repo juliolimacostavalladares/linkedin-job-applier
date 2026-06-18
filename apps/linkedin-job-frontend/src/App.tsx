@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuthStore, useJobsStore } from './stores';
 import JobsPage from './pages/JobsPage';
-import ResumePage from './pages/ResumePage';
+import ProfilePage from './pages/ProfilePage';
 import ApplicationsPage from './pages/ApplicationsPage';
 import { ConfigLoading } from './components/ui/ConfigLoading';
 import { WelcomeScreen } from './components/WelcomeScreen';
@@ -27,7 +27,7 @@ function AppLayout() {
   return (
     <Routes>
       <Route path="/" element={<JobsPage />} />
-      <Route path="/resume" element={<ResumePage />} />
+      <Route path="/profile" element={<ProfilePage />} />
       <Route path="/applications" element={<ApplicationsPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

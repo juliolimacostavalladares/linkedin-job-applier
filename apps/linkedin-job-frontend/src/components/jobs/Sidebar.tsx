@@ -2,8 +2,8 @@ import { Briefcase, ClipboardList, Sun, Moon, CircleUser } from 'lucide-react';
 import { useThemeStore } from '../../stores';
 
 interface SidebarProps {
-  activeView: 'jobs' | 'resume' | 'applications';
-  onViewChange: (view: 'jobs' | 'resume' | 'applications') => void;
+  activeView: 'jobs' | 'profile' | 'applications';
+  onViewChange: (view: 'jobs' | 'profile' | 'applications') => void;
 }
 
 export function Sidebar({ activeView, onViewChange }: SidebarProps) {
@@ -46,10 +46,10 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
 
         {/* Profile / Resume button */}
         <button
-          onClick={() => onViewChange('resume')}
-          title="Meu Currículo"
+          onClick={() => onViewChange('profile')}
+          title="Meu Perfil"
           className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border shadow-sm ${
-            activeView === 'resume'
+            activeView === 'profile'
               ? 'bg-brand-blue text-white border-brand-blue hover:bg-brand-blue-hover'
               : 'text-text-secondary bg-transparent border-transparent hover:bg-bg-hover hover:text-text-primary'
           }`}

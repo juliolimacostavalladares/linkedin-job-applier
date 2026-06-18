@@ -25,8 +25,6 @@ export function ProfileView() {
       profile={profile}
       onRefresh={handleRefresh}
       isRefreshing={isRefreshing}
-      title="Meu Perfil do LinkedIn"
-      subtitle="Veja os dados profissionais sincronizados do seu LinkedIn"
     />
   );
 }

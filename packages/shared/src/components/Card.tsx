@@ -8,11 +8,12 @@ export interface CardProps {
 }
 
 export function Card({ children, className = '', onClick, active = false }: CardProps) {
-  const baseStyles = 'rounded-lg p-4 transition-all duration-150 border';
+  const hasPadding = /\bp[xytrbl]?-/.test(className);
+  const baseStyles = `rounded-lg ${hasPadding ? '' : 'p-4'} transition-all duration-150 border`;
   const interactiveStyles = onClick ? 'cursor-pointer select-none' : '';
   const activeStyles = active
     ? 'bg-bg-active-card border-border-active-card shadow-sm'
-    : 'bg-bg-card border-border-color hover:bg-bg-hover';
+    : `bg-bg-card border-border-color ${onClick ? 'hover:bg-bg-hover' : ''}`;
 
   return (
     <div

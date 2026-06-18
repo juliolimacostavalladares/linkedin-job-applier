@@ -74,8 +74,6 @@ export function ResumeView({ resume }: ResumeViewProps) {
       profile={profileData}
       onRefresh={() => fetchProfile(true)}
       isRefreshing={isFetchingProfile}
-      title="Meu Currículo"
-      subtitle="Gerencie seu perfil profissional sincronizado do LinkedIn"
       emptyStateText="Para preencher seu currículo automaticamente, utilize a extensão do Chrome JobFinder Sync para sincronizar suas informações."
       syncSourceText="Sincronizado via Extensão"
     >

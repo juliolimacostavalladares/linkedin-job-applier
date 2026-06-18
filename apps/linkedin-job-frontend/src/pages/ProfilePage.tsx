@@ -4,7 +4,7 @@ import { useResumeStore, useThemeStore } from '../stores';
 import { Sidebar } from '../components/jobs/Sidebar';
 import { ResumeView } from '../components/resume/ResumeView';
 
-export default function ResumePage() {
+export default function ProfilePage() {
   const navigate = useNavigate();
   const resumeStore = useResumeStore();
   const { theme, toggleTheme } = useThemeStore();
@@ -13,7 +13,7 @@ export default function ResumePage() {
     <div className="flex flex-col md:flex-row h-screen w-full bg-bg-app font-sans text-text-primary overflow-hidden p-0 md:p-4 lg:p-5 transition-colors duration-200">
       <div className="flex flex-col md:flex-row flex-1 bg-bg-card md:rounded-xl overflow-hidden shadow-subtle border border-border-color relative w-full max-w-[1500px] mx-auto transition-colors duration-200">
         
-        <Sidebar activeView="resume" onViewChange={(v) => navigate(v === 'jobs' ? '/' : v === 'resume' ? '/resume' : '/applications')} />
+        <Sidebar activeView="profile" onViewChange={(v) => navigate(v === 'jobs' ? '/' : v === 'profile' ? '/profile' : '/applications')} />
 
         {/* Mobile Header */}
         <header className="md:hidden h-14 bg-bg-card border-b border-border-color flex items-center justify-between px-4 shrink-0 z-20 transition-colors duration-200">
@@ -39,9 +39,9 @@ export default function ResumePage() {
               <ClipboardList size={16} />
             </button>
             <button 
-              onClick={() => navigate('/resume')} 
+              onClick={() => navigate('/profile')} 
               className="w-8 h-8 rounded-md shrink-0 flex items-center justify-center bg-brand-blue text-white"
-              title="Currículo"
+              title="Perfil"
             >
               <CircleUser size={16} />
             </button>

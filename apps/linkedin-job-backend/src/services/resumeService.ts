@@ -28,15 +28,23 @@ export class ResumeService {
     filename?: string | null,
     profileInfo?: UpsertProfileInfo
   ) {
+    const existing = profileId 
+      ? await prisma.resume.findUnique({ where: { profileId } }) 
+      : await prisma.resume.findFirst({ orderBy: { updatedAt: 'desc' } });
+
     const data = {
-      text,
-      filename,
-      name: profileInfo?.name,
-      headline: profileInfo?.headline,
-      photoUrl: profileInfo?.photoUrl,
-      about: profileInfo?.about,
-      experienceJson: profileInfo?.experienceJson,
-      educationJson: profileInfo?.educationJson,
+      text: text || existing?.text || '',
+      filename: filename || existing?.filename || null,
+      name: profileInfo?.name || existing?.name || null,
+      headline: profileInfo?.headline || existing?.headline || null,
+      photoUrl: profileInfo?.photoUrl || existing?.photoUrl || null,
+      about: profileInfo?.about || existing?.about || null,
+      experienceJson: (profileInfo?.experienceJson && profileInfo.experienceJson !== '[]') 
+        ? profileInfo.experienceJson 
+        : existing?.experienceJson || null,
+      educationJson: (profileInfo?.educationJson && profileInfo.educationJson !== '[]') 
+        ? profileInfo.educationJson 
+        : existing?.educationJson || null,
       searchQuery: null, // Reset cached query so it is regenerated on next load
     };
 
@@ -48,12 +56,8 @@ export class ResumeService {
       });
     }
 
-    const latest = await prisma.resume.findFirst({
-      orderBy: { updatedAt: 'desc' },
-    });
-
-    if (latest) {
-      return prisma.resume.update({ where: { id: latest.id }, data });
+    if (existing) {
+      return prisma.resume.update({ where: { id: existing.id }, data });
     }
 
     return prisma.resume.create({ data: { id: uuidv4(), ...data } });
