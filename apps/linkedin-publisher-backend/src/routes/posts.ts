@@ -1,16 +1,50 @@
 import { Router } from 'express';
 import { prisma } from '../lib/prisma';
+import { credentialsService } from '../services/credentialsService';
+import { queryGraphQL } from '../utils/graphqlClient';
 
 const router = Router();
 
-// Helper to generate mock metrics for published posts
-function generateMockMetrics() {
-  return {
-    views: Math.floor(Math.random() * 800) + 150,
-    likes: Math.floor(Math.random() * 80) + 12,
-    comments: Math.floor(Math.random() * 15) + 2,
-    shares: Math.floor(Math.random() * 6) + 1,
+interface CreatePostResponse {
+  createPost: {
+    success: boolean;
+    postId?: string;
+    error?: string;
   };
+}
+
+async function publishToLinkedIn(text: string): Promise<{ success: boolean; postId?: string; error?: string }> {
+  const creds = await credentialsService.getLatest();
+  if (!creds) {
+    return {
+      success: false,
+      error: 'LinkedIn não conectado. Por favor, utilize a extensão para sincronizar as credenciais.',
+    };
+  }
+
+  const query = `
+    mutation CreatePost($cookie: String!, $csrf: String!, $headersJson: String, $text: String!) {
+      createPost(cookie: $cookie, csrf: $csrf, headersJson: $headersJson, text: $text) {
+        success
+        postId
+        error
+      }
+    }
+  `;
+
+  try {
+    const data = await queryGraphQL<CreatePostResponse>(query, {
+      cookie: creds.cookie,
+      csrf: creds.csrf,
+      headersJson: creds.headersJson,
+      text,
+    });
+
+    return data.createPost;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { success: false, error: message };
+  }
 }
 
 // GET all posts
@@ -55,7 +89,14 @@ router.post('/', async (req, res) => {
 
   try {
     const isPublished = status === 'published';
-    const metrics = isPublished ? generateMockMetrics() : null;
+
+    if (isPublished) {
+      const result = await publishToLinkedIn(text);
+      if (!result.success) {
+        res.status(400).json({ error: result.error || 'Falha ao publicar no LinkedIn' });
+        return;
+      }
+    }
 
     const post = await prisma.post.create({
       data: {
@@ -66,10 +107,10 @@ router.post('/', async (req, res) => {
         status: status || 'draft',
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
         publishedAt: isPublished ? new Date() : null,
-        views: metrics?.views || 0,
-        likes: metrics?.likes || 0,
-        comments: metrics?.comments || 0,
-        shares: metrics?.shares || 0,
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
       },
     });
     res.status(201).json(post);
@@ -94,17 +135,13 @@ router.put('/:id', async (req, res) => {
     const wasPublished = existing.status === 'published';
     const isPublishing = status === 'published';
 
-    // Se está publicando agora pela primeira vez, gera métricas fictícias
-    let metricsUpdate = {};
     if (isPublishing && !wasPublished) {
-      const metrics = generateMockMetrics();
-      metricsUpdate = {
-        publishedAt: new Date(),
-        views: metrics.views,
-        likes: metrics.likes,
-        comments: metrics.comments,
-        shares: metrics.shares,
-      };
+      const postText = text !== undefined ? text : existing.text;
+      const result = await publishToLinkedIn(postText);
+      if (!result.success) {
+        res.status(400).json({ error: result.error || 'Falha ao publicar no LinkedIn' });
+        return;
+      }
     }
 
     const post = await prisma.post.update({
@@ -116,7 +153,7 @@ router.put('/:id', async (req, res) => {
         mediaName: mediaName !== undefined ? mediaName : existing.mediaName,
         status: status !== undefined ? status : existing.status,
         scheduledAt: scheduledAt !== undefined ? (scheduledAt ? new Date(scheduledAt) : null) : existing.scheduledAt,
-        ...metricsUpdate,
+        publishedAt: isPublishing && !wasPublished ? new Date() : existing.publishedAt,
       },
     });
 
@@ -151,17 +188,22 @@ router.post('/:id/publish', async (req, res) => {
       return;
     }
 
-    const metrics = generateMockMetrics();
+    const result = await publishToLinkedIn(existing.text);
+    if (!result.success) {
+      res.status(400).json({ error: result.error || 'Falha ao publicar no LinkedIn' });
+      return;
+    }
+
     const post = await prisma.post.update({
       where: { id },
       data: {
         status: 'published',
         publishedAt: new Date(),
         scheduledAt: null,
-        views: metrics.views,
-        likes: metrics.likes,
-        comments: metrics.comments,
-        shares: metrics.shares,
+        views: 0,
+        likes: 0,
+        comments: 0,
+        shares: 0,
       },
     });
     res.json(post);

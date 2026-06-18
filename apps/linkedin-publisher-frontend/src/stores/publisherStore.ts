@@ -7,7 +7,9 @@ interface PublisherState {
   selectedPost: LinkedInPost | null;
   loading: boolean;
   aiGenerating: boolean;
+  hasCredentials: boolean;
   
+  fetchCredentialsStatus: () => Promise<void>;
   fetchPosts: () => Promise<void>;
   createPost: (post: Omit<LinkedInPost, 'id' | 'createdAt' | 'updatedAt' | 'metrics'>) => Promise<void>;
   updatePost: (id: string, updates: Partial<LinkedInPost>) => Promise<void>;
@@ -23,6 +25,17 @@ export const usePublisherStore = create<PublisherState>((set, get) => ({
   selectedPost: null,
   loading: false,
   aiGenerating: false,
+  hasCredentials: false,
+
+  fetchCredentialsStatus: async () => {
+    try {
+      const { data } = await api.get<{ hasCredentials: boolean }>('/api/credentials/status');
+      set({ hasCredentials: !!data?.hasCredentials });
+    } catch (error) {
+      console.error('Failed to fetch credentials status:', error);
+      set({ hasCredentials: false });
+    }
+  },
 
   fetchPosts: async () => {
     set({ loading: true });

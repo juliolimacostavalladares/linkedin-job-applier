@@ -79,6 +79,24 @@ export const resolvers = {
     },
   },
   Mutation: {
+    createPost: async (
+      _: unknown,
+      {
+        cookie,
+        csrf,
+        headersJson,
+        text,
+      }: {
+        cookie: string;
+        csrf: string;
+        headersJson?: string | null;
+        text: string;
+      }
+    ) => {
+      const svc = new LinkedInService(cookie, csrf, headersJson);
+      return svc.createPost(text);
+    },
+
     submitApplication: async (
       _: unknown,
       {
