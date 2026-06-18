@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { usePublisherStore } from '../stores';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
@@ -34,49 +34,23 @@ export function CreatePostView({ editingPost, onClearEdit, onNavigateToDashboard
   const { createPost, updatePost, generateWithAi, aiGenerating } = usePublisherStore();
   const { success: showToastSuccess, error: showToastError } = useToast();
 
-  const [text, setText] = useState('');
-  const [postType, setPostType] = useState<PostType>('text');
-  const [mediaUrl, setMediaUrl] = useState('');
-  const [mediaName, setMediaName] = useState('');
-  const [isScheduled, setIsScheduled] = useState(false);
-  const [scheduledAt, setScheduledAt] = useState('');
+  const [text, setText] = useState(editingPost?.text || '');
+  const [postType, setPostType] = useState<PostType>(editingPost?.type || 'text');
+  const [mediaUrl, setMediaUrl] = useState(editingPost?.mediaUrl || '');
+  const [mediaName, setMediaName] = useState(editingPost?.mediaName || '');
+  const [isScheduled, setIsScheduled] = useState(editingPost?.status === 'scheduled');
+  const [scheduledAt, setScheduledAt] = useState(() => {
+    if (editingPost?.scheduledAt) {
+      const dateObj = new Date(editingPost.scheduledAt);
+      return dateObj.toISOString().slice(0, 16);
+    }
+    return '';
+  });
   
   // AI assist states
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiTone, setAiTone] = useState('technical');
   const [generatedText, setGeneratedText] = useState('');
-
-  // Hydrate form if editing
-  useEffect(() => {
-    if (editingPost) {
-      setText(editingPost.text);
-      setPostType(editingPost.type);
-      setMediaUrl(editingPost.mediaUrl || '');
-      setMediaName(editingPost.mediaName || '');
-      setIsScheduled(editingPost.status === 'scheduled');
-      if (editingPost.scheduledAt) {
-        // Formatar para datetime-local input (YYYY-MM-DDTHH:MM)
-        const dateObj = new Date(editingPost.scheduledAt);
-        const formatted = dateObj.toISOString().slice(0, 16);
-        setScheduledAt(formatted);
-      } else {
-        setScheduledAt('');
-      }
-    } else {
-      clearForm();
-    }
-  }, [editingPost]);
-
-  const clearForm = () => {
-    setText('');
-    setPostType('text');
-    setMediaUrl('');
-    setMediaName('');
-    setIsScheduled(false);
-    setScheduledAt('');
-    setGeneratedText('');
-    setAiPrompt('');
-  };
 
   const handleSaveDraft = () => {
     if (!text.trim()) {
@@ -179,7 +153,7 @@ export function CreatePostView({ editingPost, onClearEdit, onNavigateToDashboard
         <div className="flex items-center gap-3">
           {editingPost && (
             <button 
-              onClick={() => { onClearEdit(); clearForm(); }}
+              onClick={onClearEdit}
               className="p-1 rounded-md text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer"
               title="Cancelar edição"
             >

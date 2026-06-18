@@ -83,6 +83,7 @@ function AppLayout() {
           )}
           {activeTab === 'create' && (
             <CreatePostView 
+              key={editingPost?.id || 'new'}
               editingPost={editingPost} 
               onClearEdit={handleClearEdit}
               onNavigateToDashboard={() => setActiveTab('dashboard')}
