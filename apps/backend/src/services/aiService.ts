@@ -170,18 +170,23 @@ Diretrizes de Otimização e Formatação:
 2. Adapte o resumo profissional e as realizações/responsabilidades nas experiências para destacar essas palavras-chave e competências, alinhando a linguagem do currículo com a da vaga.
 3. NÃO invente novas experiências acadêmicas ou profissionais que não existam no currículo original. Apenas otimize a forma de apresentar e destacar o que já existe.
 4. O resultado deve ser estruturado em Markdown estrito para permitir uma formatação visual excelente na conversão para PDF:
-   - Comece exatamente com o Nome do Candidato como título principal (use \`# Nome do Candidato\`).
-   - Se houver um cargo principal/headline, coloque-o abaixo do nome antes do contato.
+   - Comece exatamente com o Nome do Candidato em caixa alta (ex: \`# NOME DO CANDIDATO\`).
+   - Se houver um cargo principal/headline, coloque-o na linha seguinte (ex: \`Cargo Principal | Especialidades\`).
    - Logo abaixo, coloque as informações de contato do candidato separadas por barra vertical. Exemplo:
-     \`E-mail: email@domain.com | Telefone: +55... | LinkedIn: linkedin.com/in/... | Localização: Cidade, Estado (Remoto/Híbrido)\`
-   - Use títulos de seção principal do tipo \`## Nome da Seção\` (ex: \`## Resumo Profissional\`, \`## Experiência Profissional\`, \`## Habilidades Técnicas\`, \`## Formação Acadêmica\`).
+     \`Endereço | Telefone | E-mail | LinkedIn\`
+   - Adicione outras informações adicionais na linha seguinte (ex: \`Nascimento: DD/MM/AAAA | Disponibilidade: Remoto | Regime: CLT/PJ\`).
+   - Use \`---\` para criar linhas divisórias horizontais entre as seções.
+   - Use títulos de seção principal do tipo \`### NOME DA SEÇÃO\` em caixa alta (ex: \`### RESUMO PROFISSIONAL\`, \`### EXPERIÊNCIA PROFISSIONAL\`, \`### HABILIDADES TÉCNICAS\`, \`### FORMAÇÃO ACADÊMICA\`).
    - Para cada entrada de experiência profissional, use:
-     \`### Nome da Empresa\`
-     \`**Cargo**  |  Período  |  Localização\`
-   - Para descrever as realizações de cada cargo, use listas com \`- \` e negrito (\`**palavra**\`) estrategicamente para destacar palavras-chave, conquistas e resultados quantitativos.
+     \`**Cargo | Empresa**\`
+     \`*Período | Localização*\`
+     (Exemplo:
+     \`**Desenvolvedor Front-end Sênior | Greenn**\`
+     \`*Maio 2025 – Março 2026 (11 meses) | Remoto*\`
+     )
+   - Para descrever as realizações de cada cargo, use listas com \`- \` ou \`* \` e negrito (\`**palavra**\`) estrategicamente para destacar conquistas e termos importantes.
    - Para cada formação acadêmica, use:
-     \`### Instituição\`
-     \`**Curso / Grau**  |  Período\`
+     \`*   **Curso / Grau** | Instituição (Período)\`
 5. O resultado deve ser o currículo completo otimizado na mesma língua que o original (português ou inglês).
 6. Retorne APENAS o texto do currículo otimizado final, sem explicações, introduções ou blocos de código markdown (não use \`\`\`markdown ou \`\`\`, apenas retorne o texto puro formatado em markdown).
 7. NÃO use emojis de forma alguma. O conteúdo deve ser puramente textual, formal e adequado para leitura por ATS e recrutadores humanos.
