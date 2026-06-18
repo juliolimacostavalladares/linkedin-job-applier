@@ -314,7 +314,7 @@ export default function ApplicationsPage() {
                         <div className="flex items-center gap-2 mt-1.5 text-[10px] text-text-secondary flex-wrap">
                           <Calendar size={10} />
                           <span>Enviado em {new Date(app.createdAt).toLocaleDateString()}</span>
-                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-text-secondary/10 text-text-secondary border border-text-secondary/20 rounded text-[9px] font-bold uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1">
                             {app.appliedThroughSystem ? <SystemIcon size="sm" /> : <LinkedInIcon size="sm" />}
                             {app.appliedThroughSystem ? 'Via Sistema' : 'LinkedIn'}
                           </span>
