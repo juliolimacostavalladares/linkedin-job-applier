@@ -12,7 +12,7 @@ function AppLayout() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'create' | 'analytics'>('dashboard');
   const [editingPost, setEditingPost] = useState<LinkedInPost | null>(null);
   const { theme, toggleTheme } = useThemeStore();
-  const { fetchPosts, fetchCredentialsStatus, hasCredentials } = usePublisherStore();
+  const { fetchPosts, fetchCredentialsStatus } = usePublisherStore();
 
   useEffect(() => {
     fetchPosts();
@@ -76,22 +76,6 @@ function AppLayout() {
 
         {/* Main Body */}
         <main className="flex-1 flex flex-col overflow-hidden relative">
-          {!hasCredentials && (
-            <div className="bg-amber-500/10 dark:bg-amber-500/5 border-b border-border-color px-4 py-2.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-amber-700 dark:text-amber-400 shrink-0">
-              <div className="flex items-start gap-2">
-                <span className="shrink-0 mt-0.5 sm:mt-0">⚠️</span>
-                <span>
-                  <b>LinkedIn não conectado:</b> Para habilitar postagens reais no LinkedIn, abra a extensão do Chrome, altere a URL do servidor para <code className="bg-bg-hover border border-border-color px-1 py-0.5 rounded font-mono select-all">http://localhost:3001</code> e clique em <b>Sincronizar</b>.
-                </span>
-              </div>
-              <button 
-                onClick={fetchCredentialsStatus} 
-                className="bg-amber-600 hover:bg-amber-700 text-white font-bold px-2.5 py-1 rounded shrink-0 transition-colors shadow-sm cursor-pointer"
-              >
-                Verificar Conexão
-              </button>
-            </div>
-          )}
           <div className="flex-1 flex overflow-hidden relative">
             {activeTab === 'dashboard' && (
               <DashboardView 
