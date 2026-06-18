@@ -25,3 +25,15 @@ model Post {
 
   @@map("posts")
 }
+
+model Credentials {
+  id          String   @id @default(uuid())
+  cookie      String
+  csrf        String
+  headersJson String?
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@map("credentials")
+}
+

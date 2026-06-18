@@ -3,6 +3,7 @@ import cors from 'cors';
 import { config } from './config';
 import postsRouter from './routes/posts';
 import aiRouter from './routes/ai';
+import credentialsRouter from './routes/credentials';
 import { prisma } from './lib/prisma';
 
 const app = express();
@@ -18,6 +19,7 @@ app.use(express.json());
 // Routes
 app.use('/api/posts', postsRouter);
 app.use('/api/ai', aiRouter);
+app.use('/api/credentials', credentialsRouter);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -41,24 +43,74 @@ setInterval(async () => {
       console.log(`[Scheduler] Encontrados ${scheduledPosts.length} posts agendados para publicar.`);
       
       for (const post of scheduledPosts) {
-        // Gera métricas aleatórias iniciais
-        const views = Math.floor(Math.random() * 80) + 10;
-        const likes = Math.floor(Math.random() * 10) + 1;
-        
-        await prisma.post.update({
-          where: { id: post.id },
-          data: {
-            status: 'published',
-            publishedAt: now,
-            scheduledAt: null,
-            views,
-            likes,
-            comments: 0,
-            shares: 0,
-          },
-        });
-        
-        console.log(`[Scheduler] Post #${post.id} publicado com sucesso.`);
+        try {
+          const creds = await prisma.credentials.findFirst({
+            orderBy: { updatedAt: 'desc' },
+          });
+
+          if (!creds) {
+            console.error(`[Scheduler Error] Sem credenciais salvas do LinkedIn para publicar o post #${post.id}`);
+            continue;
+          }
+
+          const query = `
+            mutation CreatePost($cookie: String!, $csrf: String!, $headersJson: String, $text: String!) {
+              createPost(cookie: $cookie, csrf: $csrf, headersJson: $headersJson, text: $text) {
+                success
+                postId
+                error
+              }
+            }
+          `;
+
+          const response = await fetch(config.services.linkedinGraphQLUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              query,
+              variables: {
+                cookie: creds.cookie,
+                csrf: creds.csrf,
+                headersJson: creds.headersJson,
+                text: post.text,
+              },
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`GraphQL Service HTTP Error: ${response.statusText}`);
+          }
+
+          const result = (await response.json()) as {
+            data?: { createPost: { success: boolean; postId?: string; error?: string } };
+          };
+
+          if (result.data?.createPost.success) {
+            await prisma.post.update({
+              where: { id: post.id },
+              data: {
+                status: 'published',
+                publishedAt: now,
+                scheduledAt: null,
+                views: 0,
+                likes: 0,
+                comments: 0,
+                shares: 0,
+              },
+            });
+            console.log(`[Scheduler] Post #${post.id} publicado com sucesso no LinkedIn.`);
+          } else {
+            console.error(
+              `[Scheduler Error] Falha ao publicar post #${post.id} no LinkedIn:`,
+              result.data?.createPost.error
+            );
+          }
+        } catch (err: unknown) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          console.error(`[Scheduler Error] Falha ao executar publicação do post #${post.id}:`, errMsg);
+        }
       }
     }
   } catch (error) {

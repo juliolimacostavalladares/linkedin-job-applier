@@ -97,7 +97,21 @@ export const typeDefs = `#graphql
     profileInfo(cookie: String!, csrf: String!, headersJson: String): LinkedInProfile!
   }
 
+  # ─── Post Creation ──────────────────────────────────────────────────────────
+  type CreatePostResult {
+    success: Boolean!
+    postId: String
+    error: String
+  }
+
   type Mutation {
+    createPost(
+      cookie: String!
+      csrf: String!
+      headersJson: String
+      text: String!
+    ): CreatePostResult!
+
     submitApplication(
       id: ID!
       """Flat answers map (JSON): { formElementUrn: answerString }"""
