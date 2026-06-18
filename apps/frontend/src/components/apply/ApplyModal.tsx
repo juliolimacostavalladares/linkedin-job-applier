@@ -20,9 +20,11 @@ export function ApplyModal({ job, onClose }: ApplyModalProps) {
     updateFormValue,
     currentStep,
     setCurrentStep,
+    optimizedResume,
+    optimizedResumePdfBase64,
   } = useApplyFormStore();
 
-  const { resumeText, isEditingResume, setIsEditingResume, saveResume, setResumeText } = useResumeStore();
+  const { resumeText, isEditingResume, setIsEditingResume, saveResume, setResumeText, name: userName } = useResumeStore();
   const { applyJob } = useJobsStore();
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -31,18 +33,38 @@ export function ApplyModal({ job, onClose }: ApplyModalProps) {
 
   const handleSaveResume = async () => {
     await saveResume();
-    await fetchApplyForm(job.id);
+    await fetchApplyForm(job.id, job.title, job.companyName || job.companyInfo, userName || undefined);
   };
 
   const handleSubmit = async () => {
     setSubmitting(true);
     setSubmitError(null);
     try {
+      const questionTitles: Record<string, string> = {};
+      if (applyForm) {
+        if (applyForm.questions) {
+          applyForm.questions.forEach((q) => {
+            questionTitles[q.urn] = q.title;
+          });
+        }
+        if (applyForm.steps) {
+          applyForm.steps.forEach((step) => {
+            if (step.questions) {
+              step.questions.forEach((q) => {
+                questionTitles[q.urn] = q.title;
+              });
+            }
+          });
+        }
+      }
+
       await applyJob(job.id, formValues, {
         jobTitle: job.title,
         companyName: job.companyName,
         companyLogo: job.companyLogo,
         jobUrl: job.url,
+        optimizedResume,
+        questionTitles,
       });
       alert('Candidatura finalizada com sucesso!');
       onClose();
@@ -57,23 +79,25 @@ export function ApplyModal({ job, onClose }: ApplyModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
       <div className="bg-bg-card border border-border-color max-w-lg w-full rounded-lg shadow-lg flex flex-col max-h-[85vh] overflow-hidden transition-all duration-200">
-        <ModalHeader job={job} onClose={onClose} />
-        
-        <ModalBody
-          applyForm={applyForm}
-          loadingForm={loadingForm}
-          errorForm={errorForm}
-          currentStep={currentStep}
-          currentStepQuestions={currentStepQuestions}
-          formValues={formValues}
-          updateFormValue={updateFormValue}
-          resumeText={resumeText}
-          isEditingResume={isEditingResume}
-          setIsEditingResume={setIsEditingResume}
-          onChangeResumeText={setResumeText}
-          onSaveResume={handleSaveResume}
-          submitError={submitError}
-        />
+         <ModalHeader job={job} onClose={onClose} />
+         
+         <ModalBody
+           applyForm={applyForm}
+           loadingForm={loadingForm}
+           errorForm={errorForm}
+           currentStep={currentStep}
+           currentStepQuestions={currentStepQuestions}
+           formValues={formValues}
+           updateFormValue={updateFormValue}
+           resumeText={resumeText}
+           isEditingResume={isEditingResume}
+           setIsEditingResume={setIsEditingResume}
+           onChangeResumeText={setResumeText}
+           onSaveResume={handleSaveResume}
+           submitError={submitError}
+           optimizedResume={optimizedResume}
+           optimizedResumePdfBase64={optimizedResumePdfBase64}
+         />
 
         <ModalFooter
           applyForm={applyForm}
@@ -122,6 +146,8 @@ interface ModalBodyProps {
   onChangeResumeText: (value: string) => void;
   onSaveResume: () => void;
   submitError?: string | null;
+  optimizedResume: string;
+  optimizedResumePdfBase64: string;
 }
 
 function ModalBody({
@@ -138,6 +164,8 @@ function ModalBody({
   onChangeResumeText,
   onSaveResume,
   submitError,
+  optimizedResume,
+  optimizedResumePdfBase64,
 }: ModalBodyProps) {
   if (loadingForm) {
     return (
@@ -170,6 +198,42 @@ function ModalBody({
           <StepHeader
             title={applyForm.steps[currentStep].title}
           />
+
+          {optimizedResume && (
+            <div className="bg-brand-blue/5 border border-brand-blue/20 rounded-md p-3 mb-3 text-xs">
+              <div className="flex items-center gap-1.5 text-brand-blue font-bold mb-1">
+                <Sparkles size={14} className="fill-brand-blue/20" />
+                <span>Currículo ATS Otimizado por IA</span>
+              </div>
+              <p className="text-text-secondary mb-2">
+                Um currículo sob medida para esta vaga foi gerado para preencher as perguntas e será salvo caso a candidatura seja concluída.
+              </p>
+              <details className="cursor-pointer group">
+                <summary className="text-[10px] font-bold text-brand-blue/80 hover:text-brand-blue uppercase tracking-wider select-none mb-2 block">
+                  Visualizar Currículo Otimizado
+                </summary>
+                {optimizedResumePdfBase64 ? (
+                  <div className="mt-2 border border-border-color rounded-md overflow-hidden bg-bg-input">
+                    <object
+                      data={`data:application/pdf;base64,${optimizedResumePdfBase64}`}
+                      type="application/pdf"
+                      className="w-full h-96"
+                    >
+                      <iframe
+                        src={`data:application/pdf;base64,${optimizedResumePdfBase64}`}
+                        className="w-full h-96 border-0"
+                        title="Preview do Currículo Otimizado"
+                      />
+                    </object>
+                  </div>
+                ) : (
+                  <pre className="mt-2 p-2 bg-bg-input rounded border border-border-color font-mono text-[10px] max-h-36 overflow-y-auto whitespace-pre-wrap text-text-primary">
+                    {optimizedResume}
+                  </pre>
+                )}
+              </details>
+            </div>
+          )}
 
           {isEditingResume && (
             <ResumeEditor

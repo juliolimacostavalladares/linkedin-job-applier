@@ -4,20 +4,31 @@ import { v4 as uuidv4 } from 'uuid';
 export class ApplicationService {
   async save(
     jobId: string, 
-    answers: any, 
+    answers: unknown, 
     status: string = 'applied',
-    metadata?: { jobTitle?: string; companyName?: string; companyLogo?: string; jobUrl?: string }
+    metadata?: { 
+      jobTitle?: string; 
+      companyName?: string; 
+      companyLogo?: string; 
+      jobUrl?: string;
+      optimizedResume?: string;
+      resumePdfPath?: string;
+      resumePdfBase64?: string;
+    }
   ) {
     return await prisma.application.create({
       data: {
         id: uuidv4(),
         jobId,
-        answers: typeof answers === 'string' ? answers : JSON.stringify(answers),
+        answers: typeof answers === 'string' ? answers : JSON.stringify(answers || {}),
         status,
         jobTitle: metadata?.jobTitle,
         companyName: metadata?.companyName,
         companyLogo: metadata?.companyLogo,
         jobUrl: metadata?.jobUrl,
+        optimizedResume: metadata?.optimizedResume,
+        resumePdfPath: metadata?.resumePdfPath,
+        resumePdfBase64: metadata?.resumePdfBase64,
       },
     });
   }
@@ -59,6 +70,12 @@ export class ApplicationService {
   async deleteByJobId(jobId: string) {
     return await prisma.application.deleteMany({
       where: { jobId },
+    });
+  }
+
+  async findById(id: string) {
+    return await prisma.application.findUnique({
+      where: { id },
     });
   }
 }

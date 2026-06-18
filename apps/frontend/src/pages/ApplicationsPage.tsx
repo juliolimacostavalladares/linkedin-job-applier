@@ -16,14 +16,16 @@ import {
   AlertCircle,
   X,
   Loader2,
-  RefreshCw
+  RefreshCw,
+  Sparkles,
+  CircleUser
 } from 'lucide-react';
 import { useApplicationsStore, useThemeStore, useJobsStore } from '../stores';
 import { Sidebar } from '../components/jobs/Sidebar';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import type { Application, JobDetail } from '../types';
-import { apiService } from '../services/apiService';
+import api, { apiService } from '../services/apiService';
 
 export default function ApplicationsPage() {
   const navigate = useNavigate();
@@ -39,9 +41,42 @@ export default function ApplicationsPage() {
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [detailError, setDetailError] = useState('');
 
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+
   useEffect(() => {
     fetchApplications();
   }, [fetchApplications]);
+
+  useEffect(() => {
+    if (!selectedApp) {
+      setPdfUrl(null);
+      return;
+    }
+
+    if (selectedApp.resumePdfBase64) {
+      setPdfUrl(`data:application/pdf;base64,${selectedApp.resumePdfBase64}`);
+      return;
+    }
+
+    if (selectedApp.resumePdfPath) {
+      const fetchPdf = async () => {
+        try {
+          const response = await api.get(`/api/applications/${selectedApp.id}/resume.pdf`, {
+            responseType: 'blob',
+          });
+          const blob = new Blob([response.data], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          setPdfUrl(url);
+        } catch (err) {
+          console.error('Failed to load PDF blob:', err);
+          setPdfUrl(null);
+        }
+      };
+      fetchPdf();
+    } else {
+      setPdfUrl(null);
+    }
+  }, [selectedApp]);
 
   const handleSync = async () => {
     const result = await syncWithLinkedIn();
@@ -123,7 +158,7 @@ export default function ApplicationsPage() {
               className="w-8 h-8 rounded-md shrink-0 flex items-center justify-center text-text-secondary hover:bg-bg-hover hover:text-text-primary"
               title="Currículo"
             >
-              <FileText size={16} />
+              <CircleUser size={16} />
             </button>
             <button 
               onClick={toggleTheme} 
@@ -422,9 +457,20 @@ export default function ApplicationsPage() {
                           const parsed = JSON.parse(selectedApp.answers || '{}');
                           const entries = Object.entries(parsed);
                           if (entries.length === 0) return <span className="text-text-secondary italic">Nenhuma pergunta customizada foi feita.</span>;
-                          return entries.map(([qUrn, answer]) => {
+                          return entries.map(([qUrn, rawAnswer]) => {
+                            const answerValue = typeof rawAnswer === 'object' && rawAnswer !== null && 'value' in rawAnswer 
+                              ? (rawAnswer as { value: string }).value 
+                              : String(rawAnswer);
+
                             let questionTitle = '';
-                            if (jobDetail?.applyForm) {
+
+                            // 1. Check if the saved answer has a title stored with it
+                            if (typeof rawAnswer === 'object' && rawAnswer !== null && 'title' in rawAnswer && (rawAnswer as { title?: string }).title) {
+                              questionTitle = (rawAnswer as { title: string }).title;
+                            }
+
+                            // 2. Fallback to matching with active applyForm questions
+                            if (!questionTitle && jobDetail?.applyForm) {
                               const directMatch = jobDetail.applyForm.questions?.find((q) => q.urn === qUrn);
                               if (directMatch?.title) {
                                 questionTitle = directMatch.title;
@@ -439,6 +485,20 @@ export default function ApplicationsPage() {
                               }
                             }
 
+                            // 2.5. Match common URN suffixes as fallback for older/external entries
+                            if (!questionTitle) {
+                              if (qUrn.endsWith('phoneNumber~country)') || qUrn.includes('phoneNumber~country')) {
+                                questionTitle = 'Código do País (DDI)';
+                              } else if (qUrn.endsWith('phoneNumber~nationalNumber)') || qUrn.includes('phoneNumber~nationalNumber')) {
+                                questionTitle = 'Número de Telefone';
+                              } else if (qUrn.endsWith('emailAddress)') || qUrn.includes('emailAddress')) {
+                                questionTitle = 'Endereço de E-mail';
+                              } else if (qUrn.endsWith('document)') || qUrn.includes('document')) {
+                                questionTitle = 'Currículo / Documento';
+                              }
+                            }
+
+                            // 3. Last fallback: parse the URN id
                             if (!questionTitle) {
                               const match = qUrn.match(/,(\d+),/);
                               if (match && match[1]) {
@@ -458,7 +518,7 @@ export default function ApplicationsPage() {
                                   {displayQuestion}
                                 </span>
                                 <div className="bg-bg-app px-2.5 py-1.5 rounded-lg border border-border-color/50 text-[11px] font-mono text-text-secondary break-words whitespace-pre-wrap">
-                                  {String(answer)}
+                                  {String(answerValue)}
                                 </div>
                               </div>
                             );
@@ -471,11 +531,59 @@ export default function ApplicationsPage() {
                   </div>
                 )}
 
+                {/* AI-Optimized Resume */}
+                {selectedApp.optimizedResume && (
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-text-secondary flex items-center gap-1">
+                      <Sparkles size={12} className="text-brand-blue" />
+                      Currículo Otimizado para esta Vaga
+                    </h4>
+                    {selectedApp.resumePdfPath || selectedApp.resumePdfBase64 ? (
+                      pdfUrl ? (
+                        <div className="border border-border-color rounded-xl overflow-hidden bg-bg-input">
+                          <object
+                            data={pdfUrl}
+                            type="application/pdf"
+                            className="w-full h-[450px]"
+                          >
+                            <iframe
+                              src={pdfUrl}
+                              className="w-full h-[450px] border-0"
+                              title="Preview do Currículo Otimizado"
+                            />
+                          </object>
+                        </div>
+                      ) : (
+                        <div className="h-[450px] flex items-center justify-center border border-border-color rounded-xl bg-bg-card text-xs text-text-secondary">
+                          <Loader2 className="animate-spin text-brand-blue mr-2" size={16} />
+                          <span>Carregando visualizador de PDF...</span>
+                        </div>
+                      )
+                    ) : (
+                      <div className="p-4 bg-bg-card border border-border-color rounded-xl text-xs max-h-[200px] overflow-y-auto font-mono whitespace-pre-wrap text-text-primary bg-brand-blue/5 border-brand-blue/10">
+                        {selectedApp.optimizedResume}
+                      </div>
+                    )}
+                  </div>
+                )}
+
               </div>
 
               {/* Detail footer actions */}
-              {selectedApp.jobUrl && (
-                <div className="px-5 py-4 border-t border-border-color bg-bg-card flex gap-2 shrink-0">
+              <div className="px-5 py-4 border-t border-border-color bg-bg-card flex gap-2 shrink-0">
+                {(selectedApp.resumePdfPath || selectedApp.resumePdfBase64) && (
+                  <a
+                    href={apiService.getResumePdfUrl(selectedApp.id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 bg-bg-app border border-border-color text-text-primary hover:bg-bg-hover py-2 rounded-lg font-semibold transition-all text-xs flex items-center justify-center gap-1.5 shadow-sm"
+                    title="Baixar Currículo Otimizado em PDF"
+                  >
+                    <FileText size={14} className="text-brand-blue" />
+                    <span>Baixar PDF</span>
+                  </a>
+                )}
+                {selectedApp.jobUrl && (
                   <a
                     href={selectedApp.jobUrl}
                     target="_blank"
@@ -485,8 +593,8 @@ export default function ApplicationsPage() {
                     <span>Ver no LinkedIn</span>
                     <ExternalLink size={12} />
                   </a>
-                </div>
-              )}
+                )}
+              </div>
 
             </aside>
           )}

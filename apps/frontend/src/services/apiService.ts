@@ -27,7 +27,14 @@ export const apiService = {
   applyJob: (
     id: string, 
     answers: Record<string, string>, 
-    metadata?: { jobTitle?: string; companyName?: string; companyLogo?: string; jobUrl?: string }
+    metadata?: { 
+      jobTitle?: string; 
+      companyName?: string; 
+      companyLogo?: string; 
+      jobUrl?: string; 
+      optimizedResume?: string;
+      questionTitles?: Record<string, string>;
+    }
   ) =>
     api.post(`/api/jobs/${id}/apply`, { answers, ...metadata }),
   
@@ -46,6 +53,11 @@ export const apiService = {
   getApplications: () => api.get('/api/applications'),
   
   syncApplications: () => api.post('/api/applications/sync'),
+
+  getResumePdfUrl: (applicationId: string) => {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+    return `${baseUrl}/api/applications/${applicationId}/resume.pdf`;
+  },
 };
 
 export default api;

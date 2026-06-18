@@ -5,8 +5,11 @@ import { queryGraphQL } from '../utils/graphqlClient';
 import { resumeService } from '../services/resumeService';
 import { aiService } from '../services/aiService';
 import { applicationService } from '../services/applicationService';
+import { pdfService } from '../services/pdfService';
 import { logger } from '../utils/logger';
 import type { Job, JobDetail, ApplyForm, FormQuestion } from '../types';
+import type { FileUploadResponse } from '@linkedin-job-applier/shared';
+import path from 'path';
 
 const router = Router();
 
@@ -309,6 +312,14 @@ router.get('/:id/apply-form', async (req, res, next) => {
       return;
     }
 
+    const detailQuery = `
+      query GetJobDetail($id: ID!, $cookie: String!, $csrf: String!, $headersJson: String) {
+        jobDetail(id: $id, cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
+          description
+        }
+      }
+    `;
+
     const query = `
       query GetApplyForm($id: ID!, $cookie: String!, $csrf: String!, $headersJson: String) {
         applyForm(id: $id, cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
@@ -344,21 +355,52 @@ router.get('/:id/apply-form', async (req, res, next) => {
       }
     `;
 
-    const data = await queryGraphQL<{ applyForm: ApplyForm }>(query, {
-      id,
-      cookie: creds.cookie,
-      csrf: creds.csrf,
-      headersJson: creds.headersJson,
-    });
+    // Fetch form and job description
+    const [formRes, detailRes] = await Promise.all([
+      queryGraphQL<{ applyForm: ApplyForm }>(query, {
+        id,
+        cookie: creds.cookie,
+        csrf: creds.csrf,
+        headersJson: creds.headersJson,
+      }),
+      queryGraphQL<{ jobDetail?: { description?: string } }>(detailQuery, {
+        id,
+        cookie: creds.cookie,
+        csrf: creds.csrf,
+        headersJson: creds.headersJson,
+      }).catch((err) => {
+        logger.warn('[apply-form] Failed to fetch job description:', err);
+        return { jobDetail: { description: '' } };
+      }),
+    ]);
 
-    const applyForm = data.applyForm;
+    const applyForm = formRes.applyForm;
+    const jobDescription = detailRes.jobDetail?.description || '';
+    let optimizedResume = '';
+    let optimizedResumePdfBase64 = '';
 
     // AI suggestions generation on the backend:
     if (applyForm && applyForm.success && applyForm.questions && applyForm.questions.length > 0) {
       const latestResume = await resumeService.getLatest();
       if (latestResume && latestResume.text.trim()) {
         try {
-          const aiRes = await aiService.generateAnswers(applyForm.questions, latestResume.text);
+          if (jobDescription.trim()) {
+            logger.info(`[apply-form] Optimizing resume for job: ${id}`);
+            optimizedResume = await aiService.optimizeResume(latestResume.text, jobDescription);
+          } else {
+            optimizedResume = latestResume.text;
+          }
+
+          if (optimizedResume) {
+            try {
+              const pdfBuffer = await pdfService.generateFromMarkdownToBuffer(optimizedResume);
+              optimizedResumePdfBase64 = pdfBuffer.toString('base64');
+            } catch (pdfErr) {
+              logger.error('Failed to generate preview PDF buffer:', pdfErr);
+            }
+          }
+
+          const aiRes = await aiService.generateAnswers(applyForm.questions, optimizedResume);
           const answerMap = new Map<string, string>();
           aiRes.answers.forEach((ans) => {
             if (ans.answer) {
@@ -387,7 +429,11 @@ router.get('/:id/apply-form', async (req, res, next) => {
       }
     }
 
-    res.json(applyForm);
+    res.json({
+      ...applyForm,
+      optimizedResume,
+      optimizedResumePdfBase64,
+    });
   } catch (error) {
     next(error);
   }
@@ -403,10 +449,12 @@ router.post('/:id/apply', async (req, res, next) => {
       companyName,
       companyLogo,
       jobUrl,
+      optimizedResume,
+      questionTitles,
       // Pre-typed payload from the frontend (preferred)
       formResponses,
       referenceId: bodyReferenceId,
-      fileUploadResponses,
+      fileUploadResponses: bodyFileUploadResponses,
       // Shortcut resume fields (can come from the frontend after fetching apply-form)
       resumeUrn: bodyResumeUrn,
       resumeUploadFormElementUrn: bodyResumeFormElementUrn,
@@ -416,12 +464,16 @@ router.post('/:id/apply', async (req, res, next) => {
       companyName?: string;
       companyLogo?: string;
       jobUrl?: string;
+      optimizedResume?: string;
+      questionTitles?: Record<string, string>;
       formResponses?: unknown[];
       referenceId?: string;
       fileUploadResponses?: unknown[];
       resumeUrn?: string;
       resumeUploadFormElementUrn?: string;
     };
+
+    let fileUploadResponses = bodyFileUploadResponses as FileUploadResponse[] | undefined;
 
     // Get credentials to call LinkedIn API
     const creds = await credentialsService.getCookieAndCsrf();
@@ -468,6 +520,82 @@ router.post('/:id/apply', async (req, res, next) => {
         );
       } catch (err) {
         logger.warn('[apply] Failed to fetch apply-form context, proceeding without it', err);
+      }
+    }
+
+    // ── Generate & Upload Resume PDF if optimizedResume text is provided ────────
+    let resumePdfPath: string | undefined = undefined;
+    let resumePdfBase64: string | undefined = undefined;
+
+    if (optimizedResume && optimizedResume.trim()) {
+      try {
+        const latestResume = await resumeService.getLatest();
+        const userName = latestResume?.name || '';
+
+        const cleanString = (str?: string | null): string => {
+          if (!str) return '';
+          return str
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // remove accents
+            .replace(/[^a-zA-Z0-9]/g, '_') // replace non-alphanumeric with underscore
+            .replace(/_+/g, '_') // collapse multiple underscores
+            .replace(/(^_|_$)/g, ''); // trim leading/trailing underscores
+        };
+
+        const parts: string[] = [];
+        if (userName) parts.push(cleanString(userName));
+        
+        const companyOrTitle = companyName ? companyName : jobTitle;
+        if (companyOrTitle) parts.push(cleanString(companyOrTitle));
+        
+        const baseFilename = parts.length > 0 ? parts.join('_') : 'curriculo_otimizado';
+        const pdfFilename = `${baseFilename}_${Date.now()}.pdf`;
+
+        // 1. Generate PDF buffer
+        logger.info(`[apply] Generating PDF resume buffer from optimized markdown`);
+        const pdfBuffer = await pdfService.generateFromMarkdownToBuffer(optimizedResume);
+        resumePdfBase64 = pdfBuffer.toString('base64');
+
+        // 2. Upload to LinkedIn and get new URN (if job application form has an upload field)
+        if (resumeUploadFormElementUrn) {
+          logger.info(`[apply] Uploading optimized PDF resume to LinkedIn`);
+          const newResumeUrn = await resumeService.uploadResumeToLinkedIn(
+            creds.cookie,
+            creds.csrf,
+            pdfBuffer,
+            pdfFilename,
+            creds.headersJson
+          );
+          
+          // Use the newly uploaded resume URN
+          resumeUrn = newResumeUrn;
+          logger.info(`[apply] Using newly uploaded resume URN: ${resumeUrn}`);
+
+          if (fileUploadResponses && fileUploadResponses.length > 0) {
+            fileUploadResponses = fileUploadResponses.map(fur => {
+              if (fur.formElementUrn === resumeUploadFormElementUrn) {
+                return {
+                  ...fur,
+                  inputUrn: newResumeUrn
+                };
+              }
+              return fur;
+            });
+            logger.info(`[apply] Updated fileUploadResponses to use new resumeUrn: ${newResumeUrn}`);
+          }
+        } else {
+          logger.info(`[apply] No resume upload field in job form, skipping upload to LinkedIn`);
+        }
+
+        // 3. Save PDF locally for history
+        const pdfDir = path.join(process.cwd(), 'uploads', 'resumes');
+        const fullPdfPath = path.join(pdfDir, pdfFilename);
+        
+        logger.info(`[apply] Saving PDF copy locally: ${fullPdfPath}`);
+        await pdfService.generateFromMarkdown(optimizedResume, fullPdfPath);
+        resumePdfPath = `uploads/resumes/${pdfFilename}`;
+      } catch (uploadErr) {
+        logger.error('[apply] Failed to generate or upload optimized PDF resume', uploadErr);
       }
     }
 
@@ -537,11 +665,23 @@ router.post('/:id/apply', async (req, res, next) => {
     }
 
     // 3. Only if LinkedIn accepted, save locally
-    const application = await applicationService.save(id, answers || {}, 'applied', {
+    const answersWithTitles: Record<string, string | { value: string; title?: string }> = {};
+    if (answers) {
+      for (const [urn, value] of Object.entries(answers)) {
+        answersWithTitles[urn] = questionTitles?.[urn]
+          ? { value, title: questionTitles[urn] }
+          : value;
+      }
+    }
+
+    const application = await applicationService.save(id, answersWithTitles, 'applied', {
       jobTitle,
       companyName,
       companyLogo,
       jobUrl,
+      optimizedResume,
+      resumePdfPath,
+      resumePdfBase64,
     });
 
     res.json({

@@ -50,6 +50,9 @@ export function convertFlatAnswersToResponses(
   for (const [formElementUrn, value] of Object.entries(formValues)) {
     if (value === undefined || value === null || String(value).trim() === '') continue;
 
+    const isFileUpload = formElementUrn.includes('FileUploadFormElement') || formElementUrn.startsWith('urn:li:fsu_');
+    if (isFileUpload) continue;
+
     const isDateRange = formElementUrn.includes('dateRange~');
     const isEntityField =
       formElementUrn.includes('multipleChoice') ||
