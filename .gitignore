@@ -45,3 +45,6 @@ apps/graphql-linkedin/test-*.js
 # Uploads
 apps/linkedin-job-backend/uploads/
 
+# Generated Prisma Clients
+**/src/generated/
+
