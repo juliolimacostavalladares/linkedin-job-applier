@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw, Search, Globe, Clock } from 'lucide-react';
 import { useJobsStore } from '../../stores/jobsStore';
+import { Input } from '../ui/Input';
 
 interface SearchBarProps {
   onRefresh: () => void;
@@ -48,16 +49,14 @@ export function SearchBar({ onRefresh, loading }: SearchBarProps) {
       </div>
       
       <form onSubmit={handleSearch} className="space-y-2.5">
-        <div className="relative">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Pesquisar vagas..."
-            className="w-full bg-bg-input border border-border-color rounded-md py-1.5 pl-8 pr-3 text-xs focus:outline-none focus:ring-2 focus:ring-brand-blue/30 focus:border-brand-blue text-text-primary placeholder:text-text-secondary/40 transition-all"
-          />
-          <Search className="w-3.5 h-3.5 text-text-secondary/60 absolute left-2.5 top-2" />
-        </div>
+        <Input
+          type="text"
+          value={inputValue}
+          onChange={(val) => setInputValue(val)}
+          placeholder="Pesquisar vagas..."
+          className="py-1.5 text-xs rounded-md placeholder:text-text-secondary/40"
+          startIcon={<Search className="w-3.5 h-3.5 text-text-secondary/60" />}
+        />
 
         <div className="flex gap-2">
           <button
