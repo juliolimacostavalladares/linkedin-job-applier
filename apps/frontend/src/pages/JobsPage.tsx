@@ -28,7 +28,7 @@ export default function JobsPage() {
   const handleOpenApplyModal = () => {
     if (selectedJob) {
       setIsApplyModalOpen(true);
-      fetchApplyForm(selectedJob.id, selectedJob.title, selectedJob.companyName || selectedJob.companyInfo, userName || undefined);
+      fetchApplyForm(selectedJob.id, selectedJob.title, selectedJob.companyName, userName || undefined);
     }
   };
 

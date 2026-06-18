@@ -35,7 +35,8 @@ export const useApplyFormStore = create<ApplyFormState>((set, get) => ({
   fetchApplyForm: async (jobId, jobTitle, companyName, userName) => {
     set({ loadingForm: true, errorForm: null, applyForm: null, optimizedResume: '', optimizedResumePdfBase64: '' });
     try {
-      const { data } = await apiService.getApplyForm(jobId);
+      const response = await apiService.getApplyForm(jobId);
+      const data: ApplyForm = response.data;
       const initialValues: Record<string, string> = {};
 
       const cleanString = (str?: string) => {
