@@ -310,9 +310,18 @@ export default function ApplicationsPage() {
                       <div className="min-w-0">
                         <h3 className="font-bold text-sm text-text-primary truncate">{app.jobTitle || 'Vaga Sem Título'}</h3>
                         <p className="text-xs text-text-secondary font-medium truncate mt-0.5">{app.companyName || 'Empresa Desconhecida'}</p>
-                        <div className="flex items-center gap-2 mt-1.5 text-[10px] text-text-secondary">
+                        <div className="flex items-center gap-2 mt-1.5 text-[10px] text-text-secondary flex-wrap">
                           <Calendar size={10} />
                           <span>Enviado em {new Date(app.createdAt).toLocaleDateString()}</span>
+                          {app.appliedThroughSystem ? (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-brand-blue/10 text-brand-blue border border-brand-blue/20 rounded text-[9px] font-bold uppercase tracking-wider">
+                              🤖 Via Sistema
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-purple-500/10 text-purple-500 border border-purple-500/20 rounded text-[9px] font-bold uppercase tracking-wider">
+                              Via LinkedIn
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -414,7 +423,15 @@ export default function ApplicationsPage() {
                   </div>
                   <div className="bg-bg-card border border-border-color rounded-xl p-3 text-center">
                     <span className="text-[10px] font-bold text-text-secondary uppercase">Canal</span>
-                    <span className="block text-sm font-semibold text-text-primary mt-1">LinkedIn</span>
+                    {selectedApp.appliedThroughSystem ? (
+                      <span className="flex items-center justify-center gap-1 text-sm font-semibold text-brand-blue mt-1">
+                        🤖 Via Sistema
+                      </span>
+                    ) : (
+                      <span className="flex items-center justify-center gap-1 text-sm font-semibold text-purple-500 mt-1">
+                        Via LinkedIn
+                      </span>
+                    )}
                   </div>
                 </div>
 

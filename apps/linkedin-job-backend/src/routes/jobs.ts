@@ -4,7 +4,7 @@ import { credentialsService } from '../services/credentialsService';
 import { queryGraphQL } from '../utils/graphqlClient';
 import { resumeService } from '../services/resumeService';
 import { aiService } from '../services/aiService';
-import { applicationService } from '../services/applicationService';
+import { applicationService, isAppliedThroughSystem } from '../services/applicationService';
 import { pdfService } from '../services/pdfService';
 import { logger } from '../utils/logger';
 import type { Job, JobDetail, ApplyForm, FormQuestion } from '../types';
@@ -116,11 +116,12 @@ router.get('/', async (req, res, next) => {
       past24h: isPast24h,
     });
 
-    const appliedIds = await applicationService.listAppliedJobIds();
-    const appliedSet = new Set(appliedIds);
+    const appliedInfo = await applicationService.listAppliedInfo();
+    const appliedSet = new Set(appliedInfo.keys());
 
     const enrichedJobs = (data.jobs || []).map((job) => {
       const isApplied = job.applied || appliedSet.has(job.id);
+      const info = appliedInfo.get(job.id);
 
       if (job.applied && !appliedSet.has(job.id)) {
         applicationService.save(job.id, {}, 'applied', {
@@ -136,6 +137,7 @@ router.get('/', async (req, res, next) => {
       return {
         ...job,
         applied: isApplied,
+        appliedThroughSystem: info?.appliedThroughSystem ?? false,
       };
     });
 
@@ -247,6 +249,8 @@ router.get('/:id', async (req, res, next) => {
     let applied = false;
     let appliedAt: string | undefined;
     let applicationStatus = 'applied';
+    let appliedThroughSystem = false;
+    let localApp: { answers?: string | null; optimizedResume?: string | null; resumePdfPath?: string | null; resumePdfBase64?: string | null } | null = null;
 
     if (appDbRes.status === 'fulfilled' && appDbRes.value && appDbRes.value.length > 0) {
       const activeApp = appDbRes.value.find((app) => ['applied', 'viewed', 'closed'].includes(app.status));
@@ -254,6 +258,8 @@ router.get('/:id', async (req, res, next) => {
         applied = true;
         appliedAt = activeApp.createdAt.toISOString();
         applicationStatus = activeApp.status;
+        localApp = activeApp;
+        appliedThroughSystem = isAppliedThroughSystem(activeApp);
       }
     }
 
@@ -273,6 +279,8 @@ router.get('/:id', async (req, res, next) => {
         });
         appliedAt = app.createdAt.toISOString();
         applicationStatus = targetStatus;
+        // Newly auto-synced from LinkedIn → NOT through our system
+        appliedThroughSystem = false;
       } else if (applicationStatus !== targetStatus) {
         await applicationService.updateStatus(id, targetStatus);
         applicationStatus = targetStatus;
@@ -292,10 +300,12 @@ router.get('/:id', async (req, res, next) => {
       applyForm,
       applied,
       appliedAt,
+      appliedThroughSystem,
       applicationStatus,
       viewedByJobPosterAt: jobDetail.viewedByJobPosterAt,
       closed: jobDetail.closed || false,
     });
+
   } catch (error) {
     next(error);
   }

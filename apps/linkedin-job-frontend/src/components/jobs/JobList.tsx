@@ -94,9 +94,15 @@ function JobCard({ job, active, onClick }: JobCardProps) {
           <p className="text-[11px] text-text-secondary font-medium mt-0.5 truncate flex items-center gap-1.5">
             <span className="truncate">{job.companyInfo}</span>
             {job.applied && (
-              <span className="inline-flex items-center px-1 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 rounded text-[9px] font-bold uppercase tracking-wider shrink-0">
-                Candidatado
-              </span>
+              job.appliedThroughSystem ? (
+                <span className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-brand-blue/10 text-brand-blue border border-brand-blue/20 rounded text-[9px] font-bold uppercase tracking-wider shrink-0">
+                  🤖 Via Sistema
+                </span>
+              ) : (
+                <span className="inline-flex items-center px-1 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 rounded text-[9px] font-bold uppercase tracking-wider shrink-0">
+                  Candidatado
+                </span>
+              )
             )}
             {active && <span className="w-1 h-1 rounded-full bg-brand-blue inline-block shrink-0"></span>}
           </p>

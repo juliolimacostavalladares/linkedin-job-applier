@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { applicationService } from '../services/applicationService';
+import { applicationService, isAppliedThroughSystem } from '../services/applicationService';
 import { credentialsService } from '../services/credentialsService';
 import { queryGraphQL } from '../utils/graphqlClient';
 import { logger } from '../utils/logger';
@@ -12,7 +12,11 @@ const router = Router();
 router.get('/', async (req, res, next) => {
   try {
     const applications = await applicationService.listAll();
-    res.json(applications);
+    const enriched = applications.map((app) => ({
+      ...app,
+      appliedThroughSystem: isAppliedThroughSystem(app),
+    }));
+    res.json(enriched);
   } catch (error) {
     logger.error('Failed to list applications', error);
     next(error);

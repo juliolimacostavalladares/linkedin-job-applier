@@ -1,6 +1,17 @@
 import prisma from '../lib/prisma';
 import { v4 as uuidv4 } from 'uuid';
 
+export function isAppliedThroughSystem(app: {
+  answers?: string | null;
+  optimizedResume?: string | null;
+  resumePdfPath?: string | null;
+  resumePdfBase64?: string | null;
+}): boolean {
+  const hasAnswers = !!(app.answers && app.answers !== '{}' && app.answers !== 'null' && app.answers !== '');
+  const hasResume = !!(app.optimizedResume || app.resumePdfPath || app.resumePdfBase64);
+  return hasAnswers || hasResume;
+}
+
 export class ApplicationService {
   async save(
     jobId: string, 
@@ -46,6 +57,18 @@ export class ApplicationService {
       select: { jobId: true }
     });
     return apps.map(app => app.jobId);
+  }
+
+  async listAppliedInfo(): Promise<Map<string, { appliedThroughSystem: boolean }>> {
+    const apps = await prisma.application.findMany({
+      where: { status: { in: ['applied', 'viewed', 'closed'] } },
+      select: { jobId: true, answers: true, optimizedResume: true, resumePdfPath: true, resumePdfBase64: true }
+    });
+    const map = new Map<string, { appliedThroughSystem: boolean }>();
+    for (const app of apps) {
+      map.set(app.jobId, { appliedThroughSystem: isAppliedThroughSystem(app) });
+    }
+    return map;
   }
 
   async listAll() {

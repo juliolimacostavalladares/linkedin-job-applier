@@ -91,10 +91,17 @@ export function JobDetailPanel({ onApply }: JobDetailPanelProps) {
             {/* Action Buttons */}
             <div className="flex items-center gap-2 mt-2 md:mt-0 shrink-0">
               {selectedJob.applied ? (
-                <div className="inline-flex items-center gap-1.5 px-3 py-2 bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 rounded-lg text-sm font-semibold shadow-sm">
-                  <CheckCircle size={15} />
-                  <span>Candidatado</span>
-                </div>
+                selectedJob.appliedThroughSystem ? (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-2 bg-brand-blue/10 text-brand-blue border border-brand-blue/20 rounded-lg text-sm font-semibold shadow-sm">
+                    <CheckCircle size={15} />
+                    <span>🤖 Via Sistema</span>
+                  </div>
+                ) : (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-2 bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 rounded-lg text-sm font-semibold shadow-sm">
+                    <CheckCircle size={15} />
+                    <span>Candidatado</span>
+                  </div>
+                )
               ) : (
                 <Button size="md" onClick={onApply} icon={<CheckCircle size={15} />}>
                   Candidatar-se

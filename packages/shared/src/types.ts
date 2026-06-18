@@ -4,6 +4,7 @@ export interface Job {
   companyInfo: string;
   companyLogo?: string;
   applied?: boolean;
+  appliedThroughSystem?: boolean;
 }
 
 export interface JobDetail {
@@ -17,6 +18,7 @@ export interface JobDetail {
   companyLogo?: string;
   applyForm?: ApplyForm;
   applied?: boolean;
+  appliedThroughSystem?: boolean;
   appliedAt?: string;
   appliedOnLinkedIn?: boolean;
   viewedByJobPosterAt?: string | null;
@@ -164,6 +166,7 @@ export interface Application {
   optimizedResume?: string | null;
   resumePdfPath?: string | null;
   resumePdfBase64?: string | null;
+  appliedThroughSystem?: boolean;
   createdAt: string;
   updatedAt: string;
 }
