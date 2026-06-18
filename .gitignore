@@ -1,22 +1,12 @@
-```gitignore
-# Dependencies
 node_modules/
-
-# Build outputs
 dist/
 build/
-.next/
-.nuxt/
-out/
+coverage/
+.DS_Store
+*.log
 
-# TypeScript/JavaScript
-*.tsbuildinfo
-*.js.map
-*.ts.map
-
-# Environment variables
+# Environment files
 .env
-.env.local
 .env.*
 !.env.example
 
@@ -26,14 +16,24 @@ out/
 *.swp
 *.swo
 
-# Logs
-*.log
-
 # OS files
-.DS_Store
 Thumbs.db
 
-# Coverage
-coverage/
-.nyc_output/
-```
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Turbo
+.turbo/
+
+# pnpm
+pnpm-debug.log*
+
+# Logs
+logs/
+*.log
+
+# Database
+*.db
+*.db-journal
