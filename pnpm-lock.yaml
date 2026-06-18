@@ -242,6 +242,9 @@ importers:
 
   apps/linkedin-publisher-frontend:
     dependencies:
+      '@linkedin-job-applier/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       axios:
         specifier: ^1.18.0
         version: 1.18.0
@@ -306,6 +309,21 @@ importers:
 
   packages/shared:
     devDependencies:
+      '@types/react':
+        specifier: ^19.0.0
+        version: 19.2.17
+      '@types/react-dom':
+        specifier: ^19.0.0
+        version: 19.2.3(@types/react@19.2.17)
+      lucide-react:
+        specifier: ^0.546.0
+        version: 0.546.0(react@19.2.7)
+      react:
+        specifier: ^19.0.0
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.0.0
+        version: 19.2.7(react@19.2.7)
       typescript:
         specifier: ~5.8.2
         version: 5.8.3

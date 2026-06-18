@@ -1,10 +1,10 @@
-import { LayoutDashboard, FilePenLine, BarChart3, Sun, Moon, User } from 'lucide-react';
+import { LayoutDashboard, FilePenLine, BarChart3, Sun, Moon, CircleUser } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useThemeStore, usePublisherStore } from '../stores';
 
 export function Sidebar() {
   const { theme, toggleTheme } = useThemeStore();
-  const { setSelectedPost } = usePublisherStore();
+  const { setSelectedPost, profile } = usePublisherStore();
   const location = useLocation();
   const currentPath = location.pathname;
 
@@ -36,15 +36,9 @@ export function Sidebar() {
           to="/analytics"
           tooltip="Métricas"
         />
-        <NavButton
-          icon={<User size={18} />}
-          active={currentPath === '/profile'}
-          to="/profile"
-          tooltip="Meu Perfil"
-        />
       </div>
 
-      {/* Footer / Theme actions */}
+      {/* Footer / Theme & Profile actions */}
       <div className="mt-auto flex flex-col gap-4 items-center w-full">
         {/* Theme Toggle */}
         <button
@@ -55,6 +49,31 @@ export function Sidebar() {
         >
           {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} />}
         </button>
+
+        {/* Profile button */}
+        <Link
+          to="/profile"
+          title="Meu Perfil"
+          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border shadow-sm cursor-pointer ${
+            currentPath === '/profile'
+              ? 'bg-brand-blue text-white border-brand-blue hover:bg-brand-blue-hover'
+              : 'text-text-secondary bg-transparent border-transparent hover:bg-bg-hover hover:text-text-primary'
+          }`}
+        >
+          {profile?.photoUrl ? (
+            <img
+              src={profile.photoUrl}
+              alt={profile.name || ''}
+              className="w-7 h-7 rounded-full object-cover"
+              referrerPolicy="no-referrer"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
+          ) : (
+            <CircleUser size={20} />
+          )}
+        </Link>
       </div>
     </aside>
   );
