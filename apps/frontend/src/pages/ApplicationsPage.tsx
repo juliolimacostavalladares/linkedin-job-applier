@@ -243,18 +243,14 @@ export default function ApplicationsPage() {
 
             {/* Filters bar */}
             <div className="flex flex-col sm:flex-row gap-3 mb-4 shrink-0">
-              <div className="relative flex-1">
-                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-text-secondary">
-                  <Search size={15} />
-                </span>
-                <input
-                  type="text"
-                  placeholder="Buscar por cargo ou empresa..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 text-sm bg-bg-app border border-border-color rounded-lg focus:outline-none focus:border-brand-blue text-text-primary"
-                />
-              </div>
+              <Input
+                type="text"
+                placeholder="Buscar por cargo ou empresa..."
+                value={searchTerm}
+                onChange={(val) => setSearchTerm(val)}
+                className="py-2 text-sm bg-bg-app rounded-lg placeholder:text-text-secondary/50"
+                startIcon={<Search size={15} />}
+              />
               <div className="flex gap-1.5 shrink-0 bg-bg-app border border-border-color p-1 rounded-lg">
                 <button
                   onClick={() => setStatusFilter('all')}

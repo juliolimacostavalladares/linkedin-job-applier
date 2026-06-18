@@ -41,7 +41,7 @@ export const useApplicationsStore = create<ApplicationsState>((set) => ({
       const { data } = await apiService.syncApplications();
       
       // Recarregar lista após sincronização
-      await set((state) => ({ ...state, syncing: false }));
+      set({ syncing: false });
       await new Promise(resolve => setTimeout(resolve, 100));
       await useApplicationsStore.getState().fetchApplications();
       
