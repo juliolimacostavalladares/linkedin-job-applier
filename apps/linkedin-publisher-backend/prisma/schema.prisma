@@ -6,7 +6,6 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = "file:./publisher.db"
 }
 
 model Post {
@@ -38,4 +37,42 @@ model Credentials {
 
   @@map("credentials")
 }
+
+model Resume {
+  id             String   @id @default(uuid())
+  profileId      String?  @unique
+  name           String?
+  headline       String?
+  photoUrl       String?
+  text           String
+  filename       String?
+  about          String?
+  experienceJson String?  // Store experiences as JSON string
+  educationJson  String?  // Store education as JSON string
+  searchQuery    String?  // Store generated AI search query
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("resumes")
+}
+
+model Application {
+  id              String   @id @default(uuid())
+  jobId           String
+  status          String   @default("draft")
+  answers         String?
+  jobTitle        String?
+  companyName     String?
+  companyLogo     String?
+  jobUrl          String?
+  optimizedResume String?
+  resumePdfPath   String?
+  resumePdfBase64 String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([jobId])
+  @@map("applications")
+}
+
 
