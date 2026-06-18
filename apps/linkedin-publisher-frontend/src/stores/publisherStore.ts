@@ -8,9 +8,11 @@ interface PublisherState {
   loading: boolean;
   aiGenerating: boolean;
   hasCredentials: boolean;
+  profile: any | null;
   
   fetchCredentialsStatus: () => Promise<void>;
   fetchPosts: () => Promise<void>;
+  fetchProfile: () => Promise<void>;
   createPost: (post: Omit<LinkedInPost, 'id' | 'createdAt' | 'updatedAt' | 'metrics'>) => Promise<void>;
   updatePost: (id: string, updates: Partial<LinkedInPost>) => Promise<void>;
   deletePost: (id: string) => Promise<void>;
@@ -26,6 +28,7 @@ export const usePublisherStore = create<PublisherState>((set, get) => ({
   loading: false,
   aiGenerating: false,
   hasCredentials: false,
+  profile: null,
 
   fetchCredentialsStatus: async () => {
     try {
@@ -140,6 +143,16 @@ export const usePublisherStore = create<PublisherState>((set, get) => ({
       set({ aiGenerating: false });
       console.error('AI generation failed:', error);
       throw error;
+    }
+  },
+
+  fetchProfile: async () => {
+    try {
+      const { data } = await api.get('/api/profile');
+      set({ profile: data });
+    } catch (error) {
+      console.error('Failed to fetch profile:', error);
+      set({ profile: null });
     }
   }
 }));

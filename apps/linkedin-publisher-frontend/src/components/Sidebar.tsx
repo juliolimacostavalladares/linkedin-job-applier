@@ -1,4 +1,4 @@
-import { LayoutDashboard, FilePenLine, BarChart3, Sun, Moon } from 'lucide-react';
+import { LayoutDashboard, FilePenLine, BarChart3, Sun, Moon, User } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useThemeStore, usePublisherStore } from '../stores';
 
@@ -35,6 +35,12 @@ export function Sidebar() {
           active={currentPath === '/analytics'}
           to="/analytics"
           tooltip="Métricas"
+        />
+        <NavButton
+          icon={<User size={18} />}
+          active={currentPath === '/profile'}
+          to="/profile"
+          tooltip="Meu Perfil"
         />
       </div>
 

@@ -27,7 +27,7 @@ import type { PostType, PostStatus } from '../types';
 
 export function CreatePostView() {
   const navigate = useNavigate();
-  const { createPost, updatePost, generateWithAi, aiGenerating, selectedPost, setSelectedPost } = usePublisherStore();
+  const { createPost, updatePost, generateWithAi, aiGenerating, selectedPost, setSelectedPost, profile } = usePublisherStore();
   const editingPost = selectedPost;
   const { success: showToastSuccess, error: showToastError } = useToast();
 
@@ -400,20 +400,32 @@ export function CreatePostView() {
         </h4>
 
         {/* LinkedIn Post Card Mockup */}
-        <div className="bg-white dark:bg-[#1b1f23] border border-border-color rounded-xl overflow-hidden shadow-xs flex flex-col">
+        <div className="bg-bg-card border border-border-color rounded-xl overflow-hidden shadow-xs flex flex-col transition-colors duration-200">
           {/* Card Header */}
           <div className="p-4 flex gap-3 items-start">
-            <div className="w-12 h-12 rounded-full bg-brand-blue/10 flex items-center justify-center border border-border-color font-bold text-brand-blue text-sm uppercase shrink-0">
-              JL
-            </div>
+            {profile?.photoUrl ? (
+              <img 
+                src={profile.photoUrl} 
+                alt={profile.name || 'Avatar'} 
+                className="w-12 h-12 rounded-full object-cover shrink-0 border border-border-color"
+                referrerPolicy="no-referrer"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-brand-blue/10 flex items-center justify-center border border-border-color font-bold text-brand-blue text-sm uppercase shrink-0">
+                {profile?.name ? profile.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2) : 'JL'}
+              </div>
+            )}
             <div className="min-w-0">
-              <h5 className="font-bold text-sm text-black dark:text-white truncate hover:underline hover:text-brand-blue cursor-pointer">
-                Julio Lima
+              <h5 className="font-bold text-sm text-text-primary truncate hover:underline hover:text-brand-blue cursor-pointer">
+                {profile?.name || 'Julio Lima'}
               </h5>
-              <p className="text-[11px] text-gray-500 dark:text-gray-400 truncate leading-snug">
-                Engenheiro de Software | Criador do JobFinder
+              <p className="text-[11px] text-text-secondary truncate leading-snug">
+                {profile?.headline || 'Engenheiro de Software | Criador do JobFinder'}
               </p>
-              <div className="flex items-center gap-1 text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">
+              <div className="flex items-center gap-1 text-[10px] text-text-secondary/70 mt-0.5">
                 <span>Agora</span>
                 <span>•</span>
                 <Globe size={10} />
@@ -424,11 +436,11 @@ export function CreatePostView() {
           {/* Card Text Content */}
           <div className="px-4 pb-3">
             {text.trim() ? (
-              <p className="text-xs text-black dark:text-gray-100 leading-relaxed whitespace-pre-wrap break-words">
+              <p className="text-xs text-text-primary leading-relaxed whitespace-pre-wrap break-words">
                 {text}
               </p>
             ) : (
-              <p className="text-xs text-gray-400 dark:text-gray-500 italic">
+              <p className="text-xs text-text-secondary/60 italic">
                 O texto digitado no editor aparecerá aqui em tempo real...
               </p>
             )}
@@ -436,14 +448,13 @@ export function CreatePostView() {
 
           {/* Card Media Preview */}
           {postType !== 'text' && mediaUrl.trim() && (
-            <div className="border-y border-border-color/65 bg-gray-50 dark:bg-[#12161a] overflow-hidden">
+            <div className="border-y border-border-color/65 bg-bg-app overflow-hidden">
               {postType === 'image' ? (
                 <img 
                   src={mediaUrl} 
                   alt="Post Attachment" 
                   className="w-full h-auto max-h-[300px] object-cover"
                   onError={(e) => {
-                    // Fallback se URL falhar
                     (e.target as HTMLElement).style.display = 'none';
                   }}
                 />
@@ -453,15 +464,15 @@ export function CreatePostView() {
                   href={mediaUrl} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex flex-col border-t border-border-color/45 p-3 hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+                  className="flex flex-col border-t border-border-color/45 p-3 hover:bg-bg-hover transition-colors"
                 >
                   <span className="text-[10px] font-medium text-brand-blue truncate uppercase tracking-wider">
                     {mediaName || 'link_attachment.com'}
                   </span>
-                  <span className="text-xs font-bold text-black dark:text-white truncate mt-1">
+                  <span className="text-xs font-bold text-text-primary truncate mt-1">
                     {mediaName || 'Guia Prático e Artigos recomendados'}
                   </span>
-                  <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                  <span className="text-[10px] text-text-secondary truncate mt-0.5">
                     {mediaUrl}
                   </span>
                 </a>
@@ -470,26 +481,26 @@ export function CreatePostView() {
           )}
 
           {/* Mock Social Count */}
-          <div className="px-4 py-2 border-b border-border-color/45 flex justify-between items-center text-[10px] text-gray-400 dark:text-gray-500">
+          <div className="px-4 py-2 border-b border-border-color/45 flex justify-between items-center text-[10px] text-text-secondary/70">
             <span>0 reações</span>
             <span>0 comentários</span>
           </div>
 
           {/* Mock Feed Actions */}
           <div className="grid grid-cols-4 px-2 py-1">
-            <button className="py-2.5 rounded-lg flex items-center justify-center gap-1.5 text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 font-semibold text-xs transition-colors cursor-default">
+            <button className="py-2.5 rounded-lg flex items-center justify-center gap-1.5 text-text-secondary hover:bg-bg-hover font-semibold text-xs transition-colors cursor-default">
               <ThumbsUp size={14} />
               <span>Gostei</span>
             </button>
-            <button className="py-2.5 rounded-lg flex items-center justify-center gap-1.5 text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 font-semibold text-xs transition-colors cursor-default">
+            <button className="py-2.5 rounded-lg flex items-center justify-center gap-1.5 text-text-secondary hover:bg-bg-hover font-semibold text-xs transition-colors cursor-default">
               <MessageSquare size={14} />
               <span>Comentar</span>
             </button>
-            <button className="py-2.5 rounded-lg flex items-center justify-center gap-1.5 text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 font-semibold text-xs transition-colors cursor-default">
+            <button className="py-2.5 rounded-lg flex items-center justify-center gap-1.5 text-text-secondary hover:bg-bg-hover font-semibold text-xs transition-colors cursor-default">
               <Repeat2 size={14} />
               <span>Compartilhar</span>
             </button>
-            <button className="py-2.5 rounded-lg flex items-center justify-center gap-1.5 text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/5 font-semibold text-xs transition-colors cursor-default">
+            <button className="py-2.5 rounded-lg flex items-center justify-center gap-1.5 text-text-secondary hover:bg-bg-hover font-semibold text-xs transition-colors cursor-default">
               <SendIcon size={14} />
               <span>Enviar</span>
             </button>

@@ -4,20 +4,22 @@ import { Sidebar } from './components/Sidebar';
 import { DashboardView } from './components/DashboardView';
 import { CreatePostView } from './components/CreatePostView';
 import { AnalyticsView } from './components/AnalyticsView';
+import { ProfileView } from './components/ProfileView';
 import { ToastProvider } from './components/ui/Toast';
-import { FilePenLine, LayoutDashboard, BarChart3, Sun, Moon } from 'lucide-react';
+import { FilePenLine, LayoutDashboard, BarChart3, Sun, Moon, User } from 'lucide-react';
 import { useThemeStore, usePublisherStore } from './stores';
 
 function AppLayout() {
   const { theme, toggleTheme } = useThemeStore();
-  const { fetchPosts, fetchCredentialsStatus, setSelectedPost } = usePublisherStore();
+  const { fetchPosts, fetchCredentialsStatus, fetchProfile, setSelectedPost } = usePublisherStore();
   const location = useLocation();
   const currentPath = location.pathname;
 
   useEffect(() => {
     fetchPosts();
     fetchCredentialsStatus();
-  }, [fetchPosts, fetchCredentialsStatus]);
+    fetchProfile();
+  }, [fetchPosts, fetchCredentialsStatus, fetchProfile]);
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full bg-bg-app font-sans text-text-primary overflow-hidden p-0 md:p-4 lg:p-5 transition-colors duration-200">
@@ -56,6 +58,13 @@ function AppLayout() {
             >
               <BarChart3 size={16} />
             </Link>
+            <Link 
+              to="/profile" 
+              className={`w-8 h-8 rounded-md shrink-0 flex items-center justify-center ${currentPath === '/profile' ? 'bg-brand-blue text-white' : 'text-text-secondary hover:bg-bg-hover hover:text-text-primary'}`}
+              title="Perfil"
+            >
+              <User size={16} />
+            </Link>
             <button 
               onClick={toggleTheme} 
               className="w-8 h-8 ml-1 rounded-md flex items-center justify-center text-text-secondary border border-border-color bg-bg-hover"
@@ -74,6 +83,7 @@ function AppLayout() {
               <Route path="/dashboard" element={<DashboardView />} />
               <Route path="/create" element={<CreatePostView />} />
               <Route path="/analytics" element={<AnalyticsView />} />
+              <Route path="/profile" element={<ProfileView />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </div>

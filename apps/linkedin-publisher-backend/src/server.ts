@@ -4,6 +4,7 @@ import { config } from './config';
 import postsRouter from './routes/posts';
 import aiRouter from './routes/ai';
 import credentialsRouter from './routes/credentials';
+import profileRouter from './routes/profile';
 import { prisma } from './lib/prisma';
 
 const app = express();
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use('/api/posts', postsRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/credentials', credentialsRouter);
+app.use('/api/profile', profileRouter);
 
 // Health check
 app.get('/health', (req, res) => {
