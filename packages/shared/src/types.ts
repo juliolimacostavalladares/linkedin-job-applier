@@ -5,6 +5,7 @@ export interface Job {
   companyLogo?: string;
   applied?: boolean;
   appliedThroughSystem?: boolean;
+  language?: 'en' | 'pt';
 }
 
 export interface JobDetail {
@@ -23,6 +24,7 @@ export interface JobDetail {
   appliedOnLinkedIn?: boolean;
   viewedByJobPosterAt?: string | null;
   closed?: boolean;
+  language?: 'en' | 'pt';
 }
 
 export interface FormQuestion {

@@ -15,8 +15,10 @@ interface JobsState {
   searchQuery: string;
   remoteFilter: boolean;
   past24hFilter: boolean;
-  fetchJobs: (q?: string, remote?: boolean, past24h?: boolean) => Promise<void>;
+  languageFilter: 'all' | 'en' | 'pt';
+  fetchJobs: (q?: string, remote?: boolean, past24h?: boolean, language?: 'all' | 'en' | 'pt') => Promise<void>;
   setFilters: (filters: { q?: string; remote?: boolean; past24h?: boolean }) => void;
+  setLanguageFilter: (lang: 'all' | 'en' | 'pt') => void;
   selectJob: (job: Job) => Promise<void>;
   applyJob: (
     jobId: string, 
@@ -46,6 +48,7 @@ export const useJobsStore = create<JobsState>((set, get) => ({
   searchQuery: '',
   remoteFilter: true,
   past24hFilter: true,
+  languageFilter: 'all',
 
   setFilters: (filters) => {
     set((state) => ({
@@ -55,14 +58,17 @@ export const useJobsStore = create<JobsState>((set, get) => ({
     }));
   },
 
-  fetchJobs: async (q?: string, remote?: boolean, past24h?: boolean) => {
+  setLanguageFilter: (languageFilter) => set({ languageFilter }),
+
+  fetchJobs: async (q?: string, remote?: boolean, past24h?: boolean, language?: 'all' | 'en' | 'pt') => {
     const query = q !== undefined ? q : get().searchQuery;
     const isRemote = remote !== undefined ? remote : get().remoteFilter;
     const isPast24h = past24h !== undefined ? past24h : get().past24hFilter;
+    const lang = language !== undefined ? language : get().languageFilter;
 
     set({ loadingList: true, loading: true, error: '', credentialError: false });
     try {
-      const { data } = await apiService.getJobs(query, isRemote, isPast24h);
+      const { data } = await apiService.getJobs(query, isRemote, isPast24h, lang);
       set({ 
         jobs: data.jobs || [], 
         searchQuery: data.searchQuery !== undefined ? data.searchQuery : query,

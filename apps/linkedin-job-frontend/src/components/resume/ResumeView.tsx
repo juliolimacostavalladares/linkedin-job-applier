@@ -76,27 +76,30 @@ export function ResumeView({ resume }: ResumeViewProps) {
       isRefreshing={isFetchingProfile}
       emptyStateText="Para preencher seu currículo automaticamente, utilize a extensão do Chrome JobFinder Sync para sincronizar suas informações."
       syncSourceText="Sincronizado via Extensão"
+      topChildren={
+        <>
+          {/* Error notification if a background sync fails */}
+          {profileError && (
+            <div className="p-3 bg-red-500/10 text-red-500 rounded-lg text-xs flex items-center justify-between border border-red-500/20 shadow-sm transition-all duration-150">
+              <span className="flex items-center gap-1.5 font-medium">
+                <AlertCircle size={14} /> {profileError}
+              </span>
+              <button onClick={() => fetchProfile(true)} className="text-[10px] bg-red-500/20 hover:bg-red-500/30 px-2 py-0.5 rounded font-bold uppercase">
+                Re-sync
+              </button>
+            </div>
+          )}
+
+          {/* Tip for client-side sync */}
+          <div className="p-3 bg-blue-500/10 text-blue-500 dark:text-blue-400 rounded-lg text-xs flex items-start gap-2 border border-blue-500/20 shadow-sm">
+            <AlertCircle size={14} className="mt-0.5 shrink-0" />
+            <div>
+              <span className="font-semibold">Dica de Segurança:</span> Para sincronizar seu perfil do LinkedIn de forma 100% segura e evitar que a sua sessão seja invalidada pela plataforma, abra a extensão **JobFinder Sync** no seu navegador e clique no botão **Sincronizar**.
+            </div>
+          </div>
+        </>
+      }
     >
-      {/* Error notification if a background sync fails */}
-      {profileError && (
-        <div className="p-3 bg-red-500/10 text-red-500 rounded-lg text-xs flex items-center justify-between border border-red-500/20 shadow-sm transition-all duration-150">
-          <span className="flex items-center gap-1.5 font-medium">
-            <AlertCircle size={14} /> {profileError}
-          </span>
-          <button onClick={() => fetchProfile(true)} className="text-[10px] bg-red-500/20 hover:bg-red-500/30 px-2 py-0.5 rounded font-bold uppercase">
-            Re-sync
-          </button>
-        </div>
-      )}
-
-      {/* Tip for client-side sync */}
-      <div className="p-3 bg-blue-500/10 text-blue-500 dark:text-blue-400 rounded-lg text-xs flex items-start gap-2 border border-blue-500/20 shadow-sm">
-        <AlertCircle size={14} className="mt-0.5 shrink-0" />
-        <div>
-          <span className="font-semibold">Dica de Segurança:</span> Para sincronizar seu perfil do LinkedIn de forma 100% segura e evitar que a sua sessão seja invalidada pela plataforma, abra a extensão **JobFinder Sync** no seu navegador e clique no botão **Sincronizar**.
-        </div>
-      </div>
-
       {/* 5. RAW TEXT EDITOR (IA PROMPT RESUME TEXT) */}
       <div className="bg-bg-card border border-border-color rounded-xl p-6 space-y-4 shadow-xs transition-colors">
         <div className="flex justify-between items-center pb-2 border-b border-border-color/45">

@@ -1,5 +1,6 @@
 import { config } from '../config';
 import type { AIResponse, FormQuestion, ParsedResume } from '../types';
+import { detectLanguageFromText } from '../utils/language';
 
 export class AIService {
   private async call9Router(prompt: string): Promise<string> {
@@ -139,12 +140,47 @@ Retorne um JSON válido e estrito no formato abaixo, sem tags markdown ou explic
     resume: string,
     jobContext?: { title?: string; companyName?: string; description?: string }
   ): string {
+    const lang = detectLanguageFromText(jobContext?.description ?? '');
+    const isEn = lang === 'en';
+
     const jobInfo = jobContext 
-      ? `Vaga: ${jobContext.title || 'Não informada'}\nEmpresa: ${jobContext.companyName || 'Não informada'}\nDescrição da Vaga:\n${jobContext.description || 'Não informada'}`
-      : 'Não informada';
+      ? `${isEn ? 'Job Title' : 'Vaga'}: ${jobContext.title || (isEn ? 'Not provided' : 'Não informada')}\n${isEn ? 'Company' : 'Empresa'}: ${jobContext.companyName || (isEn ? 'Not provided' : 'Não informada')}\n${isEn ? 'Job Description' : 'Descrição da Vaga'}:\n${jobContext.description || (isEn ? 'Not provided' : 'Não informada')}`
+      : (isEn ? 'Not provided' : 'Não informada');
+
+    if (isEn) {
+      return `
+You are an expert recruitment assistant. Given the user's resume, job information (if available) and an application form, suggest the best answer for each question based on the resume.
+
+⚠️ IMPORTANT: The job posting is in English. ALL answers must be written in English, regardless of the language of the user's resume.
+
+User Resume:
+${resume || 'Not provided'}
+
+Job Information:
+${jobInfo}
+
+Form Questions:
+${JSON.stringify(questions, null, 2)}
+
+Return a JSON with the suggested answers. Exact format:
+{
+  "answers": [
+    { "urn": "field_urn", "answer": "suggested answer" }
+  ]
+}
+Rules:
+1. For selection fields (dropdown/checkbox/typeahead), choose the best option based on the "options" provided. If there is no exact match, choose the closest one.
+2. For free-text fields, respond professionally and concisely in English.
+3. If the question is about a Cover Letter, Message to hiring manager, or Motivation ("Why do you want to work here?", etc.), write a personalized 3–5 sentence response in English, highlighting the match between the user's experience and the job requirements. NEVER write lazy phrases like "Please find my resume attached". Create a warm, professional, tailor-made message!
+4. If the type is 'file', just say "Upload resume".
+5. Return ONLY the valid JSON.
+`;
+    }
 
     return `
 Você é um assistente especialista em recrutamento. Dado o currículo do usuário, as informações da vaga (se disponíveis) e um formulário de candidatura a uma vaga, sugira a melhor resposta para cada pergunta baseada no currículo.
+
+⚠️ IMPORTANTE: A vaga está em português. TODAS as respostas devem ser escritas em português, independente do idioma do currículo.
 
 Currículo do Usuário:
 ${resume || 'Não informado'}
@@ -163,17 +199,83 @@ Retorne um JSON contendo as respostas sugeridas. Formato exato:
 }
 Regras:
 1. Para campos de seleção (dropdown/checkbox/typeahead), escolha a melhor opção baseada nos "options" passados. Se não houver exata, escolha a mais próxima.
-2. Para campos de texto livre, responda de forma profissional e concisa.
-3. Se a pergunta for sobre Carta de Apresentação ("Cover Letter", "Message to hiring manager", etc.) ou Motivação ("Why do you want to work here?", "Por que você quer trabalhar aqui?", "Por que devemos te contratar?", etc.), escreva uma resposta personalizada de 3 a 5 frases completas e persuasivas, destacando a compatibilidade entre as experiências do currículo do usuário e os requisitos da vaga. NUNCA use frases curtas ou preguiçosas como "Please find my resume attached" ou "Tenho interesse". Crie uma mensagem calorosa, profissional e sob medida!
+2. Para campos de texto livre, responda de forma profissional e concisa em português.
+3. Se a pergunta for sobre Carta de Apresentação ("Cover Letter", "Message to hiring manager", etc.) ou Motivação ("Why do you want to work here?", "Por que você quer trabalhar aqui?", "Por que devemos te contratar?", etc.), escreva uma resposta personalizada de 3 a 5 frases completas e persuasivas em português, destacando a compatibilidade entre as experiências do currículo do usuário e os requisitos da vaga. NUNCA use frases curtas ou preguiçosas como "Please find my resume attached" ou "Tenho interesse". Crie uma mensagem calorosa, profissional e sob medida!
 4. Se for do tipo 'file', apenas diga "Fazer upload do currículo".
 5. Retorne APENAS o JSON válido.
 `;
   }
 
   async optimizeResume(resumeText: string, jobDescription: string): Promise<string> {
+    const lang = detectLanguageFromText(jobDescription);
+    const isEn = lang === 'en';
+
+    if (isEn) {
+      const prompt = `
+You are an expert in recruitment and ATS resume optimization.
+Your task is to generate a complete, optimized resume for the job described below.
+
+⚠️ IMPORTANT: The job posting is in English. The ENTIRE resume must be written in English, regardless of the original language of the user's resume. Translate all content to English.
+
+User Base Resume:
+${resumeText}
+
+Job Description:
+${jobDescription}
+
+══════════════════════════════════════════════
+OPTIMIZATION GUIDELINES
+══════════════════════════════════════════════
+1. Identify keywords, skills and competencies from the job posting.
+2. Adapt the summary and achievements to highlight those keywords.
+3. Do NOT invent experiences that don't exist in the original resume.
+4. Do NOT use emojis. Formal, ATS-friendly content only.
+5. In the EDUCATION section, include ONLY formations directly relevant to the job area. Omit unrelated ones — unless it's the only education listed.
+6. NEVER invent personal information not explicitly in the original resume. This includes: date of birth, address, phone, email, LinkedIn, availability, contract type. If information is not in the base resume, simply omit it from the header.
+
+══════════════════════════════════════════════
+MANDATORY OUTPUT FORMAT
+══════════════════════════════════════════════
+The resume must start with an HTML HEADER BLOCK, followed by the body in pure Markdown.
+
+HEADER (use exactly this HTML format, replacing values):
+<div style="font-size: 2.5em; font-weight: bold; margin-top: -20px; margin-bottom: 5px;">FULL NAME IN UPPERCASE</div>
+<div style="font-size: 1.1em; margin-bottom: 10px;">Primary Role | Main specialties from the job</div>
+<div style="font-size: 0.9em; margin-bottom: 2px;">Location | Phone | email@example.com | LinkedIn</div>
+<div style="font-size: 0.9em;">Date of Birth: MM/DD/YYYY | Availability: Remote | Contract: Full-time</div>
+
+BODY (pure Markdown after the header):
+- Use \`---\` for horizontal dividers between sections
+- Section titles: \`### SECTION NAME\` in uppercase
+- Role/company: \`**Role | Company**\`
+- Period: \`*Month Year – Month Year (duration) | Location*\`
+- Achievements: list with \`*   **Title:** Detailed description.\`
+- Skills: list with \`*   **Category:** item1, item2, item3.\`
+- Education: list with \`*   **Degree/Course** | Institution (Period)\`
+- Use **bold** strategically for important keywords
+
+SECTION STRUCTURE (in this order):
+1. HTML header block (above)
+2. ---
+3. ### PROFESSIONAL SUMMARY
+4. ---
+5. ### PROFESSIONAL EXPERIENCE
+6. ---
+7. ### TECHNICAL SKILLS
+8. ---
+9. ### EDUCATION
+
+Return ONLY the resume text (HTML header + Markdown body), without explanations, introductions or code blocks.
+`;
+      const text = await this.call9Router(prompt);
+      return text.trim();
+    }
+
     const prompt = `
 Você é um especialista em recrutamento e otimização de currículos para sistemas ATS.
 Sua tarefa é gerar um currículo completo e otimizado para a vaga descrita abaixo.
+
+⚠️ IMPORTANTE: A vaga está em português. O currículo INTEIRO deve ser escrito em português.
 
 Currículo Base do Usuário:
 ${resumeText}
@@ -187,10 +289,9 @@ DIRETRIZES DE OTIMIZAÇÃO
 1. Identifique as palavras-chave, habilidades e competências da vaga.
 2. Adapte o resumo e as realizações para destacar essas palavras-chave.
 3. NÃO invente experiências que não existam no currículo original.
-4. Mantenha o mesmo idioma do currículo original (português ou inglês).
-5. NÃO use emojis. Conteúdo formal e adequado para ATS.
-6. Na seção FORMAÇÃO ACADÊMICA, inclua APENAS as formações diretamente relevantes para a área da vaga (ex: cursos de tecnologia, programação, design, engenharia, certificações técnicas relacionadas). Omita formações sem relação com a vaga, como ensino fundamental, ensino médio genérico ou cursos de áreas completamente diferentes — a menos que sejam a única formação existente no currículo.
-7. NUNCA invente informações pessoais que não estejam explicitamente no currículo original. Isso inclui: data de nascimento, endereço, telefone, e-mail, LinkedIn, disponibilidade, regime de contrato e qualquer outro dado pessoal. Se uma informação não estiver no currículo base, simplesmente omita-a do cabeçalho — não coloque valores fictícios, exemplos ou placeholders.
+4. NÃO use emojis. Conteúdo formal e adequado para ATS.
+5. Na seção FORMAÇÃO ACADÊMICA, inclua APENAS as formações diretamente relevantes para a área da vaga. Omita formações sem relação com a vaga — a menos que sejam a única formação existente no currículo.
+6. NUNCA invente informações pessoais que não estejam explicitamente no currículo original. Isso inclui: data de nascimento, endereço, telefone, e-mail, LinkedIn, disponibilidade, regime de contrato. Se uma informação não estiver no currículo base, simplesmente omita-a do cabeçalho.
 
 ══════════════════════════════════════════════
 FORMATO OBRIGATÓRIO DE SAÍDA

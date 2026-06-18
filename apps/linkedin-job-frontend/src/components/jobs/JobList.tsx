@@ -91,6 +91,15 @@ function JobCard({ job, active, onClick }: JobCardProps) {
             <h3 className={`font-bold text-xs leading-tight truncate ${active ? 'text-brand-blue' : 'text-text-primary'}`}>
               {job.title}
             </h3>
+            {job.language && (
+              <span className={`px-1 py-0.5 rounded text-[8px] font-bold uppercase shrink-0 border ${
+                job.language === 'en'
+                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400'
+                  : 'bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400'
+              }`}>
+                {job.language}
+              </span>
+            )}
           </div>
           <p className="text-[11px] text-text-secondary font-medium mt-0.5 truncate flex items-center gap-1.5">
             <span className="truncate">{job.companyInfo}</span>

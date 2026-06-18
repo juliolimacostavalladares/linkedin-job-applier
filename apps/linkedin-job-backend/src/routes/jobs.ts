@@ -10,6 +10,7 @@ import { logger } from '../utils/logger';
 import type { Job, JobDetail, ApplyForm, FormQuestion } from '../types';
 import type { FileUploadResponse } from '@linkedin-job-applier/shared';
 import path from 'path';
+import { detectLanguageFromTitle, detectLanguageFromText } from '../utils/language';
 
 const router = Router();
 
@@ -62,7 +63,7 @@ router.get('/', async (req, res, next) => {
       return;
     }
 
-    const { q, remote, past24h } = req.query;
+    const { q, remote, past24h, language } = req.query;
     const isRemote = remote !== 'false';
     const isPast24h = past24h !== 'false';
 
@@ -93,6 +94,12 @@ router.get('/', async (req, res, next) => {
         }
         activeQuery = cached || '';
       }
+    }
+
+    if (language === 'en') {
+      activeQuery = activeQuery ? `(${activeQuery}) AND (English OR Inglês)` : '(English OR Inglês)';
+    } else if (language === 'pt') {
+      activeQuery = activeQuery ? `(${activeQuery}) AND (Português OR Portuguese OR Vaga)` : '(Português OR Portuguese OR Vaga)';
     }
 
     const query = `
@@ -134,10 +141,13 @@ router.get('/', async (req, res, next) => {
         });
       }
 
+      const language = detectLanguageFromTitle(job.title);
+
       return {
         ...job,
         applied: isApplied,
         appliedThroughSystem: info?.appliedThroughSystem ?? false,
+        language,
       };
     });
 
@@ -147,6 +157,7 @@ router.get('/', async (req, res, next) => {
       filters: {
         remote: isRemote,
         past24h: isPast24h,
+        language: language || 'all',
       },
       source: 'linkedin-graphql',
     });
@@ -287,6 +298,8 @@ router.get('/:id', async (req, res, next) => {
       }
     }
 
+    const language = detectLanguageFromText(jobDetail.description || '');
+
     res.json({
       id:               jobDetail.id,
       title:            jobDetail.title,
@@ -304,6 +317,7 @@ router.get('/:id', async (req, res, next) => {
       applicationStatus,
       viewedByJobPosterAt: jobDetail.viewedByJobPosterAt,
       closed: jobDetail.closed || false,
+      language,
     });
 
   } catch (error) {

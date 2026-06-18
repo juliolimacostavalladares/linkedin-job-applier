@@ -9,7 +9,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({ onRefresh, loading }: SearchBarProps) {
-  const { searchQuery, remoteFilter, past24hFilter, fetchJobs, setFilters } = useJobsStore();
+  const { searchQuery, remoteFilter, past24hFilter, languageFilter, fetchJobs, setFilters, setLanguageFilter } = useJobsStore();
   const [inputValue, setInputValue] = useState(searchQuery);
 
   // Sync input value when store's searchQuery changes (e.g. initial load)
@@ -32,6 +32,11 @@ export function SearchBar({ onRefresh, loading }: SearchBarProps) {
     const newVal = !past24hFilter;
     setFilters({ past24h: newVal });
     fetchJobs(inputValue, remoteFilter, newVal);
+  };
+
+  const selectLanguage = (lang: 'all' | 'en' | 'pt') => {
+    setLanguageFilter(lang);
+    fetchJobs(inputValue, remoteFilter, past24hFilter, lang);
   };
 
   return (
@@ -83,6 +88,43 @@ export function SearchBar({ onRefresh, loading }: SearchBarProps) {
           >
             <Clock size={11} />
             Últimas 24h
+          </button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-border-color/30">
+          <span className="text-[10px] text-text-secondary/80 font-medium mr-1">Idioma:</span>
+          <button
+            type="button"
+            onClick={() => selectLanguage('all')}
+            className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all duration-200 cursor-pointer border ${
+              languageFilter === 'all'
+                ? 'bg-brand-blue/15 border-brand-blue/30 text-brand-blue shadow-sm'
+                : 'bg-transparent border-transparent text-text-secondary hover:bg-bg-hover'
+            }`}
+          >
+            Todos
+          </button>
+          <button
+            type="button"
+            onClick={() => selectLanguage('pt')}
+            className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all duration-200 cursor-pointer border ${
+              languageFilter === 'pt'
+                ? 'bg-brand-blue/15 border-brand-blue/30 text-brand-blue shadow-sm'
+                : 'bg-transparent border-transparent text-text-secondary hover:bg-bg-hover'
+            }`}
+          >
+            Português
+          </button>
+          <button
+            type="button"
+            onClick={() => selectLanguage('en')}
+            className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all duration-200 cursor-pointer border ${
+              languageFilter === 'en'
+                ? 'bg-brand-blue/15 border-brand-blue/30 text-brand-blue shadow-sm'
+                : 'bg-transparent border-transparent text-text-secondary hover:bg-bg-hover'
+            }`}
+          >
+            Inglês
           </button>
         </div>
       </form>

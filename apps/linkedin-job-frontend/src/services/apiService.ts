@@ -11,11 +11,12 @@ const api = axios.create({
 export const apiService = {
   getConfig: () => api.get('/api/config'),
   
-  getJobs: (q?: string, remote?: boolean, past24h?: boolean) => {
+  getJobs: (q?: string, remote?: boolean, past24h?: boolean, language?: 'all' | 'en' | 'pt') => {
     const params = new URLSearchParams();
     if (q && q.trim()) params.append('q', q.trim());
     if (remote !== undefined) params.append('remote', String(remote));
     if (past24h !== undefined) params.append('past24h', String(past24h));
+    if (language && language !== 'all') params.append('language', language);
     const queryStr = params.toString();
     return api.get(`/api/jobs${queryStr ? `?${queryStr}` : ''}`);
   },
