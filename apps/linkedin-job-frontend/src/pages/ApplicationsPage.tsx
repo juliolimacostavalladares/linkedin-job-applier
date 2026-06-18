@@ -18,7 +18,8 @@ import {
   Loader2,
   RefreshCw,
   Sparkles,
-  CircleUser
+  CircleUser,
+  Bot
 } from 'lucide-react';
 import { useApplicationsStore, useThemeStore, useJobsStore } from '../stores';
 import { Sidebar } from '../components/jobs/Sidebar';
@@ -314,12 +315,14 @@ export default function ApplicationsPage() {
                           <Calendar size={10} />
                           <span>Enviado em {new Date(app.createdAt).toLocaleDateString()}</span>
                           {app.appliedThroughSystem ? (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-brand-blue/10 text-brand-blue border border-brand-blue/20 rounded text-[9px] font-bold uppercase tracking-wider">
-                              🤖 Via Sistema
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-text-secondary/10 text-text-secondary border border-text-secondary/20 rounded text-[9px] font-bold uppercase tracking-wider">
+                              <Bot size={8} />
+                              Via Sistema
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-purple-500/10 text-purple-500 border border-purple-500/20 rounded text-[9px] font-bold uppercase tracking-wider">
-                              Via LinkedIn
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-text-secondary/10 text-text-secondary border border-text-secondary/20 rounded text-[9px] font-bold uppercase tracking-wider">
+                              <span className="text-[8px] font-black bg-[#0A66C2] text-white rounded-[2px] px-[2px] leading-[10px]">in</span>
+                              LinkedIn
                             </span>
                           )}
                         </div>
@@ -424,12 +427,13 @@ export default function ApplicationsPage() {
                   <div className="bg-bg-card border border-border-color rounded-xl p-3 text-center">
                     <span className="text-[10px] font-bold text-text-secondary uppercase">Canal</span>
                     {selectedApp.appliedThroughSystem ? (
-                      <span className="flex items-center justify-center gap-1 text-sm font-semibold text-brand-blue mt-1">
-                        🤖 Via Sistema
+                      <span className="flex items-center justify-center gap-1 text-sm font-semibold text-text-primary mt-1">
+                        <Bot size={14} className="text-text-secondary" /> Sistema
                       </span>
                     ) : (
-                      <span className="flex items-center justify-center gap-1 text-sm font-semibold text-purple-500 mt-1">
-                        Via LinkedIn
+                      <span className="flex items-center justify-center gap-1 text-sm font-semibold text-text-primary mt-1">
+                        <span className="text-[10px] font-black bg-[#0A66C2] text-white rounded-[2px] px-[3px] leading-[13px]">in</span>
+                        LinkedIn
                       </span>
                     )}
                   </div>
