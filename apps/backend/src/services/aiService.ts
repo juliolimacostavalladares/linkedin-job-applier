@@ -156,8 +156,8 @@ Regras:
 
   async optimizeResume(resumeText: string, jobDescription: string): Promise<string> {
     const prompt = `
-Você é um assistente especialista em recrutamento e otimização de currículos para sistemas ATS (Applicant Tracking Systems).
-Sua tarefa é analisar o currículo base do usuário e a descrição da vaga fornecida, e gerar um novo currículo otimizado em formato markdown estruturado.
+Você é um especialista em recrutamento e otimização de currículos para sistemas ATS.
+Sua tarefa é gerar um currículo completo e otimizado para a vaga descrita abaixo.
 
 Currículo Base do Usuário:
 ${resumeText}
@@ -165,31 +165,50 @@ ${resumeText}
 Descrição da Vaga:
 ${jobDescription}
 
-Diretrizes de Otimização e Formatação:
-1. Identifique as principais palavras-chave, habilidades técnicas e competências exigidas na descrição da vaga.
-2. Adapte o resumo profissional e as realizações/responsabilidades nas experiências para destacar essas palavras-chave e competências, alinhando a linguagem do currículo com a da vaga.
-3. NÃO invente novas experiências acadêmicas ou profissionais que não existam no currículo original. Apenas otimize a forma de apresentar e destacar o que já existe.
-4. O resultado deve ser estruturado em Markdown estrito para permitir uma formatação visual excelente na conversão para PDF:
-   - Comece exatamente com o Nome do Candidato em caixa alta (ex: \`# NOME DO CANDIDATO\`).
-   - Se houver um cargo principal/headline, coloque-o na linha seguinte (ex: \`Cargo Principal | Especialidades\`).
-   - Logo abaixo, coloque as informações de contato do candidato separadas por barra vertical. Exemplo:
-     \`Endereço | Telefone | E-mail | LinkedIn\`
-   - Adicione outras informações adicionais na linha seguinte (ex: \`Nascimento: DD/MM/AAAA | Disponibilidade: Remoto | Regime: CLT/PJ\`).
-   - Use \`---\` para criar linhas divisórias horizontais entre as seções.
-   - Use títulos de seção principal do tipo \`### NOME DA SEÇÃO\` em caixa alta (ex: \`### RESUMO PROFISSIONAL\`, \`### EXPERIÊNCIA PROFISSIONAL\`, \`### HABILIDADES TÉCNICAS\`, \`### FORMAÇÃO ACADÊMICA\`).
-   - Para cada entrada de experiência profissional, use:
-     \`**Cargo | Empresa**\`
-     \`*Período | Localização*\`
-     (Exemplo:
-     \`**Desenvolvedor Front-end Sênior | Greenn**\`
-     \`*Maio 2025 – Março 2026 (11 meses) | Remoto*\`
-     )
-   - Para descrever as realizações de cada cargo, use listas com \`- \` ou \`* \` e negrito (\`**palavra**\`) estrategicamente para destacar conquistas e termos importantes.
-   - Para cada formação acadêmica, use:
-     \`*   **Curso / Grau** | Instituição (Período)\`
-5. O resultado deve ser o currículo completo otimizado na mesma língua que o original (português ou inglês).
-6. Retorne APENAS o texto do currículo otimizado final, sem explicações, introduções ou blocos de código markdown (não use \`\`\`markdown ou \`\`\`, apenas retorne o texto puro formatado em markdown).
-7. NÃO use emojis de forma alguma. O conteúdo deve ser puramente textual, formal e adequado para leitura por ATS e recrutadores humanos.
+══════════════════════════════════════════════
+DIRETRIZES DE OTIMIZAÇÃO
+══════════════════════════════════════════════
+1. Identifique as palavras-chave, habilidades e competências da vaga.
+2. Adapte o resumo e as realizações para destacar essas palavras-chave.
+3. NÃO invente experiências que não existam no currículo original.
+4. Mantenha o mesmo idioma do currículo original (português ou inglês).
+5. NÃO use emojis. Conteúdo formal e adequado para ATS.
+6. Na seção FORMAÇÃO ACADÊMICA, inclua APENAS as formações diretamente relevantes para a área da vaga (ex: cursos de tecnologia, programação, design, engenharia, certificações técnicas relacionadas). Omita formações sem relação com a vaga, como ensino fundamental, ensino médio genérico ou cursos de áreas completamente diferentes — a menos que sejam a única formação existente no currículo.
+7. NUNCA invente informações pessoais que não estejam explicitamente no currículo original. Isso inclui: data de nascimento, endereço, telefone, e-mail, LinkedIn, disponibilidade, regime de contrato e qualquer outro dado pessoal. Se uma informação não estiver no currículo base, simplesmente omita-a do cabeçalho — não coloque valores fictícios, exemplos ou placeholders.
+
+══════════════════════════════════════════════
+FORMATO OBRIGATÓRIO DE SAÍDA
+══════════════════════════════════════════════
+O currículo deve começar com um BLOCO DE CABEÇALHO em HTML inline, seguido do corpo em Markdown puro.
+
+CABEÇALHO (use exatamente este formato HTML, substituindo os valores):
+<div style="font-size: 2.5em; font-weight: bold; margin-top: -20px; margin-bottom: 5px;">NOME COMPLETO EM MAIÚSCULAS</div>
+<div style="font-size: 1.1em; margin-bottom: 10px;">Cargo Principal | Especialidades principais da vaga</div>
+<div style="font-size: 0.9em; margin-bottom: 2px;">Endereço | Telefone | email@exemplo.com | LinkedIn</div>
+<div style="font-size: 0.9em;">Nascimento: DD/MM/AAAA | Disponibilidade: Remoto | Regime: CLT/PJ</div>
+
+CORPO (use Markdown puro após o cabeçalho):
+- Use \`---\` para divisórias horizontais entre seções
+- Títulos de seção: \`### NOME DA SEÇÃO\` em maiúsculas
+- Cargo/empresa: \`**Cargo | Empresa**\`
+- Período: \`*Mês Ano – Mês Ano (duração) | Localização*\`
+- Realizações: lista com \`*   **Título:** Descrição detalhada.\`
+- Habilidades: lista com \`*   **Categoria:** item1, item2, item3.\`
+- Formação: lista com \`*   **Curso/Grau** | Instituição (Período)\`
+- Use **negrito** estrategicamente para palavras-chave importantes
+
+ESTRUTURA DAS SEÇÕES (nesta ordem):
+1. Bloco de cabeçalho HTML (acima)
+2. ---
+3. ### RESUMO PROFISSIONAL
+4. ---
+5. ### EXPERIÊNCIA PROFISSIONAL
+6. ---
+7. ### HABILIDADES TÉCNICAS
+8. ---
+9. ### FORMAÇÃO ACADÊMICA
+
+Retorne APENAS o texto do currículo (HTML header + Markdown body), sem explicações, introduções ou blocos de código.
 `;
 
     const text = await this.call9Router(prompt);
