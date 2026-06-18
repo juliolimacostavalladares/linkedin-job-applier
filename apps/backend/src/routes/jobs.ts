@@ -315,6 +315,8 @@ router.get('/:id/apply-form', async (req, res, next) => {
     const detailQuery = `
       query GetJobDetail($id: ID!, $cookie: String!, $csrf: String!, $headersJson: String) {
         jobDetail(id: $id, cookie: $cookie, csrf: $csrf, headersJson: $headersJson) {
+          title
+          companyName
           description
         }
       }
@@ -363,68 +365,90 @@ router.get('/:id/apply-form', async (req, res, next) => {
         csrf: creds.csrf,
         headersJson: creds.headersJson,
       }),
-      queryGraphQL<{ jobDetail?: { description?: string } }>(detailQuery, {
+      queryGraphQL<{ jobDetail?: { title?: string; companyName?: string; description?: string } }>(detailQuery, {
         id,
         cookie: creds.cookie,
         csrf: creds.csrf,
         headersJson: creds.headersJson,
       }).catch((err) => {
         logger.warn('[apply-form] Failed to fetch job description:', err);
-        return { jobDetail: { description: '' } };
+        return { jobDetail: { title: '', companyName: '', description: '' } };
       }),
     ]);
 
     const applyForm = formRes.applyForm;
+    const jobTitle = detailRes.jobDetail?.title || '';
+    const companyName = detailRes.jobDetail?.companyName || '';
     const jobDescription = detailRes.jobDetail?.description || '';
     let optimizedResume = '';
     let optimizedResumePdfBase64 = '';
 
     // AI suggestions generation on the backend:
-    if (applyForm && applyForm.success && applyForm.questions && applyForm.questions.length > 0) {
-      const latestResume = await resumeService.getLatest();
-      if (latestResume && latestResume.text.trim()) {
-        try {
-          if (jobDescription.trim()) {
-            logger.info(`[apply-form] Optimizing resume for job: ${id}`);
-            optimizedResume = await aiService.optimizeResume(latestResume.text, jobDescription);
-          } else {
-            optimizedResume = latestResume.text;
+    if (applyForm && applyForm.success) {
+      const allQuestions: FormQuestion[] = [];
+      if (applyForm.questions) {
+        allQuestions.push(...applyForm.questions);
+      }
+      if (applyForm.steps) {
+        applyForm.steps.forEach((step) => {
+          if (step.questions) {
+            allQuestions.push(...step.questions);
           }
+        });
+      }
 
-          if (optimizedResume) {
-            try {
-              const pdfBuffer = await pdfService.generateFromMarkdownToBuffer(optimizedResume);
-              optimizedResumePdfBase64 = pdfBuffer.toString('base64');
-            } catch (pdfErr) {
-              logger.error('Failed to generate preview PDF buffer:', pdfErr);
+      if (allQuestions.length > 0) {
+        const latestResume = await resumeService.getLatest();
+        if (latestResume && latestResume.text.trim()) {
+          try {
+            if (jobDescription.trim()) {
+              logger.info(`[apply-form] Optimizing resume for job: ${id}`);
+              optimizedResume = await aiService.optimizeResume(latestResume.text, jobDescription);
+            } else {
+              optimizedResume = latestResume.text;
             }
-          }
 
-          const aiRes = await aiService.generateAnswers(applyForm.questions, optimizedResume);
-          const answerMap = new Map<string, string>();
-          aiRes.answers.forEach((ans) => {
-            if (ans.answer) {
-              answerMap.set(ans.urn, ans.answer);
+            if (optimizedResume) {
+              try {
+                const pdfBuffer = await pdfService.generateFromMarkdownToBuffer(optimizedResume);
+                optimizedResumePdfBase64 = pdfBuffer.toString('base64');
+              } catch (pdfErr) {
+                logger.error('Failed to generate preview PDF buffer:', pdfErr);
+              }
             }
-          });
 
-          // Helper to map suggestedAnswer to questions
-          const enrichQuestion = (q: FormQuestion) => {
-            if (answerMap.has(q.urn)) {
-              q.suggestedAnswer = answerMap.get(q.urn);
-            }
-          };
-
-          applyForm.questions.forEach(enrichQuestion);
-          if (applyForm.steps) {
-            applyForm.steps.forEach((step) => {
-              if (step.questions) {
-                step.questions.forEach(enrichQuestion);
+            const aiRes = await aiService.generateAnswers(allQuestions, optimizedResume, {
+              title: jobTitle,
+              companyName,
+              description: jobDescription,
+            });
+            const answerMap = new Map<string, string>();
+            aiRes.answers.forEach((ans) => {
+              if (ans.answer) {
+                answerMap.set(ans.urn, ans.answer);
               }
             });
+
+            // Helper to map suggestedAnswer to questions
+            const enrichQuestion = (q: FormQuestion) => {
+              if (answerMap.has(q.urn)) {
+                q.suggestedAnswer = answerMap.get(q.urn);
+              }
+            };
+
+            if (applyForm.questions) {
+              applyForm.questions.forEach(enrichQuestion);
+            }
+            if (applyForm.steps) {
+              applyForm.steps.forEach((step) => {
+                if (step.questions) {
+                  step.questions.forEach(enrichQuestion);
+                }
+              });
+            }
+          } catch (aiError) {
+            logger.error('Failed to generate AI answers on backend for apply-form:', aiError);
           }
-        } catch (aiError) {
-          logger.error('Failed to generate AI answers on backend for apply-form:', aiError);
         }
       }
     }

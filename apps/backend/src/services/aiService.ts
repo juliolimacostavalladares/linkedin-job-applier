@@ -82,8 +82,12 @@ export class AIService {
     return JSON.parse(cleaned) as T;
   }
 
-  async generateAnswers(questions: FormQuestion[], resume: string): Promise<AIResponse> {
-    const prompt = this.buildPrompt(questions, resume);
+  async generateAnswers(
+    questions: FormQuestion[], 
+    resume: string, 
+    jobContext?: { title?: string; companyName?: string; description?: string }
+  ): Promise<AIResponse> {
+    const prompt = this.buildPrompt(questions, resume, jobContext);
     const text = await this.call9Router(prompt);
     return this.cleanAndParseJson<AIResponse>(text);
   }
@@ -130,12 +134,23 @@ Retorne um JSON válido e estrito no formato abaixo, sem tags markdown ou explic
     return this.cleanAndParseJson<ParsedResume>(text);
   }
 
-  private buildPrompt(questions: FormQuestion[], resume: string): string {
+  private buildPrompt(
+    questions: FormQuestion[], 
+    resume: string,
+    jobContext?: { title?: string; companyName?: string; description?: string }
+  ): string {
+    const jobInfo = jobContext 
+      ? `Vaga: ${jobContext.title || 'Não informada'}\nEmpresa: ${jobContext.companyName || 'Não informada'}\nDescrição da Vaga:\n${jobContext.description || 'Não informada'}`
+      : 'Não informada';
+
     return `
-Você é um assistente especialista em recrutamento. Dado o currículo do usuário e um formulário de candidatura a uma vaga, sugira a melhor resposta para cada pergunta baseada no currículo.
+Você é um assistente especialista em recrutamento. Dado o currículo do usuário, as informações da vaga (se disponíveis) e um formulário de candidatura a uma vaga, sugira a melhor resposta para cada pergunta baseada no currículo.
 
 Currículo do Usuário:
 ${resume || 'Não informado'}
+
+Informações da Vaga:
+${jobInfo}
 
 Perguntas do Formulário:
 ${JSON.stringify(questions, null, 2)}
@@ -149,8 +164,9 @@ Retorne um JSON contendo as respostas sugeridas. Formato exato:
 Regras:
 1. Para campos de seleção (dropdown/checkbox/typeahead), escolha a melhor opção baseada nos "options" passados. Se não houver exata, escolha a mais próxima.
 2. Para campos de texto livre, responda de forma profissional e concisa.
-3. Se for do tipo 'file', apenas diga "Fazer upload do currículo".
-4. Retorne APENAS o JSON válido.
+3. Se a pergunta for sobre Carta de Apresentação ("Cover Letter", "Message to hiring manager", etc.) ou Motivação ("Why do you want to work here?", "Por que você quer trabalhar aqui?", "Por que devemos te contratar?", etc.), escreva uma resposta personalizada de 3 a 5 frases completas e persuasivas, destacando a compatibilidade entre as experiências do currículo do usuário e os requisitos da vaga. NUNCA use frases curtas ou preguiçosas como "Please find my resume attached" ou "Tenho interesse". Crie uma mensagem calorosa, profissional e sob medida!
+4. Se for do tipo 'file', apenas diga "Fazer upload do currículo".
+5. Retorne APENAS o JSON válido.
 `;
   }
 
