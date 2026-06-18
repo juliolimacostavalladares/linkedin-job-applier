@@ -6,6 +6,7 @@ import ResumePage from './pages/ResumePage';
 import ApplicationsPage from './pages/ApplicationsPage';
 import { ConfigLoading } from './components/ui/ConfigLoading';
 import { WelcomeScreen } from './components/WelcomeScreen';
+import { ToastProvider } from './components/ui/Toast';
 
 function AppLayout() {
   const { config, loading: configLoading, fetchConfig } = useAuthStore();
@@ -35,8 +36,10 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AppLayout />
-    </BrowserRouter>
+    <ToastProvider>
+      <BrowserRouter>
+        <AppLayout />
+      </BrowserRouter>
+    </ToastProvider>
   );
 }

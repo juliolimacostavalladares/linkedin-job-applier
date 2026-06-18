@@ -4,6 +4,7 @@ import { Button } from '../ui/Button';
 import { Input, Textarea } from '../ui/Input';
 import type { JobDetail, ApplyForm, FormQuestion } from '../../types';
 import { useApplyFormStore, useResumeStore, useJobsStore } from '../../stores';
+import { useToast } from '../ui/Toast';
 
 interface ApplyModalProps {
   job: JobDetail;
@@ -11,6 +12,7 @@ interface ApplyModalProps {
 }
 
 export function ApplyModal({ job, onClose }: ApplyModalProps) {
+  const { success: showSuccessToast } = useToast();
   const {
     applyForm,
     loadingForm,
@@ -33,7 +35,7 @@ export function ApplyModal({ job, onClose }: ApplyModalProps) {
 
   const handleSaveResume = async () => {
     await saveResume();
-    await fetchApplyForm(job.id, job.title, job.companyName || job.companyInfo, userName || undefined);
+    await fetchApplyForm(job.id, job.title, job.companyName, userName || undefined);
   };
 
   const handleSubmit = async () => {
@@ -66,7 +68,7 @@ export function ApplyModal({ job, onClose }: ApplyModalProps) {
         optimizedResume,
         questionTitles,
       });
-      alert('Candidatura finalizada com sucesso!');
+      showSuccessToast('Candidatura finalizada com sucesso!');
       onClose();
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erro ao enviar candidatura';
