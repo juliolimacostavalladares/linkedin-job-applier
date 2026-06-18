@@ -12,7 +12,61 @@ importers:
         specifier: ^2.3.3
         version: 2.9.18
 
-  apps/backend:
+  apps/extension: {}
+
+  apps/graphql-linkedin:
+    dependencies:
+      '@apollo/server':
+        specifier: ^4.11.3
+        version: 4.13.0(graphql@16.14.2)
+      '@linkedin-job-applier/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
+      cors:
+        specifier: ^2.8.5
+        version: 2.8.6
+      dotenv:
+        specifier: ^17.2.3
+        version: 17.4.2
+      express:
+        specifier: ^4.21.2
+        version: 4.22.2
+      graphql:
+        specifier: ^16.10.0
+        version: 16.14.2
+      pdf-parse:
+        specifier: ^1.1.1
+        version: 1.1.4
+      winston:
+        specifier: ^3.19.0
+        version: 3.19.0
+      winston-daily-rotate-file:
+        specifier: ^5.0.0
+        version: 5.0.0(winston@3.19.0)
+    devDependencies:
+      '@types/cors':
+        specifier: ^2.8.17
+        version: 2.8.19
+      '@types/express':
+        specifier: ^4.17.21
+        version: 4.17.25
+      '@types/node':
+        specifier: ^22.14.0
+        version: 22.19.21
+      '@types/pdf-parse':
+        specifier: ^1.1.4
+        version: 1.1.5
+      esbuild:
+        specifier: ^0.25.0
+        version: 0.25.12
+      tsx:
+        specifier: ^4.21.0
+        version: 4.22.4
+      typescript:
+        specifier: ~5.8.2
+        version: 5.8.3
+
+  apps/linkedin-job-backend:
     dependencies:
       '@google/genai':
         specifier: ^2.4.0
@@ -85,9 +139,7 @@ importers:
         specifier: ~5.8.2
         version: 5.8.3
 
-  apps/extension: {}
-
-  apps/frontend:
+  apps/linkedin-job-frontend:
     dependencies:
       '@linkedin-job-applier/shared':
         specifier: workspace:*
@@ -129,58 +181,6 @@ importers:
       tailwindcss:
         specifier: ^4.1.14
         version: 4.3.1
-      typescript:
-        specifier: ~5.8.2
-        version: 5.8.3
-
-  apps/graphql-linkedin:
-    dependencies:
-      '@apollo/server':
-        specifier: ^4.11.3
-        version: 4.13.0(graphql@16.14.2)
-      '@linkedin-job-applier/shared':
-        specifier: workspace:*
-        version: link:../../packages/shared
-      cors:
-        specifier: ^2.8.5
-        version: 2.8.6
-      dotenv:
-        specifier: ^17.2.3
-        version: 17.4.2
-      express:
-        specifier: ^4.21.2
-        version: 4.22.2
-      graphql:
-        specifier: ^16.10.0
-        version: 16.14.2
-      pdf-parse:
-        specifier: ^1.1.1
-        version: 1.1.4
-      winston:
-        specifier: ^3.19.0
-        version: 3.19.0
-      winston-daily-rotate-file:
-        specifier: ^5.0.0
-        version: 5.0.0(winston@3.19.0)
-    devDependencies:
-      '@types/cors':
-        specifier: ^2.8.17
-        version: 2.8.19
-      '@types/express':
-        specifier: ^4.17.21
-        version: 4.17.25
-      '@types/node':
-        specifier: ^22.14.0
-        version: 22.19.21
-      '@types/pdf-parse':
-        specifier: ^1.1.4
-        version: 1.1.5
-      esbuild:
-        specifier: ^0.25.0
-        version: 0.25.12
-      tsx:
-        specifier: ^4.21.0
-        version: 4.22.4
       typescript:
         specifier: ~5.8.2
         version: 5.8.3
@@ -3840,7 +3840,7 @@ snapshots:
 
   '@types/pdfkit@0.17.6':
     dependencies:
-      '@types/node': 22.19.21
+      '@types/node': 24.13.2
 
   '@types/puppeteer@7.0.4':
     dependencies:

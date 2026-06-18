@@ -54,11 +54,11 @@ pnpm lint
 
 ## Apps e Pacotes
 
-### Backend (`apps/backend`)
+### Backend (`apps/linkedin-job-backend`)
 Servidor Express encarregado de interagir com o LinkedIn (buscar vagas, detalhes do formulário de candidatura simplificada) e com o Gemini para gerar respostas.
 
 ```bash
-cd apps/backend
+cd apps/linkedin-job-backend
 pnpm dev    # Inicia em modo de desenvolvimento (porta 3000)
 pnpm build  # Compila para produção
 ```
@@ -72,11 +72,11 @@ pnpm dev    # Inicia em modo de desenvolvimento (porta 4000)
 pnpm build  # Compila para produção
 ```
 
-### Frontend (`apps/frontend`)
+### Frontend (`apps/linkedin-job-frontend`)
 Interface moderna em React e Tailwind CSS onde você visualiza as vagas e inicia o auto-preenchimento por Inteligência Artificial.
 
 ```bash
-cd apps/frontend
+cd apps/linkedin-job-frontend
 pnpm dev    # Inicia o servidor Vite
 pnpm build  # Gera build estático em dist/
 ```
@@ -99,7 +99,7 @@ import { Job, JobDetail, FormQuestion, AIAnswer } from '@linkedin-job-applier/sh
 
 ## Configuração (Variáveis de Ambiente)
 
-1. **Backend**: copie `apps/backend/.env.example` para `apps/backend/.env` e configure:
+1. **Backend**: copie `apps/linkedin-job-backend/.env.example` para `apps/linkedin-job-backend/.env` e configure:
    ```env
    GEMINI_API_KEY=sua-chave-api-do-gemini
    LINKEDIN_SERVICE_URL=http://localhost:4000/graphql
@@ -111,7 +111,7 @@ import { Job, JobDetail, FormQuestion, AIAnswer } from '@linkedin-job-applier/sh
    PORT=4000
    ```
 
-3. **Frontend**: copie `apps/frontend/.env.example` para `apps/frontend/.env` e configure:
+3. **Frontend**: copie `apps/linkedin-job-frontend/.env.example` para `apps/linkedin-job-frontend/.env` e configure:
    ```env
    VITE_API_URL=http://localhost:3000
    ```

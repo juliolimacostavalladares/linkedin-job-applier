@@ -16,7 +16,7 @@ O backend utiliza **Winston** para logging estruturado com múltiplos transporte
 
 Os logs são salvos separadamente para cada serviço:
 
-**Backend (`apps/backend/logs/`):**
+**Backend (`apps/linkedin-job-backend/logs/`):**
 ```
 logs/
 ├── error.log       # Apenas erros
@@ -38,7 +38,7 @@ Cada arquivo tem rotação automática:
 
 ```bash
 # Backend
-cd apps/backend && pnpm dev
+cd apps/linkedin-job-backend && pnpm dev
 
 # Logs aparecem no console com cores
 # 2024-01-15 10:30:45 [info]: Server started {port: 3000, env: "development"}
@@ -139,10 +139,10 @@ LOG_LEVEL=debug pnpm dev
 
 ### Ver logs de erro
 ```bash
-tail -f apps/backend/logs/error.log
+tail -f apps/linkedin-job-backend/logs/error.log
 ```
 
 ### Ver todas as requisições
 ```bash
-tail -f apps/backend/logs/combined.log | grep "HTTP Request"
+tail -f apps/linkedin-job-backend/logs/combined.log | grep "HTTP Request"
 ```

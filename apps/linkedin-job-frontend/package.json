@@ -1,5 +1,5 @@
 {
-  "name": "@linkedin-job-applier/frontend",
+  "name": "@linkedin-job-applier/job-frontend",
   "version": "0.0.0",
   "private": true,
   "type": "module",
