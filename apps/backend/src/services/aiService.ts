@@ -157,7 +157,7 @@ Regras:
   async optimizeResume(resumeText: string, jobDescription: string): Promise<string> {
     const prompt = `
 Você é um assistente especialista em recrutamento e otimização de currículos para sistemas ATS (Applicant Tracking Systems).
-Sua tarefa é analisar o currículo base do usuário e a descrição da vaga fornecida, e gerar um novo currículo otimizado em formato texto/markdown.
+Sua tarefa é analisar o currículo base do usuário e a descrição da vaga fornecida, e gerar um novo currículo otimizado em formato markdown estruturado.
 
 Currículo Base do Usuário:
 ${resumeText}
@@ -165,14 +165,26 @@ ${resumeText}
 Descrição da Vaga:
 ${jobDescription}
 
-Diretrizes de Otimização:
+Diretrizes de Otimização e Formatação:
 1. Identifique as principais palavras-chave, habilidades técnicas e competências exigidas na descrição da vaga.
-2. Adapte o resumo profissional (About) e as realizações/responsabilidades nas experiências para destacar essas palavras-chave e competências, alinhando a linguagem do currículo com a da vaga.
+2. Adapte o resumo profissional e as realizações/responsabilidades nas experiências para destacar essas palavras-chave e competências, alinhando a linguagem do currículo com a da vaga.
 3. NÃO invente novas experiências acadêmicas ou profissionais que não existam no currículo original. Apenas otimize a forma de apresentar e destacar o que já existe.
-4. Mantenha uma estrutura profissional organizada e legível (de preferência usando Markdown).
-5. O resultado deve ser o currículo completo otimizado em português ou inglês (combine com a língua original do currículo/vaga).
-6. Retorne APENAS o texto do currículo otimizado final, sem explicações, introduções ou blocos de código markdown desnecessários (não use \`\`\`markdown ou \`\`\`, apenas retorne o texto puro formatado em markdown).
-7. NÃO use emojis de forma alguma no currículo (como ✅, 🌟, 💼, etc.). O conteúdo deve ser puramente textual, formal e adequado para leitura por ATS e recrutadores humanos.
+4. O resultado deve ser estruturado em Markdown estrito para permitir uma formatação visual excelente na conversão para PDF:
+   - Comece exatamente com o Nome do Candidato como título principal (use \`# Nome do Candidato\`).
+   - Se houver um cargo principal/headline, coloque-o abaixo do nome antes do contato.
+   - Logo abaixo, coloque as informações de contato do candidato separadas por barra vertical. Exemplo:
+     \`E-mail: email@domain.com | Telefone: +55... | LinkedIn: linkedin.com/in/... | Localização: Cidade, Estado (Remoto/Híbrido)\`
+   - Use títulos de seção principal do tipo \`## Nome da Seção\` (ex: \`## Resumo Profissional\`, \`## Experiência Profissional\`, \`## Habilidades Técnicas\`, \`## Formação Acadêmica\`).
+   - Para cada entrada de experiência profissional, use:
+     \`### Nome da Empresa\`
+     \`**Cargo**  |  Período  |  Localização\`
+   - Para descrever as realizações de cada cargo, use listas com \`- \` e negrito (\`**palavra**\`) estrategicamente para destacar palavras-chave, conquistas e resultados quantitativos.
+   - Para cada formação acadêmica, use:
+     \`### Instituição\`
+     \`**Curso / Grau**  |  Período\`
+5. O resultado deve ser o currículo completo otimizado na mesma língua que o original (português ou inglês).
+6. Retorne APENAS o texto do currículo otimizado final, sem explicações, introduções ou blocos de código markdown (não use \`\`\`markdown ou \`\`\`, apenas retorne o texto puro formatado em markdown).
+7. NÃO use emojis de forma alguma. O conteúdo deve ser puramente textual, formal e adequado para leitura por ATS e recrutadores humanos.
 `;
 
     const text = await this.call9Router(prompt);
