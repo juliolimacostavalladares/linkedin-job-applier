@@ -1,5 +1,6 @@
-import { Building, LinkIcon, CheckCircle, Briefcase, RefreshCw, AlertCircle, Bot } from 'lucide-react';
+import { Building, LinkIcon, CheckCircle, Briefcase, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { SystemIcon, LinkedInIcon } from '../ui/SourceBadge';
 import { useJobsStore } from '../../stores';
 
 interface JobDetailPanelProps {
@@ -94,13 +95,9 @@ export function JobDetailPanel({ onApply }: JobDetailPanelProps) {
                 <div className="inline-flex items-center gap-1.5 px-3 py-2 bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 rounded-lg text-sm font-semibold shadow-sm">
                   <CheckCircle size={15} />
                   <span>Candidatado</span>
-                  {selectedJob.appliedThroughSystem ? (
-                    <Bot size={12} className="opacity-60" />
-                  ) : (
-                    <span className="text-[9px] font-black bg-[#0A66C2] text-white rounded-[2px] px-[2.5px] leading-[11px]">
-                      in
-                    </span>
-                  )}
+                  {selectedJob.appliedThroughSystem
+                    ? <SystemIcon size="sm" />
+                    : <LinkedInIcon size="sm" />}
                 </div>
               ) : (
                 <Button size="md" onClick={onApply} icon={<CheckCircle size={15} />}>

@@ -1,5 +1,6 @@
-import { AlertCircle, RefreshCw, Bot } from 'lucide-react';
+import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Card } from '../ui/Card';
+import { SystemIcon, LinkedInIcon } from '../ui/SourceBadge';
 import { useJobsStore } from '../../stores';
 import type { Job } from '@linkedin-job-applier/shared';
 
@@ -96,13 +97,9 @@ function JobCard({ job, active, onClick }: JobCardProps) {
             {job.applied && (
               <span className="inline-flex items-center gap-1 px-1 py-0.5 bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 rounded text-[9px] font-bold uppercase tracking-wider shrink-0">
                 Candidatado
-                {job.appliedThroughSystem ? (
-                  <Bot size={9} className="opacity-70" />
-                ) : (
-                  <span className="text-[8px] font-black bg-[#0A66C2] text-white rounded-[2px] px-[2px] leading-[10px]">
-                    in
-                  </span>
-                )}
+                {job.appliedThroughSystem
+                  ? <SystemIcon size="sm" />
+                  : <LinkedInIcon size="sm" />}
               </span>
             )}
             {active && <span className="w-1 h-1 rounded-full bg-brand-blue inline-block shrink-0"></span>}
