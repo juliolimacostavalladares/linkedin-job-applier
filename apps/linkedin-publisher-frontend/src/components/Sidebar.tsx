@@ -1,13 +1,12 @@
 import { LayoutDashboard, FilePenLine, BarChart3, Sun, Moon } from 'lucide-react';
-import { useThemeStore } from '../stores';
+import { Link, useLocation } from 'react-router-dom';
+import { useThemeStore, usePublisherStore } from '../stores';
 
-interface SidebarProps {
-  activeTab: 'dashboard' | 'create' | 'analytics';
-  onTabChange: (tab: 'dashboard' | 'create' | 'analytics') => void;
-}
-
-export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export function Sidebar() {
   const { theme, toggleTheme } = useThemeStore();
+  const { setSelectedPost } = usePublisherStore();
+  const location = useLocation();
+  const currentPath = location.pathname;
 
   return (
     <aside className="hidden md:flex w-18 bg-bg-sidebar border-r border-border-color z-30 flex-col items-center py-6 shrink-0 transition-colors duration-200">
@@ -20,20 +19,21 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       <div className="flex flex-col gap-4 flex-1 w-full items-center">
         <NavButton
           icon={<LayoutDashboard size={18} />}
-          active={activeTab === 'dashboard'}
-          onClick={() => onTabChange('dashboard')}
+          active={currentPath === '/dashboard' || currentPath === '/'}
+          to="/dashboard"
           tooltip="Dashboard"
         />
         <NavButton
           icon={<FilePenLine size={18} />}
-          active={activeTab === 'create'}
-          onClick={() => onTabChange('create')}
+          active={currentPath.startsWith('/create')}
+          to="/create"
+          onClick={() => setSelectedPost(null)}
           tooltip="Criar Postagem"
         />
         <NavButton
           icon={<BarChart3 size={18} />}
-          active={activeTab === 'analytics'}
-          onClick={() => onTabChange('analytics')}
+          active={currentPath === '/analytics'}
+          to="/analytics"
           tooltip="Métricas"
         />
       </div>
@@ -57,13 +57,15 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 interface NavButtonProps {
   icon: React.ReactNode;
   active: boolean;
-  onClick: () => void;
+  to: string;
   tooltip?: string;
+  onClick?: () => void;
 }
 
-function NavButton({ icon, active, onClick, tooltip }: NavButtonProps) {
+function NavButton({ icon, active, to, tooltip, onClick }: NavButtonProps) {
   return (
-    <button
+    <Link
+      to={to}
       onClick={onClick}
       title={tooltip}
       className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all border cursor-pointer ${
@@ -73,6 +75,6 @@ function NavButton({ icon, active, onClick, tooltip }: NavButtonProps) {
       }`}
     >
       {icon}
-    </button>
+    </Link>
   );
 }

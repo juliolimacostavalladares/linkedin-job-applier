@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePublisherStore } from '../stores';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
@@ -22,16 +23,12 @@ import {
   Undo2
 } from 'lucide-react';
 import { useToast } from './ui/Toast';
-import type { LinkedInPost, PostType, PostStatus } from '../types';
+import type { PostType, PostStatus } from '../types';
 
-interface CreatePostViewProps {
-  editingPost: LinkedInPost | null;
-  onClearEdit: () => void;
-  onNavigateToDashboard: () => void;
-}
-
-export function CreatePostView({ editingPost, onClearEdit, onNavigateToDashboard }: CreatePostViewProps) {
-  const { createPost, updatePost, generateWithAi, aiGenerating } = usePublisherStore();
+export function CreatePostView() {
+  const navigate = useNavigate();
+  const { createPost, updatePost, generateWithAi, aiGenerating, selectedPost, setSelectedPost } = usePublisherStore();
+  const editingPost = selectedPost;
   const { success: showToastSuccess, error: showToastError } = useToast();
 
   const [text, setText] = useState(editingPost?.text || '');
@@ -78,8 +75,8 @@ export function CreatePostView({ editingPost, onClearEdit, onNavigateToDashboard
       createPost(postData);
       showToastSuccess('Rascunho criado com sucesso!');
     }
-    onClearEdit();
-    onNavigateToDashboard();
+    setSelectedPost(null);
+    navigate('/dashboard');
   };
 
   const handlePublishOrSchedule = () => {
@@ -118,8 +115,8 @@ export function CreatePostView({ editingPost, onClearEdit, onNavigateToDashboard
           : 'Publicado no LinkedIn com sucesso!'
       );
     }
-    onClearEdit();
-    onNavigateToDashboard();
+    setSelectedPost(null);
+    navigate('/dashboard');
   };
 
   const handleAiGenerate = async () => {
@@ -153,7 +150,10 @@ export function CreatePostView({ editingPost, onClearEdit, onNavigateToDashboard
         <div className="flex items-center gap-3">
           {editingPost && (
             <button 
-              onClick={onClearEdit}
+              onClick={() => {
+                setSelectedPost(null);
+                navigate('/dashboard');
+              }}
               className="p-1 rounded-md text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors cursor-pointer"
               title="Cancelar edição"
             >

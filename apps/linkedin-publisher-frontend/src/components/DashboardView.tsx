@@ -1,17 +1,14 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { usePublisherStore } from '../stores';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Eye, Heart, MessageSquare, Share2, Calendar, FileText, Send, Trash2, Edit3, Plus } from 'lucide-react';
-import type { LinkedInPost, PostStatus } from '../types';
+import type { PostStatus } from '../types';
 
-interface DashboardViewProps {
-  onEditPost: (post: LinkedInPost) => void;
-  onNavigateToCreate: () => void;
-}
-
-export function DashboardView({ onEditPost, onNavigateToCreate }: DashboardViewProps) {
-  const { posts, deletePost, publishPostNow } = usePublisherStore();
+export function DashboardView() {
+  const navigate = useNavigate();
+  const { posts, deletePost, publishPostNow, setSelectedPost } = usePublisherStore();
   const [activeTab, setActiveTab] = useState<PostStatus>('published');
 
   // Stats calculations
@@ -35,7 +32,10 @@ export function DashboardView({ onEditPost, onNavigateToCreate }: DashboardViewP
         <Button 
           variant="primary" 
           icon={<Plus size={16} />}
-          onClick={onNavigateToCreate}
+          onClick={() => {
+            setSelectedPost(null);
+            navigate('/create');
+          }}
         >
           Nova Publicação
         </Button>
@@ -190,7 +190,10 @@ export function DashboardView({ onEditPost, onNavigateToCreate }: DashboardViewP
                   size="sm"
                   variant="secondary"
                   icon={<Edit3 size={12} />}
-                  onClick={() => onEditPost(post)}
+                  onClick={() => {
+                    setSelectedPost(post);
+                    navigate('/create');
+                  }}
                 >
                   Editar
                 </Button>
