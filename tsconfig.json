@@ -10,8 +10,10 @@
     "strict": true
   },
   "references": [
-    { "path": "./apps/backend" },
-    { "path": "./apps/frontend" },
+    { "path": "./apps/linkedin-job-backend" },
+    { "path": "./apps/linkedin-job-frontend" },
+    { "path": "./apps/linkedin-publisher-backend" },
+    { "path": "./apps/linkedin-publisher-frontend" },
     { "path": "./apps/graphql-linkedin" },
     { "path": "./apps/extension" },
     { "path": "./packages/shared" }
