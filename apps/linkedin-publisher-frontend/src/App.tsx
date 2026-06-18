@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { DashboardView } from './components/DashboardView';
 import { CreatePostView } from './components/CreatePostView';
@@ -6,12 +6,17 @@ import { AnalyticsView } from './components/AnalyticsView';
 import { ToastProvider } from './components/ui/Toast';
 import type { LinkedInPost } from './types';
 import { FilePenLine, LayoutDashboard, BarChart3, Sun, Moon } from 'lucide-react';
-import { useThemeStore } from './stores';
+import { useThemeStore, usePublisherStore } from './stores';
 
 function AppLayout() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'create' | 'analytics'>('dashboard');
   const [editingPost, setEditingPost] = useState<LinkedInPost | null>(null);
   const { theme, toggleTheme } = useThemeStore();
+  const { fetchPosts } = usePublisherStore();
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   const handleEditPost = (post: LinkedInPost) => {
     setEditingPost(post);
