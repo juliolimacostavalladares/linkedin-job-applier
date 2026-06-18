@@ -34,7 +34,7 @@ export function LinkedInIcon({ size = 'sm' }: IconProps) {
       : 'w-[20px] h-[20px] text-[11px] rounded-[4px]';
   return (
     <span
-      className={`inline-flex items-center justify-center font-black text-white shrink-0 ${cls}`}
+      className={`inline-flex items-center justify-center font-black text-white shrink-0 normal-case ${cls}`}
       style={{ background: '#0A66C2' }}
       title="Candidatado no LinkedIn"
     >
