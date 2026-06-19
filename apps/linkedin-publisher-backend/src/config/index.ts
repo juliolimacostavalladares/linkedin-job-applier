@@ -7,13 +7,13 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
 
   nineRouter: {
-    apiKey: process.env.NINE_ROUTER_API_KEY || 'sk-4d17a0a7e062b95e-dpfpwg-9d1ccc2f',
+    apiKey: process.env.NINE_ROUTER_API_KEY || '',
     baseUrl: process.env.NINE_ROUTER_BASE_URL || 'http://localhost:20128/v1',
     model: process.env.NINE_ROUTER_MODEL || 'ag/gemini-3.5-flash-low',
   },
 
   cors: {
-    allowedOrigins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:5174'],
+    allowedOrigins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:5175'],
   },
 
   services: {

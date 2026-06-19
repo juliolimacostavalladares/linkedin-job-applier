@@ -162,7 +162,7 @@ export function ProfileView({
 
           {/* About Section */}
           <Card className="p-5 space-y-4 shadow-xs">
-            <div className="flex items-center gap-2 border-b border-border-color/45 pb-3">
+            <div className="flex items-center gap-2 border-b border-border-color pb-3">
               <FileText size={18} className="text-brand-blue" />
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">
                 Sobre
@@ -175,7 +175,7 @@ export function ProfileView({
 
           {/* Experience Section */}
           <Card className="p-5 space-y-4 shadow-xs">
-            <div className="flex items-center gap-2 border-b border-border-color/45 pb-3">
+            <div className="flex items-center gap-2 border-b border-border-color pb-3">
               <Building size={18} className="text-brand-blue" />
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">
                 Experiência
@@ -199,12 +199,12 @@ export function ProfileView({
                         {exp.duration}
                       </p>
                       {exp.description && (
-                        <p className="text-[11px] text-text-secondary leading-relaxed mt-2 whitespace-pre-wrap border-l-2 border-border-color/85 pl-3">
+                        <p className="text-[11px] text-text-secondary leading-relaxed mt-2 whitespace-pre-wrap border-l-2 border-border-color pl-3">
                           {exp.description}
                         </p>
                       )}
                       {idx < experiences.length - 1 && (
-                        <div className="border-b border-border-color/45 pt-5" />
+                        <div className="border-b border-border-color pt-5" />
                       )}
                     </div>
                   </div>
@@ -219,7 +219,7 @@ export function ProfileView({
 
           {/* Education Section */}
           <Card className="p-5 space-y-4 shadow-xs">
-            <div className="flex items-center gap-2 border-b border-border-color/45 pb-3">
+            <div className="flex items-center gap-2 border-b border-border-color pb-3">
               <GraduationCap size={18} className="text-brand-blue" />
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider">
                 Formação Acadêmica
@@ -243,7 +243,7 @@ export function ProfileView({
                         {edu.duration}
                       </p>
                       {idx < education.length - 1 && (
-                        <div className="border-b border-border-color/45 pt-5" />
+                        <div className="border-b border-border-color pt-5" />
                       )}
                     </div>
                   </div>
