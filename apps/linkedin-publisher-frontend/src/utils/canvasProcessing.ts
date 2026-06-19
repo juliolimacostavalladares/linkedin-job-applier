@@ -42,10 +42,20 @@ export function applyFilter(
   canvas: HTMLCanvasElement,
   filter: FilterType
 ): void {
+  if (filter === 'original') return;
+
   const ctx = canvas.getContext('2d')!;
+
+  // Create temp canvas with current content
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvas.width;
+  tempCanvas.height = canvas.height;
+  const tempCtx = tempCanvas.getContext('2d')!;
+  tempCtx.drawImage(canvas, 0, 0);
+
+  // Apply filter by redrawing
   ctx.filter = FILTER_PRESETS[filter];
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  ctx.putImageData(imageData, 0, 0);
+  ctx.drawImage(tempCanvas, 0, 0);
   ctx.filter = 'none';
 }
 
@@ -53,16 +63,28 @@ export function applyAdjustments(
   canvas: HTMLCanvasElement,
   adj: Adjustments
 ): void {
+  // Skip if no adjustments
+  if (adj.brightness === 0 && adj.contrast === 0 && adj.saturation === 0) {
+    return;
+  }
+
   const ctx = canvas.getContext('2d')!;
 
+  // Create temp canvas with current content
+  const tempCanvas = document.createElement('canvas');
+  tempCanvas.width = canvas.width;
+  tempCanvas.height = canvas.height;
+  const tempCtx = tempCanvas.getContext('2d')!;
+  tempCtx.drawImage(canvas, 0, 0);
+
+  // Build filter string
   const brightness = 1 + adj.brightness / 100;
   const contrast = 1 + adj.contrast / 100;
   const saturation = 1 + adj.saturation / 100;
-
   ctx.filter = `brightness(${brightness}) contrast(${contrast}) saturate(${saturation})`;
 
-  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  ctx.putImageData(imageData, 0, 0);
+  // Apply by redrawing
+  ctx.drawImage(tempCanvas, 0, 0);
   ctx.filter = 'none';
 }
 
