@@ -1,5 +1,5 @@
 import { Briefcase, ClipboardList, CircleUser } from 'lucide-react';
-import { useThemeStore } from '../../stores';
+import { useThemeStore, useResumeStore } from '../../stores';
 import { SidebarLayout } from '@linkedin-job-applier/shared';
 
 interface SidebarProps {
@@ -9,6 +9,7 @@ interface SidebarProps {
 
 export function Sidebar({ activeView, onViewChange }: SidebarProps) {
   const { theme, toggleTheme } = useThemeStore();
+  const resume = useResumeStore();
 
   return (
     <SidebarLayout theme={theme} onThemeToggle={toggleTheme} footerActions={
@@ -21,7 +22,19 @@ export function Sidebar({ activeView, onViewChange }: SidebarProps) {
             : 'text-text-secondary bg-transparent border-transparent hover:bg-bg-hover hover:text-text-primary'
         }`}
       >
-        <CircleUser size={22} />
+        {resume?.photoUrl ? (
+          <img
+            src={resume.photoUrl}
+            alt={resume.name || ''}
+            className="w-7 h-7 rounded-full object-cover"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+          />
+        ) : (
+          <CircleUser size={22} />
+        )}
       </button>
     }>
       <NavButton
