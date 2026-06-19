@@ -1,13 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-@import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --bg-app: #f3f2f0;          /* LinkedIn light background */
   --bg-card: #ffffff;         /* LinkedIn light card/container */
   --bg-hover: #f8f9fa;        /* Light hover background */
-  --border-color: rgba(0, 0, 0, 0.08); /* Sober light border color */
+  --border-color: rgba(0, 0, 0, 0.03); /* Balanced subtle borders */
   --text-primary: rgba(0, 0, 0, 0.9);  /* Sober light text primary */
   --text-secondary: rgba(0, 0, 0, 0.6);/* Sober light text secondary */
   --color-primary: #0a66c2;   /* LinkedIn Blue */
@@ -23,7 +24,7 @@
   --bg-app: #0f1214;          /* LinkedIn dark background */
   --bg-card: #1b1f23;         /* LinkedIn dark card/container */
   --bg-hover: #292e33;        /* Dark hover background */
-  --border-color: rgba(255, 255, 255, 0.08); /* Sober dark border color */
+  --border-color: rgba(255, 255, 255, 0.03); /* Balanced subtle borders */
   --text-primary: rgba(255, 255, 255, 0.9);  /* Sober dark text primary */
   --text-secondary: rgba(255, 255, 255, 0.6);/* Sober dark text secondary */
   --color-primary: #70b5f9;   /* LinkedIn Dark Blue */
@@ -40,7 +41,7 @@
   
   --color-bg-app: var(--bg-app);
   --color-bg-card: var(--bg-card);
-  --color-bg-hover: var(--color-bg-hover);
+  --color-bg-hover: var(--bg-hover);
   --color-border-color: var(--border-color);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
@@ -63,10 +64,21 @@ body {
   padding: 0;
 }
 
-@utility scrollbar-hide {
-  &::-webkit-scrollbar {
+/* Force subtle borders globally */
+*[class*="border"] {
+  border-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+:root.dark *[class*="border"] {
+  border-color: rgba(255, 255, 255, 0.03) !important;
+}
+
+@layer utilities {
+  .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+  .scrollbar-hide {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
 }
