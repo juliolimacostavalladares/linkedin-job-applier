@@ -97,6 +97,7 @@ setInterval(async () => {
                 status: 'published',
                 publishedAt: now,
                 scheduledAt: null,
+                linkedinId: result.data.createPost.postId || null,
                 views: 0,
                 likes: 0,
                 comments: 0,

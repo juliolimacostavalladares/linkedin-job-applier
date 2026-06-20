@@ -154,7 +154,7 @@ router.get('/:id', async (req, res) => {
 
 // POST create post (with automatic image upload orchestration)
 router.post('/', upload.array('images', 9), async (req, res) => {
-  const { text, type, mediaUrl, mediaName, mediaUrn: bodyMediaUrn, status, scheduledAt } = req.body;
+  const { text, type, mediaUrl, mediaName, mediaUrn: bodyMediaUrn, linkedinId: bodyLinkedinId, status, scheduledAt } = req.body;
   const files = req.files as Express.Multer.File[] | undefined;
 
   if (!text) {
@@ -165,6 +165,7 @@ router.post('/', upload.array('images', 9), async (req, res) => {
   try {
     const isPublished = status === 'published';
     let mediaUrn: string | undefined = bodyMediaUrn || undefined;
+    let publishedPostId: string | undefined = undefined;
 
     // Se houver imagens, fazer upload automaticamente
     if (files && files.length > 0) {
@@ -203,6 +204,7 @@ router.post('/', upload.array('images', 9), async (req, res) => {
         res.status(400).json({ error: result.error || 'Falha ao publicar no LinkedIn' });
         return;
       }
+      publishedPostId = result.postId;
     }
 
     // Salvar no banco de dados
@@ -213,6 +215,7 @@ router.post('/', upload.array('images', 9), async (req, res) => {
         mediaUrl: mediaUrl || null,
         mediaName: mediaName || null,
         mediaUrn: mediaUrn || null,
+        linkedinId: publishedPostId || bodyLinkedinId || null,
         status: status || 'draft',
         scheduledAt: scheduledAt ? new Date(scheduledAt) : null,
         publishedAt: isPublished ? new Date() : null,
@@ -232,7 +235,7 @@ router.post('/', upload.array('images', 9), async (req, res) => {
 // PUT update post
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { text, type, mediaUrl, mediaName, mediaUrn, status, scheduledAt } = req.body;
+  const { text, type, mediaUrl, mediaName, mediaUrn, linkedinId, status, scheduledAt } = req.body;
 
   try {
     const existing = await prisma.post.findUnique({ where: { id } });
@@ -244,13 +247,17 @@ router.put('/:id', async (req, res) => {
     const wasPublished = existing.status === 'published';
     const isPublishing = status === 'published';
 
+    let publishedPostId = existing.linkedinId;
+
     if (isPublishing && !wasPublished) {
       const postText = text !== undefined ? text : existing.text;
-      const result = await publishToLinkedIn(postText, mediaUrn);
+      const finalMediaUrn = mediaUrn !== undefined ? mediaUrn : (existing.mediaUrn || undefined);
+      const result = await publishToLinkedIn(postText, finalMediaUrn);
       if (!result.success) {
         res.status(400).json({ error: result.error || 'Falha ao publicar no LinkedIn' });
         return;
       }
+      publishedPostId = result.postId;
     }
 
     const post = await prisma.post.update({
@@ -261,6 +268,7 @@ router.put('/:id', async (req, res) => {
         mediaUrl: mediaUrl !== undefined ? mediaUrl : existing.mediaUrl,
         mediaName: mediaName !== undefined ? mediaName : existing.mediaName,
         mediaUrn: mediaUrn !== undefined ? mediaUrn : existing.mediaUrn,
+        linkedinId: linkedinId !== undefined ? linkedinId : publishedPostId,
         status: status !== undefined ? status : existing.status,
         scheduledAt: scheduledAt !== undefined ? (scheduledAt ? new Date(scheduledAt) : null) : existing.scheduledAt,
         publishedAt: isPublishing && !wasPublished ? new Date() : existing.publishedAt,
@@ -278,6 +286,45 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
+    const existing = await prisma.post.findUnique({ where: { id } });
+    if (!existing) {
+      res.status(404).json({ error: 'Publicação não encontrada' });
+      return;
+    }
+
+    // Se o post foi publicado e temos o linkedinId, tentar deletar do LinkedIn
+    if (existing.status === 'published' && existing.linkedinId) {
+      const creds = await credentialsService.getLatest();
+      if (creds) {
+        const query = `
+          mutation DeletePost($cookie: String!, $csrf: String!, $headersJson: String, $linkedinId: String!) {
+            deletePost(cookie: $cookie, csrf: $csrf, headersJson: $headersJson, linkedinId: $linkedinId) {
+              success
+              error
+            }
+          }
+        `;
+
+        try {
+          const result = await queryGraphQL<{ deletePost: { success: boolean; error?: string } }>(query, {
+            cookie: creds.cookie,
+            csrf: creds.csrf,
+            headersJson: creds.headersJson,
+            linkedinId: existing.linkedinId,
+          });
+
+          if (!result.deletePost.success) {
+            console.error(`[Delete Error] Falha ao deletar post do LinkedIn: ${result.deletePost.error}`);
+          } else {
+            console.log(`[Delete Success] Post #${existing.id} deletado do LinkedIn.`);
+          }
+        } catch (err: unknown) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          console.error(`[Delete Error] Erro ao deletar post do LinkedIn:`, errMsg);
+        }
+      }
+    }
+
     await prisma.post.delete({
       where: { id },
     });
@@ -314,6 +361,7 @@ router.post('/:id/publish', async (req, res) => {
         status: 'published',
         publishedAt: new Date(),
         scheduledAt: null,
+        linkedinId: result.postId || null,
         type: finalMediaUrn ? 'image' : existing.type,
         views: 0,
         likes: 0,

@@ -12,7 +12,7 @@ import { fetchApplyForm } from './fetchers/applyFormFetcher';
 import { submitApplyForm, type ApplySubmissionResult } from './fetchers/submitApplyFormFetcher';
 import { fetchResumePdf } from './fetchers/pdfFetcher';
 import { fetchProfileInfo } from './fetchers/profileFetcher';
-import { createPost, type CreatePostResult } from './fetchers/postPublisher';
+import { createPost, deletePost, type CreatePostResult, type DeletePostResult } from './fetchers/postPublisher';
 
 import type { LinkedInResponse, Job, JobDetail, ApplyForm } from '@linkedin-job-applier/shared';
 import type { ProfileInfo } from './fetchers/profileFetcher';
@@ -28,8 +28,12 @@ export class LinkedInService {
     this.dynamicHeaders = parseDynamicHeaders(headersJson);
   }
 
-  createPost(text: string): Promise<CreatePostResult> {
-    return createPost(this.cookie, this.csrf, this.dynamicHeaders, text);
+  createPost(text: string, mediaUrn?: string): Promise<CreatePostResult> {
+    return createPost(this.cookie, this.csrf, this.dynamicHeaders, text, mediaUrn);
+  }
+
+  deletePost(linkedinId: string): Promise<DeletePostResult> {
+    return deletePost(this.cookie, this.csrf, this.dynamicHeaders, linkedinId);
   }
 
   fetchJobs(keywords?: string | null, remote?: boolean | null, past24h?: boolean | null): Promise<Job[]> {

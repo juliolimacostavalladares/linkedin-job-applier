@@ -104,13 +104,26 @@ export const typeDefs = `#graphql
     error: String
   }
 
+  type DeletePostResult {
+    success: Boolean!
+    error: String
+  }
+
   type Mutation {
     createPost(
       cookie: String!
       csrf: String!
       headersJson: String
       text: String!
+      mediaUrn: String
     ): CreatePostResult!
+
+    deletePost(
+      cookie: String!
+      csrf: String!
+      headersJson: String
+      linkedinId: String!
+    ): DeletePostResult!
 
     submitApplication(
       id: ID!

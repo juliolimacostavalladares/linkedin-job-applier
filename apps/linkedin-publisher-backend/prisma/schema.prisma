@@ -15,6 +15,7 @@ model Post {
   mediaUrl    String?
   mediaName   String?
   mediaUrn    String?
+  linkedinId  String?
   status      String   @default("draft") // 'draft' | 'scheduled' | 'published'
   scheduledAt DateTime?
   publishedAt DateTime?
