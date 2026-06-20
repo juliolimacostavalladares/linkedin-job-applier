@@ -56,8 +56,8 @@ setInterval(async () => {
           }
 
           const query = `
-            mutation CreatePost($cookie: String!, $csrf: String!, $headersJson: String, $text: String!) {
-              createPost(cookie: $cookie, csrf: $csrf, headersJson: $headersJson, text: $text) {
+            mutation CreatePost($cookie: String!, $csrf: String!, $headersJson: String, $text: String!, $mediaUrn: String) {
+              createPost(cookie: $cookie, csrf: $csrf, headersJson: $headersJson, text: $text, mediaUrn: $mediaUrn) {
                 success
                 postId
                 error
@@ -77,6 +77,7 @@ setInterval(async () => {
                 csrf: creds.csrf,
                 headersJson: creds.headersJson,
                 text: post.text,
+                mediaUrn: post.mediaUrn || null,
               },
             }),
           });

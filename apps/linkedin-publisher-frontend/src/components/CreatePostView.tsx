@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePublisherStore } from '../stores';
+import { apiService } from '../services/apiService';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 import { Input, Textarea } from './ui/Input';
@@ -49,6 +50,29 @@ export function CreatePostView() {
   const [aiTone, setAiTone] = useState('technical');
   const [generatedText, setGeneratedText] = useState('');
 
+  // Image upload states
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploadedMediaUrn, setUploadedMediaUrn] = useState<string>(editingPost?.mediaUrn || '');
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Generate preview URLs when images change
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length > 9) {
+      showToastError('Máximo de 9 imagens!');
+      return;
+    }
+    
+    // Revoke old preview URLs to free memory
+    imagePreviews.forEach(url => URL.revokeObjectURL(url));
+    
+    // Create new preview URLs
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setSelectedImages(files);
+    setImagePreviews(newPreviews);
+  };
+
   const handleSaveDraft = () => {
     if (!text.trim()) {
       showToastError('Escreva um texto antes de salvar!');
@@ -60,6 +84,7 @@ export function CreatePostView() {
       type: postType,
       mediaUrl: mediaUrl.trim() ? mediaUrl : undefined,
       mediaName: mediaName.trim() ? mediaName : undefined,
+      mediaUrn: uploadedMediaUrn || undefined,
       status: 'draft' as const,
       scheduledAt: undefined,
       publishedAt: undefined
@@ -72,7 +97,7 @@ export function CreatePostView() {
       });
       showToastSuccess('Rascunho atualizado com sucesso!');
     } else {
-      createPost(postData);
+      createPost(postData, selectedImages);
       showToastSuccess('Rascunho criado com sucesso!');
     }
     setSelectedPost(null);
@@ -95,6 +120,7 @@ export function CreatePostView() {
       type: postType,
       mediaUrl: mediaUrl.trim() ? mediaUrl : undefined,
       mediaName: mediaName.trim() ? mediaName : undefined,
+      mediaUrn: uploadedMediaUrn || undefined,
       status: (isScheduled ? 'scheduled' : 'published') as PostStatus,
       scheduledAt: isScheduled ? new Date(scheduledAt).toISOString() : undefined,
       publishedAt: isScheduled ? undefined : new Date().toISOString()
@@ -108,7 +134,7 @@ export function CreatePostView() {
           : 'Publicado no LinkedIn com sucesso!'
       );
     } else {
-      createPost(postData);
+      createPost(postData, selectedImages);
       showToastSuccess(
         isScheduled 
           ? 'Postagem agendada com sucesso!' 
@@ -136,6 +162,36 @@ export function CreatePostView() {
   const handleApplyAiText = () => {
     setText(generatedText);
     showToastSuccess('Texto aplicado ao editor.');
+  };
+
+  const handleImageUpload = async () => {
+    if (selectedImages.length === 0) {
+      showToastError('Selecione pelo menos uma imagem!');
+      return;
+    }
+
+    if (selectedImages.length > 9) {
+      showToastError('Máximo de 9 imagens por post!');
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const { data } = await apiService.uploadImages(selectedImages);
+
+      if (data.success && data.mediaUrn) {
+        setUploadedMediaUrn(data.mediaUrn);
+        showToastSuccess(`${selectedImages.length} imagem(ns) enviada(s) com sucesso!`);
+      } else {
+        throw new Error(data.error || 'Erro no upload');
+      }
+    } catch (error) {
+      showToastError('Erro ao fazer upload das imagens');
+      console.error('Upload error:', error);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const charLimit = 3000;
@@ -234,9 +290,48 @@ export function CreatePostView() {
           {/* Conditional Media Inputs */}
           {postType !== 'text' && (
             <div className="space-y-3 pt-1 animate-fadeIn">
+              {postType === 'image' && (
+                <div className="space-y-3 p-3 bg-brand-blue/5 border border-brand-blue/20 rounded-lg">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-text-primary uppercase">
+                      Upload de Imagens (até 9)
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      onChange={handleImageSelect}
+                      className="w-full text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-brand-blue file:text-white hover:file:bg-brand-blue/90 file:cursor-pointer"
+                    />
+                  </div>
+
+                  {selectedImages.length > 0 && (
+                    <div className="space-y-2">
+                      <div className="text-[10px] font-bold text-text-secondary">
+                        {selectedImages.length} imagem(ns) selecionada(s) - as imagens aparecerão no preview ao lado →
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="primary"
+                        onClick={handleImageUpload}
+                        disabled={isUploading}
+                        icon={isUploading ? <Loader2 size={12} className="animate-spin" /> : <ImageIcon size={12} />}
+                      >
+                        {isUploading ? 'Enviando...' : 'Enviar Imagens'}
+                      </Button>
+                      {uploadedMediaUrn && (
+                        <div className="text-[10px] text-green-600 font-bold">
+                          ✓ Imagens enviadas com sucesso!
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-text-secondary uppercase">
-                  {postType === 'image' ? 'URL da Imagem' : 'URL do Link'}
+                  {postType === 'image' ? 'URL da Imagem (Opcional)' : 'URL do Link'}
                 </label>
                 <Input
                   type="url"
@@ -447,6 +542,52 @@ export function CreatePostView() {
           </div>
 
           {/* Card Media Preview */}
+          {imagePreviews.length > 0 && (
+            <div className="border-y border-border-color/65 bg-bg-app overflow-hidden">
+              {imagePreviews.length === 1 ? (
+                /* Single Image */
+                <img 
+                  src={imagePreviews[0]} 
+                  alt="Post Image" 
+                  className="w-full h-auto max-h-[400px] object-cover"
+                />
+              ) : (
+                /* Multiple Images Grid */
+                <div className={`grid gap-0.5 p-0 ${
+                  imagePreviews.length === 2 ? 'grid-cols-2' : 
+                  imagePreviews.length === 3 ? 'grid-cols-3' :
+                  imagePreviews.length === 4 ? 'grid-cols-2 grid-rows-2' :
+                  'grid-cols-3'
+                }`}>
+                  {imagePreviews.slice(0, 9).map((preview, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`relative ${
+                        imagePreviews.length === 3 ? 'aspect-square' :
+                        imagePreviews.length === 5 && idx < 2 ? 'col-span-1 row-span-1 aspect-square' :
+                        imagePreviews.length === 5 && idx >= 2 ? 'col-span-1 aspect-square' :
+                        'aspect-square'
+                      } overflow-hidden`}
+                    >
+                      <img 
+                        src={preview} 
+                        alt={`Image ${idx + 1}`} 
+                        className="w-full h-full object-cover"
+                      />
+                      {/* Show +N overlay on last image if more than 9 */}
+                      {idx === 8 && imagePreviews.length > 9 && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                          <span className="text-white text-2xl font-bold">
+                            +{imagePreviews.length - 9}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
           {postType !== 'text' && mediaUrl.trim() && (
             <div className="border-y border-border-color/65 bg-bg-app overflow-hidden">
               {postType === 'image' ? (
