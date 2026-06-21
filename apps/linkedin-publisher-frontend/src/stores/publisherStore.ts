@@ -13,7 +13,7 @@ interface PublisherState {
   fetchCredentialsStatus: () => Promise<void>;
   fetchPosts: () => Promise<void>;
   fetchProfile: () => Promise<void>;
-  createPost: (post: Omit<LinkedInPost, 'id' | 'createdAt' | 'updatedAt' | 'metrics'>) => Promise<void>;
+  createPost: (post: Omit<LinkedInPost, 'id' | 'createdAt' | 'updatedAt' | 'metrics'>, images?: File[]) => Promise<void>;
   updatePost: (id: string, updates: Partial<LinkedInPost>) => Promise<void>;
   deletePost: (id: string) => Promise<void>;
   setSelectedPost: (post: LinkedInPost | null) => void;
@@ -51,10 +51,10 @@ export const usePublisherStore = create<PublisherState>((set, get) => ({
     }
   },
 
-  createPost: async (post) => {
+  createPost: async (post, images) => {
     set({ loading: true });
     try {
-      const { data } = await apiService.createPost(post);
+      const { data } = await apiService.createPost(post, images);
       set((state) => ({
         posts: [data, ...state.posts],
         selectedPost: data,

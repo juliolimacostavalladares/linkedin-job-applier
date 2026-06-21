@@ -15,6 +15,7 @@ export interface LinkedInPost {
   type: PostType;
   mediaUrl?: string;
   mediaName?: string;
+  mediaUrn?: string;
   status: PostStatus;
   scheduledAt?: string;
   publishedAt?: string;
