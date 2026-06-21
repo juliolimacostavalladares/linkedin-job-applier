@@ -1,5 +1,5 @@
 import swaggerJSDoc from 'swagger-jsdoc';
-import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { writeFileSync, mkdirSync, existsSync, rmSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { generateFiles } from 'fumadocs-openapi';
@@ -33,6 +33,20 @@ const swaggerOptions = {
         },
       },
     },
+    tags: [
+      {
+        name: 'Jobs',
+        description: 'Operations related to LinkedIn easy-apply jobs',
+      },
+      {
+        name: 'Posts',
+        description: 'Operations related to publishing and managing posts',
+      },
+      {
+        name: 'Profile',
+        description: 'Operations related to parsing and retrieving user profile information',
+      },
+    ],
     security: [
       {
         LinkedInCookie: [],
@@ -60,20 +74,22 @@ console.log('OpenAPI spec generated at', openapiPath);
 async function main() {
   const outputDir = path.join(projectRoot, 'content/docs/api');
   
-  if (!existsSync(outputDir)) {
-    mkdirSync(outputDir, { recursive: true });
+  if (existsSync(outputDir)) {
+    rmSync(outputDir, { recursive: true, force: true });
   }
+  mkdirSync(outputDir, { recursive: true });
 
-  // Use path relative to projectRoot (docs app root)
-  const relativeInputPath = 'public/openapi.json';
+  // Use absolute path to ensure correct resolution from monorepo root
+  const absoluteInputPath = path.resolve(projectRoot, 'public/openapi.json');
 
   const openapi = createOpenAPI({
-    input: [relativeInputPath],
+    input: [absoluteInputPath],
   });
 
   await generateFiles({
     input: openapi,
     output: outputDir,
+    groupBy: 'tag',
   });
 
   console.log('Fumadocs API documentation files generated successfully!');

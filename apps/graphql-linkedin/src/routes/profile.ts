@@ -7,6 +7,9 @@ export const profileRouter = Router();
  * @openapi
  * /api/profile/info:
  *   get:
+ *     tags:
+ *       - Profile
+ *     operationId: getProfileInfo
  *     summary: Retrieve profile info
  *     description: Fetches full profile info including bio, experiences, and education parsed from the user's PDF profile.
  *     security:
@@ -26,6 +29,9 @@ profileRouter.get('/info', profileController.getProfileInfo);
  * @openapi
  * /api/profile/resume-pdf:
  *   get:
+ *     tags:
+ *       - Profile
+ *     operationId: getResumePdf
  *     summary: Retrieve resume PDF
  *     description: Downloads the user's profile PDF from LinkedIn and returns parsed text along with a base64-encoded PDF.
  *     security:

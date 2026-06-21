@@ -21,6 +21,20 @@
       }
     }
   },
+  "tags": [
+    {
+      "name": "Jobs",
+      "description": "Operations related to LinkedIn easy-apply jobs"
+    },
+    {
+      "name": "Posts",
+      "description": "Operations related to publishing and managing posts"
+    },
+    {
+      "name": "Profile",
+      "description": "Operations related to parsing and retrieving user profile information"
+    }
+  ],
   "security": [
     {
       "LinkedInCookie": [],
@@ -30,6 +44,10 @@
   "paths": {
     "/api/profile/info": {
       "get": {
+        "tags": [
+          "Profile"
+        ],
+        "operationId": "getProfileInfo",
         "summary": "Retrieve profile info",
         "description": "Fetches full profile info including bio, experiences, and education parsed from the user's PDF profile.",
         "security": [
@@ -53,6 +71,10 @@
     },
     "/api/profile/resume-pdf": {
       "get": {
+        "tags": [
+          "Profile"
+        ],
+        "operationId": "getResumePdf",
         "summary": "Retrieve resume PDF",
         "description": "Downloads the user's profile PDF from LinkedIn and returns parsed text along with a base64-encoded PDF.",
         "security": [
@@ -90,6 +112,10 @@
     },
     "/api/posts": {
       "post": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "createPost",
         "summary": "Create a post on LinkedIn",
         "description": "Publishes a text post (with optional media or documents) to LinkedIn.",
         "security": [
@@ -152,6 +178,10 @@
     },
     "/api/posts/{id}": {
       "delete": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "deletePost",
         "summary": "Delete a post",
         "description": "Deletes a specific post by its LinkedIn sharing ID.",
         "security": [
@@ -186,6 +216,10 @@
     },
     "/api/jobs": {
       "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "listJobs",
         "summary": "List easy-apply jobs",
         "description": "Retrieves easy-apply jobs matching the keywords and filters.",
         "security": [
@@ -235,6 +269,10 @@
     },
     "/api/jobs/{id}": {
       "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getJobDetail",
         "summary": "Retrieve job details",
         "description": "Gets detailed information for a specific job posting.",
         "security": [
@@ -269,6 +307,10 @@
     },
     "/api/jobs/{id}/apply-form": {
       "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getApplyForm",
         "summary": "Retrieve job application form",
         "description": "Fetches the multi-step form questions for a LinkedIn Easy Apply job.",
         "security": [
@@ -303,6 +345,10 @@
     },
     "/api/jobs/{id}/apply": {
       "post": {
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "submitApplication",
         "summary": "Submit application form",
         "description": "Submits Easy Apply form answers and file uploads for a job posting.",
         "security": [
@@ -386,6 +432,5 @@
         }
       }
     }
-  },
-  "tags": []
+  }
 }

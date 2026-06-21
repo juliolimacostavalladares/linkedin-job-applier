@@ -6,7 +6,8 @@ description: >-
 full: true
 _openapi:
   preload:
-    - public/openapi.json
+    - >-
+      /Users/macbookpro/Documents/linkedin-job-explorer/apps/docs/public/openapi.json
   method: GET
   webhook: false
   toc: []
@@ -27,7 +28,7 @@ export default function Layout(props) {
   return (
     <>
       {props.children}
-      <Comp document="public/openapi.json" operations={[{"path":"/api/profile/resume-pdf","method":"get"}]} />
+      <Comp document="/Users/macbookpro/Documents/linkedin-job-explorer/apps/docs/public/openapi.json" operations={[{"path":"/api/profile/resume-pdf","method":"get"}]} />
     </>
   );
 }

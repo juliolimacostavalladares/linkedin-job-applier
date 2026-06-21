@@ -7,6 +7,9 @@ export const postsRouter = Router();
  * @openapi
  * /api/posts:
  *   post:
+ *     tags:
+ *       - Posts
+ *     operationId: createPost
  *     summary: Create a post on LinkedIn
  *     description: Publishes a text post (with optional media or documents) to LinkedIn.
  *     security:
@@ -50,6 +53,9 @@ postsRouter.post('/', postsController.createPost);
  * @openapi
  * /api/posts/{id}:
  *   delete:
+ *     tags:
+ *       - Posts
+ *     operationId: deletePost
  *     summary: Delete a post
  *     description: Deletes a specific post by its LinkedIn sharing ID.
  *     security:

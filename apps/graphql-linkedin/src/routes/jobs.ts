@@ -7,6 +7,9 @@ export const jobsRouter = Router();
  * @openapi
  * /api/jobs:
  *   get:
+ *     tags:
+ *       - Jobs
+ *     operationId: listJobs
  *     summary: List easy-apply jobs
  *     description: Retrieves easy-apply jobs matching the keywords and filters.
  *     security:
@@ -42,6 +45,9 @@ jobsRouter.get('/', jobsController.getJobs);
  * @openapi
  * /api/jobs/{id}:
  *   get:
+ *     tags:
+ *       - Jobs
+ *     operationId: getJobDetail
  *     summary: Retrieve job details
  *     description: Gets detailed information for a specific job posting.
  *     security:
@@ -68,6 +74,9 @@ jobsRouter.get('/:id', jobsController.getJobDetail);
  * @openapi
  * /api/jobs/{id}/apply-form:
  *   get:
+ *     tags:
+ *       - Jobs
+ *     operationId: getApplyForm
  *     summary: Retrieve job application form
  *     description: Fetches the multi-step form questions for a LinkedIn Easy Apply job.
  *     security:
@@ -94,6 +103,9 @@ jobsRouter.get('/:id/apply-form', jobsController.getApplyForm);
  * @openapi
  * /api/jobs/{id}/apply:
  *   post:
+ *     tags:
+ *       - Jobs
+ *     operationId: submitApplication
  *     summary: Submit application form
  *     description: Submits Easy Apply form answers and file uploads for a job posting.
  *     security:

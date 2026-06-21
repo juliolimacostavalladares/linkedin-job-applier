@@ -1,5 +1,6 @@
 import { createOpenAPI } from 'fumadocs-openapi/server';
+import path from 'path';
 
 export const openapi = createOpenAPI({
-  input: ['public/openapi.json'],
+  input: [path.resolve('./public/openapi.json')],
 });
