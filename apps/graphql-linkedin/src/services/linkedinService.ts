@@ -1,12 +1,4 @@
-/**
- * LinkedInService – thin façade that maintains the original public API
- * while delegating every operation to the focused sub-modules.
- *
- * Resolvers import from this file only; they need no knowledge of the
- * internal module structure.
- */
-
-import { parseDynamicHeaders } from './http/linkedinHttpClient';
+import { validateCredentials, validateHeadersJson } from '../utils/security';
 import { fetchJobs, fetchJobDetail, parseJobsFromExtension } from './fetchers/jobsFetcher';
 import { fetchApplyForm } from './fetchers/applyFormFetcher';
 import { submitApplyForm, type ApplySubmissionResult } from './fetchers/submitApplyFormFetcher';
@@ -23,9 +15,10 @@ export class LinkedInService {
   private readonly dynamicHeaders: Record<string, string>;
 
   constructor(cookie: string, csrf: string, headersJson?: string | null) {
+    validateCredentials(cookie, csrf);
     this.cookie = cookie;
     this.csrf = csrf;
-    this.dynamicHeaders = parseDynamicHeaders(headersJson);
+    this.dynamicHeaders = validateHeadersJson(headersJson);
   }
 
   createPost(
@@ -81,11 +74,8 @@ export class LinkedInService {
     return fetchProfileInfo(this.cookie, this.csrf, this.dynamicHeaders);
   }
 
-  /**
-   * Parses a LinkedInResponse received from the browser extension.
-   * Kept as an instance method for API compatibility with existing callers.
-   */
   parseJobsFromExtension(data: LinkedInResponse): Job[] {
     return parseJobsFromExtension(data);
   }
 }
+
