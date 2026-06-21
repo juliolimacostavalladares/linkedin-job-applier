@@ -100,16 +100,18 @@ export class CarouselService {
         `;
       } else if (slide.type === 'code') {
         const lang = slide.language || 'javascript';
-        let highlightedCode = '';
-        try {
-          if (hljs.getLanguage(lang)) {
-            highlightedCode = hljs.highlight(slide.code || '', { language: lang }).value;
-          } else {
-            highlightedCode = hljs.highlightAuto(slide.code || '').value;
+        const getHighlightedCode = () => {
+          try {
+            if (hljs.getLanguage(lang)) {
+              return hljs.highlight(slide.code || '', { language: lang }).value;
+            } else {
+              return hljs.highlightAuto(slide.code || '').value;
+            }
+          } catch {
+            return escapeHtml(slide.code || '');
           }
-        } catch (error) {
-          highlightedCode = escapeHtml(slide.code || '');
-        }
+        };
+        const highlightedCode = getHighlightedCode();
 
         bodyContent = `
           <h2>${slide.title}</h2>

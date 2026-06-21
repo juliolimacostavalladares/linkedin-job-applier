@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import hljs from "highlight.js";
 import "highlight.js/styles/github-dark.css";
 import { Modal } from "./ui/Modal";
@@ -92,7 +92,7 @@ export function CarouselCreatorModal({
   const [carouselTitle, setCarouselTitle] = useState(
     "Meu Carrossel do LinkedIn",
   );
-  const [author, setAuthor] = useState("");
+  const [author, setAuthor] = useState(profile?.name || "Julio Lima");
   const [slides, setSlides] = useState<SlideData[]>([
     {
       type: "cover",
@@ -118,15 +118,6 @@ export function CarouselCreatorModal({
   const [aiTone, setAiTone] = useState("professional");
   const [generating, setGenerating] = useState(false);
   const [exporting, setExporting] = useState(false);
-
-  // Set profile name when loaded
-  useEffect(() => {
-    if (profile?.name) {
-      setAuthor(profile.name);
-    } else {
-      setAuthor("Julio Lima");
-    }
-  }, [profile]);
 
   const activeSlide = slides[activeIndex] || null;
 
@@ -333,7 +324,7 @@ export function CarouselCreatorModal({
 
     const authorAbbrev = author
       .split(" ")
-      .map((n) => n[0])
+      .map((n: string) => n[0])
       .join("")
       .slice(0, 2)
       .toUpperCase();
@@ -394,18 +385,20 @@ export function CarouselCreatorModal({
 
     if (activeSlide.type === "code") {
       const lang = activeSlide.language || "javascript";
-      let highlightedCode = "";
-      try {
-        if (hljs.getLanguage(lang)) {
-          highlightedCode = hljs.highlight(activeSlide.code || "", {
-            language: lang,
-          }).value;
-        } else {
-          highlightedCode = hljs.highlightAuto(activeSlide.code || "").value;
+      const getHighlightedCode = () => {
+        try {
+          if (hljs.getLanguage(lang)) {
+            return hljs.highlight(activeSlide.code || "", {
+              language: lang,
+            }).value;
+          } else {
+            return hljs.highlightAuto(activeSlide.code || "").value;
+          }
+        } catch {
+          return activeSlide.code || "";
         }
-      } catch {
-        highlightedCode = activeSlide.code || "";
-      }
+      };
+      const highlightedCode = getHighlightedCode();
 
       return (
         <div className="flex flex-col justify-between h-full px-6 text-left py-4">
