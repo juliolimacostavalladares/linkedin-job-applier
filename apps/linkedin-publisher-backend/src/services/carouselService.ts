@@ -163,9 +163,7 @@ export class CarouselService {
                   <span>${slide.footer || 'Deslize'}</span>
                   <span>➔</span>
                  </div>`
-              : `<div class="swipe-indicator" style="color: #10b981;">
-                  <span>Pronto</span>
-                 </div>`
+              : `<div></div>`
           }
           <div class="page-number">${slideNum} / ${totalSlides}</div>
         </div>
@@ -229,7 +227,7 @@ export class CarouselService {
     }
     
     /* Highlight.js GitHub Dark Theme Styles */
-    .hljs { color: #c9d1d9; background: #0d1117 }
+    .hljs { color: #c9d1d9; background: transparent }
     .hljs-doctag, .hljs-keyword, .hljs-meta .hljs-keyword, .hljs-template-tag, .hljs-template-variable, .hljs-type, .hljs-variable.language_ { color: #ff7b72 }
     .hljs-title, .hljs-title.class_, .hljs-title.class_.inherited__, .hljs-title.function_ { color: #d2a8ff }
     .hljs-attr, .hljs-attribute, .hljs-literal, .hljs-meta, .hljs-number, .hljs-operator, .hljs-selector-attr, .hljs-selector-class, .hljs-selector-id, .hljs-variable { color: #79c0ff }
