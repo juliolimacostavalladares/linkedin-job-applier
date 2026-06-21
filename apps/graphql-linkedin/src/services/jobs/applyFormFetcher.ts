@@ -1,5 +1,5 @@
 import { getHeaders, handleResponseError } from '../http/linkedinHttpClient';
-import { parseApplyForm } from '../parsers/applyFormParser';
+import { parseApplyForm } from './applyFormParser';
 import { writeFileSync } from 'fs';
 import type { ApplyForm } from '@linkedin-job-applier/shared';
 import type { LinkedInGraphQLResponse } from '../../types/linkedin';

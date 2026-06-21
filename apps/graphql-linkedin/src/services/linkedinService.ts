@@ -3,20 +3,20 @@ import {
   fetchJobs,
   fetchJobDetail,
   parseJobsFromExtension,
-} from "./fetchers/jobsFetcher";
-import { fetchApplyForm } from "./fetchers/applyFormFetcher";
+} from "./jobs/jobsFetcher";
+import { fetchApplyForm } from "./jobs/applyFormFetcher";
 import {
   submitApplyForm,
   type ApplySubmissionResult,
-} from "./fetchers/submitApplyFormFetcher";
-import { fetchResumePdf } from "./fetchers/pdfFetcher";
-import { fetchProfileInfo } from "./fetchers/profileFetcher";
+} from "./jobs/submitApplyFormFetcher";
+import { fetchResumePdf } from "./profile/pdfFetcher";
+import { fetchProfileInfo } from "./profile/profileFetcher";
 import {
   createPost,
   deletePost,
   type CreatePostResult,
   type DeletePostResult,
-} from "./fetchers/postPublisher";
+} from "./posts/postPublisher";
 
 import type {
   LinkedInResponse,
@@ -26,7 +26,7 @@ import type {
   FormResponse,
   FileUploadResponse,
 } from "@linkedin-job-applier/shared";
-import type { ProfileInfo } from "./fetchers/profileFetcher";
+import type { ProfileInfo } from "./profile/profileFetcher";
 
 export class LinkedInService {
   private readonly cookie: string;
