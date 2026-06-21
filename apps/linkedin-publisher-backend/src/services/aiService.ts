@@ -32,19 +32,55 @@ Instruções:
       throw new Error(`NineRouter error: ${response.status} ${response.statusText} - ${text}`);
     }
 
-    const data = await response.json() as {
-      choices?: Array<{
-        message?: {
-          content?: string;
-        };
-      }>;
-    };
+    const text = await response.text();
+    const isStream = text.includes('data: ') || response.headers.get('content-type')?.includes('event-stream');
 
-    const content = data.choices?.[0]?.message?.content;
-    if (!content) {
-      throw new Error('Retorno vazio da API do NineRouter');
+    if (isStream) {
+      let accumulatedContent = '';
+      const lines = text.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('data: ')) {
+          const dataStr = trimmed.slice(6).trim();
+          if (dataStr === '[DONE]') {
+            continue;
+          }
+          try {
+            const parsed = JSON.parse(dataStr) as {
+              choices?: Array<{
+                delta?: {
+                  content?: string;
+                };
+                text?: string;
+              }>;
+            };
+            const chunk = parsed.choices?.[0]?.delta?.content || parsed.choices?.[0]?.text;
+            if (chunk) {
+              accumulatedContent += chunk;
+            }
+          } catch {
+            // Ignore parse errors for partial/malformed lines in buffer
+          }
+        }
+      }
+      const trimmedResult = accumulatedContent.trim();
+      if (!trimmedResult) {
+        throw new Error('9Router returned an empty stream response');
+      }
+      return trimmedResult;
+    } else {
+      const data = JSON.parse(text) as {
+        choices?: Array<{
+          message?: {
+            content?: string;
+          };
+        }>;
+      };
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) {
+        throw new Error('Retorno vazio da API do NineRouter');
+      }
+      return content.trim();
     }
-
-    return content.trim();
   }
 }
