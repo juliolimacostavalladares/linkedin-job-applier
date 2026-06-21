@@ -71,7 +71,8 @@ function toUnicodeStrikethrough(text: string): string {
  * - ~~strikethrough~~
  */
 export function convertMarkdownToUnicode(text: string): string {
-  let result = text;
+  if (!text) return '';
+  let result = text.normalize("NFD");
 
   // 1. Bold-Italic (***text*** or ___text___)
   result = result.replace(/\*\*\*([\s\S]+?)\*\*\*/g, (_, p1: string) => {
@@ -102,5 +103,5 @@ export function convertMarkdownToUnicode(text: string): string {
     return toUnicodeStrikethrough(p1);
   });
 
-  return result;
+  return result.normalize("NFC");
 }

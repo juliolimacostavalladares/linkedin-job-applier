@@ -42,4 +42,16 @@ describe('markdownFormatter', () => {
     const result = convertMarkdownToUnicode(text);
     expect(result).toContain('𝗯𝗼𝗹𝗱 𝗶𝘁𝗮𝗹𝗶𝗰 𝗯𝗼𝗹𝗱');
   });
+
+  it('should handle LATAM accented characters (á, é, í, ó, ú, ç, ã, õ)', () => {
+    const text = 'Este é um **publicação com acentuação**';
+    const result = convertMarkdownToUnicode(text);
+    
+    // Check that we got bold representation with combining marks
+    expect(result).toContain('𝗽𝘂𝗯𝗹𝗶𝗰𝗮𝗰̧𝗮̃𝗼');
+    expect(result).toContain('𝗮𝗰𝗲𝗻𝘁𝘂𝗮𝗰̧𝗮̃𝗼');
+    
+    // Check that the plain-text accented characters outside formatting remain precomposed
+    expect(result).toContain('Este é um');
+  });
 });
