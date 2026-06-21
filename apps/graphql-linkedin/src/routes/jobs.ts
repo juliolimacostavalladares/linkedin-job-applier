@@ -1,10 +1,7 @@
 import { Router } from 'express';
-import { linkedinAuthMiddleware } from '../middlewares/auth';
-import * as linkedinController from '../controllers/linkedinController';
+import * as jobsController from '../controllers/jobsController';
 
-export const apiRouter = Router();
-
-apiRouter.use(linkedinAuthMiddleware);
+export const jobsRouter = Router();
 
 /**
  * @openapi
@@ -39,7 +36,7 @@ apiRouter.use(linkedinAuthMiddleware);
  *       500:
  *         description: Internal server error
  */
-apiRouter.get('/jobs', linkedinController.getJobs);
+jobsRouter.get('/', jobsController.getJobs);
 
 /**
  * @openapi
@@ -65,7 +62,7 @@ apiRouter.get('/jobs', linkedinController.getJobs);
  *       500:
  *         description: Internal server error
  */
-apiRouter.get('/jobs/:id', linkedinController.getJobDetail);
+jobsRouter.get('/:id', jobsController.getJobDetail);
 
 /**
  * @openapi
@@ -91,7 +88,7 @@ apiRouter.get('/jobs/:id', linkedinController.getJobDetail);
  *       500:
  *         description: Internal server error
  */
-apiRouter.get('/jobs/:id/apply-form', linkedinController.getApplyForm);
+jobsRouter.get('/:id/apply-form', jobsController.getApplyForm);
 
 /**
  * @openapi
@@ -152,120 +149,4 @@ apiRouter.get('/jobs/:id/apply-form', linkedinController.getApplyForm);
  *       500:
  *         description: Internal server error
  */
-apiRouter.post('/jobs/:id/apply', linkedinController.submitApplication);
-
-/**
- * @openapi
- * /api/posts:
- *   post:
- *     summary: Create a post on LinkedIn
- *     description: Publishes a text post (with optional media or documents) to LinkedIn.
- *     security:
- *       - LinkedInCookie: []
- *         LinkedInCsrf: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - text
- *             properties:
- *               text:
- *                 type: string
- *                 description: Main text content of the post
- *               mediaUrn:
- *                 type: string
- *                 description: URN of image or article media (optional)
- *               mediaCategory:
- *                 type: string
- *                 enum: [IMAGE, DOCUMENT, ARTICLE]
- *                 description: Category type of the media (optional)
- *               documentSharingTitle:
- *                 type: string
- *                 description: Title of shared document (optional)
- *     responses:
- *       200:
- *         description: Post published successfully
- *       400:
- *         description: Bad request
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
- */
-apiRouter.post('/posts', linkedinController.createPost);
-
-/**
- * @openapi
- * /api/posts/{id}:
- *   delete:
- *     summary: Delete a post
- *     description: Deletes a specific post by its LinkedIn sharing ID.
- *     security:
- *       - LinkedInCookie: []
- *         LinkedInCsrf: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: LinkedIn post sharing ID
- *     responses:
- *       200:
- *         description: Post deleted successfully
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
- */
-apiRouter.delete('/posts/:id', linkedinController.deletePost);
-
-/**
- * @openapi
- * /api/profile/info:
- *   get:
- *     summary: Retrieve profile info
- *     description: Fetches full profile info including bio, experiences, and education parsed from the user's PDF profile.
- *     security:
- *       - LinkedInCookie: []
- *         LinkedInCsrf: []
- *     responses:
- *       200:
- *         description: Successfully fetched profile info
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
- */
-apiRouter.get('/profile/info', linkedinController.getProfileInfo);
-
-/**
- * @openapi
- * /api/profile/resume-pdf:
- *   get:
- *     summary: Retrieve resume PDF
- *     description: Downloads the user's profile PDF from LinkedIn and returns parsed text along with a base64-encoded PDF.
- *     security:
- *       - LinkedInCookie: []
- *         LinkedInCsrf: []
- *     parameters:
- *       - in: query
- *         name: profileId
- *         required: true
- *         schema:
- *           type: string
- *         description: LinkedIn profile/member URN ID
- *     responses:
- *       200:
- *         description: PDF downloaded and parsed successfully
- *       400:
- *         description: Bad request
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Internal server error
- */
-apiRouter.get('/profile/resume-pdf', linkedinController.getResumePdf);
+jobsRouter.post('/:id/apply', jobsController.submitApplication);

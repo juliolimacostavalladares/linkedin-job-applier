@@ -8,7 +8,7 @@ import path from 'path';
 
 import { typeDefs } from './schema';
 import { resolvers } from './resolvers';
-import { apiRouter } from './routes/api';
+import { apiRouter } from './routes';
 import { logger } from './utils/logger';
 import { redactSensitiveData } from './utils/security';
 import { LinkedInRequest } from './types/express';

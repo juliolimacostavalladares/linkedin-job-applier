@@ -1,13 +1,32 @@
-import { validateCredentials, validateHeadersJson } from '../utils/security';
-import { fetchJobs, fetchJobDetail, parseJobsFromExtension } from './fetchers/jobsFetcher';
-import { fetchApplyForm } from './fetchers/applyFormFetcher';
-import { submitApplyForm, type ApplySubmissionResult } from './fetchers/submitApplyFormFetcher';
-import { fetchResumePdf } from './fetchers/pdfFetcher';
-import { fetchProfileInfo } from './fetchers/profileFetcher';
-import { createPost, deletePost, type CreatePostResult, type DeletePostResult } from './fetchers/postPublisher';
+import { validateCredentials, validateHeadersJson } from "../utils/security";
+import {
+  fetchJobs,
+  fetchJobDetail,
+  parseJobsFromExtension,
+} from "./fetchers/jobsFetcher";
+import { fetchApplyForm } from "./fetchers/applyFormFetcher";
+import {
+  submitApplyForm,
+  type ApplySubmissionResult,
+} from "./fetchers/submitApplyFormFetcher";
+import { fetchResumePdf } from "./fetchers/pdfFetcher";
+import { fetchProfileInfo } from "./fetchers/profileFetcher";
+import {
+  createPost,
+  deletePost,
+  type CreatePostResult,
+  type DeletePostResult,
+} from "./fetchers/postPublisher";
 
-import type { LinkedInResponse, Job, JobDetail, ApplyForm } from '@linkedin-job-applier/shared';
-import type { ProfileInfo } from './fetchers/profileFetcher';
+import type {
+  LinkedInResponse,
+  Job,
+  JobDetail,
+  ApplyForm,
+  FormResponse,
+  FileUploadResponse,
+} from "@linkedin-job-applier/shared";
+import type { ProfileInfo } from "./fetchers/profileFetcher";
 
 export class LinkedInService {
   private readonly cookie: string;
@@ -34,7 +53,7 @@ export class LinkedInService {
       text,
       mediaUrn,
       mediaCategory,
-      documentSharingTitle
+      documentSharingTitle,
     );
   }
 
@@ -42,8 +61,19 @@ export class LinkedInService {
     return deletePost(this.cookie, this.csrf, this.dynamicHeaders, linkedinId);
   }
 
-  fetchJobs(keywords?: string | null, remote?: boolean | null, past24h?: boolean | null): Promise<Job[]> {
-    return fetchJobs(this.cookie, this.csrf, this.dynamicHeaders, keywords, remote, past24h);
+  fetchJobs(
+    keywords?: string | null,
+    remote?: boolean | null,
+    past24h?: boolean | null,
+  ): Promise<Job[]> {
+    return fetchJobs(
+      this.cookie,
+      this.csrf,
+      this.dynamicHeaders,
+      keywords,
+      remote,
+      past24h,
+    );
   }
 
   fetchJobDetail(jobId: string): Promise<JobDetail> {
@@ -58,12 +88,19 @@ export class LinkedInService {
     jobId: string,
     formValues: Record<string, string>,
     options?: {
-      formResponses?: import('@linkedin-job-applier/shared').FormResponse[];
+      formResponses?: FormResponse[];
       referenceId?: string;
-      fileUploadResponses?: import('@linkedin-job-applier/shared').FileUploadResponse[];
+      fileUploadResponses?: FileUploadResponse[];
     },
   ): Promise<ApplySubmissionResult> {
-    return submitApplyForm(jobId, formValues, this.cookie, this.csrf, this.dynamicHeaders, options);
+    return submitApplyForm(
+      jobId,
+      formValues,
+      this.cookie,
+      this.csrf,
+      this.dynamicHeaders,
+      options,
+    );
   }
 
   fetchResumePdf(profileId: string): Promise<ArrayBuffer> {
@@ -78,4 +115,3 @@ export class LinkedInService {
     return parseJobsFromExtension(data);
   }
 }
-
