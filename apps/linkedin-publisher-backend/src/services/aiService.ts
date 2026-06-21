@@ -154,14 +154,49 @@ Diretrizes importantes:
     }
 
     const text = await response.text();
-    const data = JSON.parse(text) as {
-      choices?: Array<{
-        message?: {
-          content?: string;
-        };
-      }>;
-    };
-    const content = data.choices?.[0]?.message?.content;
+    const isStream = text.includes('data: ') || response.headers.get('content-type')?.includes('event-stream');
+
+    let content = '';
+    if (isStream) {
+      let accumulatedContent = '';
+      const lines = text.split('\n');
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('data: ')) {
+          const dataStr = trimmed.slice(6).trim();
+          if (dataStr === '[DONE]') {
+            continue;
+          }
+          try {
+            const parsed = JSON.parse(dataStr) as {
+              choices?: Array<{
+                delta?: {
+                  content?: string;
+                };
+                text?: string;
+              }>;
+            };
+            const chunk = parsed.choices?.[0]?.delta?.content || parsed.choices?.[0]?.text;
+            if (chunk) {
+              accumulatedContent += chunk;
+            }
+          } catch {
+            // Ignore parse errors
+          }
+        }
+      }
+      content = accumulatedContent.trim();
+    } else {
+      const data = JSON.parse(text) as {
+        choices?: Array<{
+          message?: {
+            content?: string;
+          };
+        }>;
+      };
+      content = (data.choices?.[0]?.message?.content || '').trim();
+    }
+
     if (!content) {
       throw new Error('Retorno vazio da API do NineRouter');
     }
