@@ -1,14 +1,17 @@
 import { logger } from '../utils/logger';
+import hljs from 'highlight.js';
 import path from 'path';
 import fs from 'fs';
 
 export interface SlideData {
-  type: 'cover' | 'content' | 'cta';
+  type: 'cover' | 'content' | 'cta' | 'code' | 'text';
   title: string;
   subtitle?: string;
   content?: string; // Markdown or simple list lines separated by \n
   footer?: string;
   authorName?: string;
+  code?: string;
+  language?: string;
 }
 
 export interface CarouselConfig {
@@ -16,6 +19,38 @@ export interface CarouselConfig {
   title: string;
   authorName: string;
   slides: SlideData[];
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function parseMarkdown(text: string): string {
+  if (text.includes('|') && text.split('\n').some(line => line.trim().startsWith('|'))) {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const rows = lines.map(line => {
+      const cells = line.split('|').map(c => c.trim()).filter((c, idx, arr) => idx > 0 && idx < arr.length - 1);
+      return cells;
+    }).filter(row => row.length > 0);
+    
+    if (rows.length > 1) {
+      const hasSeparator = rows[1].every(cell => /^[-:|]+$/.test(cell));
+      const headers = rows[0];
+      const dataRows = hasSeparator ? rows.slice(2) : rows.slice(1);
+      
+      let tableHtml = '<table class="slide-table">';
+      tableHtml += '<thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead>';
+      tableHtml += '<tbody>' + dataRows.map(row => '<tr>' + row.map(cell => `<td>${cell}</td>`).join('') + '</tr>').join('') + '</tbody>';
+      tableHtml += '</table>';
+      return tableHtml;
+    }
+  }
+  return text.split('\n').map(p => `<p class="slide-paragraph">${p}</p>`).join('');
 }
 
 export class CarouselService {
@@ -63,6 +98,38 @@ export class CarouselService {
             </div>
           </div>
         `;
+      } else if (slide.type === 'code') {
+        const lang = slide.language || 'javascript';
+        const getHighlightedCode = () => {
+          try {
+            if (hljs.getLanguage(lang)) {
+              return hljs.highlight(slide.code || '', { language: lang }).value;
+            } else {
+              return hljs.highlightAuto(slide.code || '').value;
+            }
+          } catch {
+            return escapeHtml(slide.code || '');
+          }
+        };
+        const highlightedCode = getHighlightedCode();
+
+        bodyContent = `
+          <h2>${slide.title}</h2>
+          <div class="slide-body">
+            <div class="code-editor-window">
+              <pre class="code-editor-body"><code class="hljs ${lang}">${highlightedCode}</code></pre>
+            </div>
+          </div>
+        `;
+      } else if (slide.type === 'text') {
+        bodyContent = `
+          <h2>${slide.title}</h2>
+          <div class="slide-body">
+            <div class="text-content-wrapper">
+              ${parseMarkdown(slide.content || '')}
+            </div>
+          </div>
+        `;
       } else {
         // Content slide: Split lines by \n to render as bullet points
         const lines = (slide.content || '')
@@ -79,13 +146,11 @@ export class CarouselService {
           .join('');
 
         bodyContent = `
-          <div>
-            <h2>${slide.title}</h2>
-            <div class="slide-body">
-              <ul class="points-list">
-                ${listItemsHtml}
-              </ul>
-            </div>
+          <h2>${slide.title}</h2>
+          <div class="slide-body">
+            <ul class="points-list">
+              ${listItemsHtml}
+            </ul>
           </div>
         `;
       }
@@ -100,9 +165,7 @@ export class CarouselService {
                   <span>${slide.footer || 'Deslize'}</span>
                   <span>➔</span>
                  </div>`
-              : `<div class="swipe-indicator" style="color: #10b981;">
-                  <span>Pronto</span>
-                 </div>`
+              : `<div></div>`
           }
           <div class="page-number">${slideNum} / ${totalSlides}</div>
         </div>
@@ -110,7 +173,7 @@ export class CarouselService {
 
       return `
         <div class="slide theme-${theme}">
-          <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
             ${bodyContent}
             ${footerHtml}
           </div>
@@ -125,7 +188,7 @@ export class CarouselService {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${config.title || 'LinkedIn Carousel'}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&family=Outfit:wght@600;700;800;900&family=Fira+Code:wght@500;700&display=swap');
 
     *, *::before, *::after {
       box-sizing: border-box;
@@ -151,6 +214,109 @@ export class CarouselService {
       padding: 90px;
       page-break-after: always;
       box-sizing: border-box;
+    }
+
+    /* Code Editor Window */
+    .code-editor-window {
+      background-color: #1e1e2e;
+      border: 1px solid #313244;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      margin-top: 20px;
+      font-family: 'Fira Code', 'Courier New', Courier, monospace;
+      text-align: left;
+    }
+    
+    /* Highlight.js GitHub Dark Theme Styles */
+    .hljs { color: #c9d1d9; background: transparent }
+    .hljs-doctag, .hljs-keyword, .hljs-meta .hljs-keyword, .hljs-template-tag, .hljs-template-variable, .hljs-type, .hljs-variable.language_ { color: #ff7b72 }
+    .hljs-title, .hljs-title.class_, .hljs-title.class_.inherited__, .hljs-title.function_ { color: #d2a8ff }
+    .hljs-attr, .hljs-attribute, .hljs-literal, .hljs-meta, .hljs-number, .hljs-operator, .hljs-selector-attr, .hljs-selector-class, .hljs-selector-id, .hljs-variable { color: #79c0ff }
+    .hljs-meta .hljs-string, .hljs-regexp, .hljs-string { color: #a5d6ff }
+    .hljs-built_in, .hljs-symbol { color: #ffa657 }
+    .hljs-code, .hljs-comment, .hljs-formula { color: #8b949e }
+    .hljs-name, .hljs-quote, .hljs-selector-pseudo, .hljs-selector-tag { color: #7ee787 }
+    .hljs-subst { color: #c9d1d9 }
+    .hljs-section { color: #1f6feb; font-weight: 700 }
+    .hljs-bullet { color: #f2cc60 }
+    .hljs-emphasis { color: #c9d1d9; font-style: italic }
+    .hljs-strong { color: #c9d1d9; font-weight: 700 }
+    .hljs-addition { color: #aff5b4; background-color: #033a16 }
+    .hljs-deletion { color: #ffdcd7; background-color: #67060c }
+    .code-editor-header {
+      background-color: #181825;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #313244;
+    }
+    .code-editor-dots {
+      display: flex;
+      gap: 8px;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-red { background-color: #f38ba8; }
+    .dot-yellow { background-color: #f9e2af; }
+    .dot-green { background-color: #a6e3a1; }
+    .code-editor-lang {
+      color: #cdd6f4;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+    .code-editor-body {
+      padding: 24px;
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.5;
+      color: #cdd6f4;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Slide Table and Text Paragraphs */
+    .slide-paragraph {
+      font-size: 30px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .slide-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .theme-startup-clean .slide-table {
+      background: rgba(0, 0, 0, 0.02);
+      color: #0f172a;
+    }
+    .slide-table th, .slide-table td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .theme-startup-clean .slide-table th, 
+    .theme-startup-clean .slide-table td {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    .slide-table th {
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .theme-startup-clean .slide-table th {
+      background: rgba(0, 0, 0, 0.04);
     }
 
     /* ─── Themes styles ─── */
@@ -434,11 +600,26 @@ export class CarouselService {
     }
 
     @media print {
-      body {
-        background-color: transparent;
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background-color: transparent !important;
+        width: 1080px !important;
+        height: 1350px !important;
+        overflow: visible !important;
       }
       .slide {
-        page-break-after: always;
+        width: 1080px !important;
+        height: 1350px !important;
+        page-break-before: always !important;
+        page-break-inside: avoid !important;
+        page-break-after: always !important;
+        margin: 0 !important;
+        border: none !important;
+        box-sizing: border-box !important;
+      }
+      .slide:first-child {
+        page-break-before: avoid !important;
       }
     }
   </style>
@@ -475,6 +656,13 @@ export class CarouselService {
     try {
       const page = await browser.newPage();
 
+      // Set exact viewport size to match target print resolution
+      await page.setViewport({
+        width: 1080,
+        height: 1350,
+        deviceScaleFactor: 1,
+      });
+
       // Render the HTML slides
       await page.setContent(html, {
         waitUntil: 'load',
@@ -486,6 +674,7 @@ export class CarouselService {
         width: '1080px',
         height: '1350px',
         printBackground: true,
+        preferCSSPageSize: true,
         margin: { top: '0', right: '0', bottom: '0', left: '0' },
       });
 

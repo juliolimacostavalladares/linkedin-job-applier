@@ -13,6 +13,7 @@
   "dependencies": {
     "@linkedin-job-applier/shared": "workspace:*",
     "axios": "^1.18.0",
+    "highlight.js": "^11.11.1",
     "lucide-react": "^0.546.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
