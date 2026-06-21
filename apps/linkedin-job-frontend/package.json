@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@linkedin-job-applier/shared": "workspace:*",
-    "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
     "axios": "^1.18.0",
     "lucide-react": "^0.546.0",
@@ -25,7 +24,9 @@
   "devDependencies": {
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
-    "tailwindcss": "^4.1.14",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
     "typescript": "~5.8.2"
   }
 }

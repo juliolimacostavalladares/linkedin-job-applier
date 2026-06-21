@@ -86,15 +86,35 @@ export const resolvers = {
         csrf,
         headersJson,
         text,
+        mediaUrn,
       }: {
         cookie: string;
         csrf: string;
         headersJson?: string | null;
         text: string;
+        mediaUrn?: string | null;
       }
     ) => {
       const svc = new LinkedInService(cookie, csrf, headersJson);
-      return svc.createPost(text);
+      return svc.createPost(text, mediaUrn ?? undefined);
+    },
+
+    deletePost: async (
+      _: unknown,
+      {
+        cookie,
+        csrf,
+        headersJson,
+        linkedinId,
+      }: {
+        cookie: string;
+        csrf: string;
+        headersJson?: string | null;
+        linkedinId: string;
+      }
+    ) => {
+      const svc = new LinkedInService(cookie, csrf, headersJson);
+      return svc.deletePost(linkedinId);
     },
 
     submitApplication: async (

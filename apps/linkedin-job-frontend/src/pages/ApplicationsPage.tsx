@@ -1,16 +1,16 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  Briefcase, 
-  FileText, 
-  ClipboardList, 
-  Sun, 
-  Moon, 
-  Eye, 
-  CheckCircle, 
-  ExternalLink, 
-  Search, 
-  Filter, 
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Briefcase,
+  FileText,
+  ClipboardList,
+  Sun,
+  Moon,
+  Eye,
+  CheckCircle,
+  ExternalLink,
+  Search,
+  Filter,
   Building,
   Calendar,
   AlertCircle,
@@ -18,29 +18,40 @@ import {
   Loader2,
   RefreshCw,
   Sparkles,
-  CircleUser
-} from 'lucide-react';
-import { useApplicationsStore, useThemeStore, useJobsStore } from '../stores';
-import { Sidebar } from '../components/jobs/Sidebar';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { SystemIcon, LinkedInIcon } from '../components/ui/SourceBadge';
-import type { Application, JobDetail } from '../types';
-import api, { apiService } from '../services/apiService';
+  CircleUser,
+} from "lucide-react";
+import { useApplicationsStore, useThemeStore, useJobsStore } from "../stores";
+import { Sidebar } from "../components/jobs/Sidebar";
+import { Button } from "../components/ui/Button";
+import { Input } from "../components/ui/Input";
+import { SystemIcon, LinkedInIcon } from "../components/ui/SourceBadge";
+import type { Application, JobDetail } from "../types";
+import api, { apiService } from "../services/apiService";
 
 export default function ApplicationsPage() {
   const navigate = useNavigate();
-  const { applications, loading, syncing, fetchApplications, syncWithLinkedIn } = useApplicationsStore();
+  const {
+    applications,
+    loading,
+    syncing,
+    fetchApplications,
+    syncWithLinkedIn,
+  } = useApplicationsStore();
   const { theme, toggleTheme } = useThemeStore();
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'applied' | 'viewed' | 'closed'>('all');
-  const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<
+    "all" | "applied" | "viewed" | "closed"
+  >("all");
+  const [syncMessage, setSyncMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
   // Job detail panel state
   const [selectedApp, setSelectedApp] = useState<Application | null>(null);
   const [jobDetail, setJobDetail] = useState<JobDetail | null>(null);
   const [loadingDetail, setLoadingDetail] = useState(false);
-  const [detailError, setDetailError] = useState('');
+  const [detailError, setDetailError] = useState("");
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
@@ -62,14 +73,17 @@ export default function ApplicationsPage() {
     if (selectedApp.resumePdfPath) {
       const fetchPdf = async () => {
         try {
-          const response = await api.get(`/api/applications/${selectedApp.id}/resume.pdf`, {
-            responseType: 'blob',
-          });
-          const blob = new Blob([response.data], { type: 'application/pdf' });
+          const response = await api.get(
+            `/api/applications/${selectedApp.id}/resume.pdf`,
+            {
+              responseType: "blob",
+            },
+          );
+          const blob = new Blob([response.data], { type: "application/pdf" });
           const url = URL.createObjectURL(blob);
           setPdfUrl(url);
         } catch (err) {
-          console.error('Failed to load PDF blob:', err);
+          console.error("Failed to load PDF blob:", err);
           setPdfUrl(null);
         }
       };
@@ -82,8 +96,8 @@ export default function ApplicationsPage() {
   const handleSync = async () => {
     const result = await syncWithLinkedIn();
     setSyncMessage({
-      type: result.success ? 'success' : 'error',
-      text: result.message
+      type: result.success ? "success" : "error",
+      text: result.message,
     });
     // Clear message after 5 seconds
     setTimeout(() => setSyncMessage(null), 5000);
@@ -93,13 +107,13 @@ export default function ApplicationsPage() {
   const handleSelectApp = async (app: Application) => {
     setSelectedApp(app);
     setJobDetail(null);
-    setDetailError('');
+    setDetailError("");
     setLoadingDetail(true);
     try {
       const { data } = await apiService.getJobDetail(app.jobId);
       setJobDetail(data);
     } catch (err: unknown) {
-      setDetailError('Não foi possível carregar os detalhes da vaga.');
+      setDetailError("Não foi possível carregar os detalhes da vaga.");
       console.error(err);
     } finally {
       setLoadingDetail(false);
@@ -108,75 +122,89 @@ export default function ApplicationsPage() {
 
   // Filter applications
   const filteredApps = applications.filter((app) => {
-    const matchesSearch = 
-      (app.jobTitle || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (app.companyName || '').toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = 
-      statusFilter === 'all' || 
-      app.status === statusFilter;
-      
+    const matchesSearch =
+      (app.jobTitle || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (app.companyName || "").toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === "all" || app.status === statusFilter;
+
     return matchesSearch && matchesStatus;
   });
 
   // Calculate stats
   const totalCount = applications.length;
-  const viewedCount = applications.filter(a => a.status === 'viewed').length;
-  const closedCount = applications.filter(a => a.status === 'closed').length;
+  const viewedCount = applications.filter((a) => a.status === "viewed").length;
+  const closedCount = applications.filter((a) => a.status === "closed").length;
   const pendingCount = totalCount - viewedCount - closedCount;
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full bg-bg-app font-sans text-text-primary overflow-hidden p-0 md:p-4 lg:p-5 transition-colors duration-200">
       <div className="flex flex-col md:flex-row flex-1 bg-bg-card md:rounded-xl overflow-hidden shadow-subtle border border-border-color relative w-full max-w-[1500px] mx-auto transition-colors duration-200">
-        
-        <Sidebar activeView="applications" onViewChange={(v) => navigate(v === 'jobs' ? '/' : v === 'profile' ? '/profile' : '/applications')} />
+        <Sidebar
+          activeView="applications"
+          onViewChange={(v) =>
+            navigate(
+              v === "jobs"
+                ? "/"
+                : v === "profile"
+                  ? "/profile"
+                  : "/applications",
+            )
+          }
+        />
 
         {/* Mobile Header */}
         <header className="md:hidden h-14 bg-bg-card border-b border-border-color flex items-center justify-between px-4 shrink-0 z-20 transition-colors duration-200">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 bg-brand-blue rounded-md flex items-center justify-center">
-              <span className="text-white font-black text-sm tracking-tighter">in</span>
+              <span className="text-white font-black text-sm tracking-tighter">
+                in
+              </span>
             </div>
-            <span className="font-bold text-base tracking-tight text-text-primary">JobFinder</span>
+            <span className="font-bold text-base tracking-tight text-text-primary">
+              JobFinder
+            </span>
           </div>
           <div className="flex items-center gap-1.5">
-            <button 
-              onClick={() => navigate('/')} 
+            <button
+              onClick={() => navigate("/")}
               className="w-8 h-8 rounded-md shrink-0 flex items-center justify-center text-text-secondary hover:bg-bg-hover hover:text-text-primary"
               title="Vagas"
             >
               <Briefcase size={16} />
             </button>
-            <button 
-              onClick={() => navigate('/applications')} 
+            <button
+              onClick={() => navigate("/applications")}
               className="w-8 h-8 rounded-md shrink-0 flex items-center justify-center bg-brand-blue text-white"
               title="Candidaturas"
             >
               <ClipboardList size={16} />
             </button>
-            <button 
-              onClick={() => navigate('/profile')} 
+            <button
+              onClick={() => navigate("/profile")}
               className="w-8 h-8 rounded-md shrink-0 flex items-center justify-center text-text-secondary hover:bg-bg-hover hover:text-text-primary"
               title="Perfil"
             >
               <CircleUser size={16} />
             </button>
-            <button 
-              onClick={toggleTheme} 
+            <button
+              onClick={toggleTheme}
               className="w-8 h-8 ml-1 rounded-md flex items-center justify-center text-text-secondary border border-border-color bg-bg-hover"
               title="Alternar Tema"
             >
-              {theme === 'dark' ? <Sun size={14} className="text-amber-400" /> : <Moon size={14} />}
+              {theme === "dark" ? (
+                <Sun size={14} className="text-amber-400" />
+              ) : (
+                <Moon size={14} />
+              )}
             </button>
           </div>
         </header>
 
         {/* Main Body */}
         <main className="flex-1 flex flex-col md:flex-row overflow-hidden relative">
-          
           {/* Applications list section */}
           <div className="flex-1 flex flex-col overflow-hidden p-6">
-            
             {/* Header section */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 shrink-0">
               <div>
@@ -184,31 +212,50 @@ export default function ApplicationsPage() {
                   <ClipboardList size={24} className="text-brand-blue" />
                   Minhas Candidaturas
                 </h1>
-                <p className="text-xs text-text-secondary mt-1">Acompanhe as candidaturas que foram enviadas pelo LinkedIn</p>
+                <p className="text-xs text-text-secondary mt-1">
+                  Acompanhe as candidaturas que foram enviadas pelo LinkedIn
+                </p>
               </div>
               <div className="flex gap-2 self-start md:self-auto">
-                <Button 
-                  size="sm" 
-                  onClick={handleSync} 
+                <Button
+                  size="sm"
+                  onClick={handleSync}
                   disabled={syncing || loading}
                   variant="secondary"
                   className="flex items-center gap-2"
                 >
-                  {syncing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
-                  Sincronizar com LinkedIn
+                  <div className="flex justify-center gap-3">
+                    {syncing ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <RefreshCw size={14} />
+                    )}
+                    Sincronizar com LinkedIn
+                  </div>
                 </Button>
-                <Button size="sm" onClick={() => fetchApplications()} disabled={loading} className="self-start md:self-auto">
-                  {loading ? <Loader2 size={14} className="animate-spin" /> : 'Atualizar Lista'}
+                <Button
+                  size="sm"
+                  onClick={() => fetchApplications()}
+                  disabled={loading}
+                  className="self-start md:self-auto"
+                >
+                  {loading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    "Atualizar Lista"
+                  )}
                 </Button>
               </div>
             </div>
 
             {syncMessage && (
-              <div className={`p-3 rounded-lg mb-4 ${
-                syncMessage.type === 'success' 
-                  ? 'bg-green-50 border border-green-200 text-green-800' 
-                  : 'bg-red-50 border border-red-200 text-red-800'
-              }`}>
+              <div
+                className={`p-3 rounded-lg mb-4 ${
+                  syncMessage.type === "success"
+                    ? "bg-green-50 border border-green-200 text-green-800"
+                    : "bg-red-50 border border-red-200 text-red-800"
+                }`}
+              >
                 {syncMessage.text}
               </div>
             )}
@@ -216,29 +263,39 @@ export default function ApplicationsPage() {
             {/* Stats Dashboard cards */}
             <div className="grid grid-cols-4 gap-3 mb-6 shrink-0">
               <div className="bg-bg-app border border-border-color rounded-xl p-3 flex flex-col justify-between shadow-xs">
-                <span className="text-[9px] uppercase font-bold tracking-wider text-text-secondary">Enviadas</span>
-                <span className="text-lg md:text-xl font-black mt-1 text-text-primary">{totalCount}</span>
+                <span className="text-[9px] uppercase font-bold tracking-wider text-text-secondary">
+                  Enviadas
+                </span>
+                <span className="text-lg md:text-xl font-black mt-1 text-text-primary">
+                  {totalCount}
+                </span>
               </div>
               <div className="bg-bg-app border border-border-color rounded-xl p-3 flex flex-col justify-between shadow-xs border-l-4 border-l-blue-500">
                 <span className="text-[9px] uppercase font-bold tracking-wider text-blue-500 flex items-center gap-1">
                   <Eye size={12} />
                   Visualizadas
                 </span>
-                <span className="text-lg md:text-xl font-black mt-1 text-text-primary">{viewedCount}</span>
+                <span className="text-lg md:text-xl font-black mt-1 text-text-primary">
+                  {viewedCount}
+                </span>
               </div>
               <div className="bg-bg-app border border-border-color rounded-xl p-3 flex flex-col justify-between shadow-xs border-l-4 border-l-green-500">
                 <span className="text-[9px] uppercase font-bold tracking-wider text-green-500 flex items-center gap-1">
                   <CheckCircle size={12} />
                   Em Análise
                 </span>
-                <span className="text-lg md:text-xl font-black mt-1 text-text-primary">{pendingCount}</span>
+                <span className="text-lg md:text-xl font-black mt-1 text-text-primary">
+                  {pendingCount}
+                </span>
               </div>
               <div className="bg-bg-app border border-border-color rounded-xl p-3 flex flex-col justify-between shadow-xs border-l-4 border-l-gray-400">
                 <span className="text-[9px] uppercase font-bold tracking-wider text-gray-500 flex items-center gap-1">
                   <X size={12} />
                   Encerradas
                 </span>
-                <span className="text-lg md:text-xl font-black mt-1 text-text-primary">{closedCount}</span>
+                <span className="text-lg md:text-xl font-black mt-1 text-text-primary">
+                  {closedCount}
+                </span>
               </div>
             </div>
 
@@ -254,26 +311,26 @@ export default function ApplicationsPage() {
               />
               <div className="flex gap-1.5 shrink-0 bg-bg-app border border-border-color p-1 rounded-lg">
                 <button
-                  onClick={() => setStatusFilter('all')}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${statusFilter === 'all' ? 'bg-bg-card text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
+                  onClick={() => setStatusFilter("all")}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${statusFilter === "all" ? "bg-bg-card text-text-primary shadow-xs" : "text-text-secondary hover:text-text-primary"}`}
                 >
                   Todas
                 </button>
                 <button
-                  onClick={() => setStatusFilter('applied')}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${statusFilter === 'applied' ? 'bg-bg-card text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
+                  onClick={() => setStatusFilter("applied")}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${statusFilter === "applied" ? "bg-bg-card text-text-primary shadow-xs" : "text-text-secondary hover:text-text-primary"}`}
                 >
                   Enviadas
                 </button>
                 <button
-                  onClick={() => setStatusFilter('viewed')}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${statusFilter === 'viewed' ? 'bg-bg-card text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
+                  onClick={() => setStatusFilter("viewed")}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${statusFilter === "viewed" ? "bg-bg-card text-text-primary shadow-xs" : "text-text-secondary hover:text-text-primary"}`}
                 >
                   Visualizadas
                 </button>
                 <button
-                  onClick={() => setStatusFilter('closed')}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${statusFilter === 'closed' ? 'bg-bg-card text-text-primary shadow-xs' : 'text-text-secondary hover:text-text-primary'}`}
+                  onClick={() => setStatusFilter("closed")}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${statusFilter === "closed" ? "bg-bg-card text-text-primary shadow-xs" : "text-text-secondary hover:text-text-primary"}`}
                 >
                   Encerradas
                 </button>
@@ -285,49 +342,75 @@ export default function ApplicationsPage() {
               {loading ? (
                 <div className="flex flex-col items-center justify-center h-48 gap-3">
                   <Loader2 className="animate-spin text-brand-blue" size={24} />
-                  <span className="text-xs text-text-secondary">Carregando candidaturas...</span>
+                  <span className="text-xs text-text-secondary">
+                    Carregando candidaturas...
+                  </span>
                 </div>
               ) : filteredApps.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-48 border border-dashed border-border-color rounded-xl bg-bg-app p-4 text-center">
-                  <ClipboardList size={28} className="text-text-secondary opacity-50 mb-2" />
-                  <span className="text-sm font-semibold text-text-primary">Nenhuma candidatura encontrada</span>
-                  <span className="text-xs text-text-secondary mt-1">Busque outra palavra-chave ou filtre por outro status.</span>
+                  <ClipboardList
+                    size={28}
+                    className="text-text-secondary opacity-50 mb-2"
+                  />
+                  <span className="text-sm font-semibold text-text-primary">
+                    Nenhuma candidatura encontrada
+                  </span>
+                  <span className="text-xs text-text-secondary mt-1">
+                    Busque outra palavra-chave ou filtre por outro status.
+                  </span>
                 </div>
               ) : (
                 filteredApps.map((app) => (
-                  <div 
-                    key={app.id} 
+                  <div
+                    key={app.id}
                     onClick={() => handleSelectApp(app)}
-                    className={`p-4 border rounded-xl bg-bg-app flex items-center justify-between gap-4 cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:border-brand-blue hover:shadow-subtle ${selectedApp?.id === app.id ? 'border-brand-blue ring-1 ring-brand-blue/30' : 'border-border-color'}`}
+                    className={`p-4 border rounded-xl bg-bg-app flex items-center justify-between gap-4 cursor-pointer transition-all duration-200 hover:scale-[1.01] hover:border-brand-blue hover:shadow-subtle ${selectedApp?.id === app.id ? "border-brand-blue ring-1 ring-brand-blue/30" : "border-border-color"}`}
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       {app.companyLogo ? (
-                        <img src={app.companyLogo} alt={app.companyName || ''} className="w-10 h-10 rounded-lg shrink-0 object-contain bg-white border border-border-color" />
+                        <img
+                          src={app.companyLogo}
+                          alt={app.companyName || ""}
+                          className="w-10 h-10 rounded-lg shrink-0 object-contain bg-white border border-border-color"
+                        />
                       ) : (
                         <div className="w-10 h-10 rounded-lg shrink-0 bg-brand-blue/10 flex items-center justify-center border border-border-color">
                           <Building className="text-brand-blue" size={18} />
                         </div>
                       )}
                       <div className="min-w-0">
-                        <h3 className="font-bold text-sm text-text-primary truncate">{app.jobTitle || 'Vaga Sem Título'}</h3>
-                        <p className="text-xs text-text-secondary font-medium truncate mt-0.5">{app.companyName || 'Empresa Desconhecida'}</p>
+                        <h3 className="font-bold text-sm text-text-primary truncate">
+                          {app.jobTitle || "Vaga Sem Título"}
+                        </h3>
+                        <p className="text-xs text-text-secondary font-medium truncate mt-0.5">
+                          {app.companyName || "Empresa Desconhecida"}
+                        </p>
                         <div className="flex items-center gap-2 mt-1.5 text-[10px] text-text-secondary flex-wrap">
                           <Calendar size={10} />
-                          <span>Enviado em {new Date(app.createdAt).toLocaleDateString()}</span>
+                          <span>
+                            Enviado em{" "}
+                            {new Date(app.createdAt).toLocaleDateString()}
+                          </span>
                           <span className="inline-flex items-center gap-1">
-                            {app.appliedThroughSystem ? <SystemIcon size="sm" /> : <LinkedInIcon size="sm" />}
-                            {app.appliedThroughSystem ? 'Via Sistema' : 'LinkedIn'}
+                            {app.appliedThroughSystem ? (
+                              <SystemIcon size="sm" />
+                            ) : (
+                              <LinkedInIcon size="sm" />
+                            )}
+                            {app.appliedThroughSystem
+                              ? "Via Sistema"
+                              : "LinkedIn"}
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      {app.status === 'viewed' ? (
+                      {app.status === "viewed" ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded-full text-[10px] font-bold uppercase tracking-wider">
                           <Eye size={10} />
                           Visualizada
                         </span>
-                      ) : app.status === 'closed' ? (
+                      ) : app.status === "closed" ? (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-500/10 text-gray-600 dark:text-gray-400 border border-gray-500/20 rounded-full text-[10px] font-bold uppercase tracking-wider">
                           <X size={10} />
                           Encerrada
@@ -360,15 +443,18 @@ export default function ApplicationsPage() {
           {/* Job details slide-out panel */}
           {selectedApp && (
             <aside className="w-full md:w-[450px] lg:w-[500px] border-t md:border-t-0 md:border-l border-border-color bg-bg-card md:bg-bg-app flex flex-col shrink-0 z-20 absolute md:relative inset-y-0 right-0 shadow-subtle md:shadow-none transition-transform duration-300 transform translate-x-0">
-              
               {/* Detail header */}
               <div className="px-5 py-4 border-b border-border-color flex items-center justify-between shrink-0 bg-bg-card">
                 <div>
-                  <h2 className="font-bold text-sm text-text-primary">Detalhes da Candidatura</h2>
-                  <p className="text-xs text-text-secondary mt-0.5">Vaga #{selectedApp.jobId}</p>
+                  <h2 className="font-bold text-sm text-text-primary">
+                    Detalhes da Candidatura
+                  </h2>
+                  <p className="text-xs text-text-secondary mt-0.5">
+                    Vaga #{selectedApp.jobId}
+                  </p>
                 </div>
-                <button 
-                  onClick={() => setSelectedApp(null)} 
+                <button
+                  onClick={() => setSelectedApp(null)}
                   className="p-1 rounded-md text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-colors"
                 >
                   <X size={16} />
@@ -377,26 +463,33 @@ export default function ApplicationsPage() {
 
               {/* Detail body */}
               <div className="flex-1 overflow-y-auto p-5 space-y-5">
-                
                 {/* Meta Card */}
                 <div className="bg-bg-card border border-border-color rounded-xl p-4 shadow-xs flex items-start gap-3">
                   {selectedApp.companyLogo ? (
-                    <img src={selectedApp.companyLogo} alt={selectedApp.companyName || ''} className="w-12 h-12 rounded-xl object-contain bg-white border border-border-color shrink-0" />
+                    <img
+                      src={selectedApp.companyLogo}
+                      alt={selectedApp.companyName || ""}
+                      className="w-12 h-12 rounded-xl object-contain bg-white border border-border-color shrink-0"
+                    />
                   ) : (
                     <div className="w-12 h-12 rounded-xl bg-brand-blue/10 flex items-center justify-center border border-border-color shrink-0">
                       <Building className="text-brand-blue" size={22} />
                     </div>
                   )}
                   <div className="min-w-0">
-                    <h3 className="font-bold text-base text-text-primary leading-snug">{selectedApp.jobTitle}</h3>
-                    <p className="text-sm font-semibold text-brand-blue mt-0.5">{selectedApp.companyName}</p>
+                    <h3 className="font-bold text-base text-text-primary leading-snug">
+                      {selectedApp.jobTitle}
+                    </h3>
+                    <p className="text-sm font-semibold text-brand-blue mt-0.5">
+                      {selectedApp.companyName}
+                    </p>
                     <div className="flex items-center gap-2 mt-2 text-xs text-text-secondary">
                       <span>Status:</span>
-                      {selectedApp.status === 'viewed' ? (
+                      {selectedApp.status === "viewed" ? (
                         <span className="font-bold text-blue-500 flex items-center gap-1">
                           <Eye size={12} /> Visualizada pelo recrutador
                         </span>
-                      ) : selectedApp.status === 'closed' ? (
+                      ) : selectedApp.status === "closed" ? (
                         <span className="font-bold text-gray-500 flex items-center gap-1">
                           <X size={12} /> Vaga Encerrada no LinkedIn
                         </span>
@@ -412,27 +505,44 @@ export default function ApplicationsPage() {
                 {/* Date and actions */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-bg-card border border-border-color rounded-xl p-3 text-center">
-                    <span className="text-[10px] font-bold text-text-secondary uppercase">Data de Envio</span>
+                    <span className="text-[10px] font-bold text-text-secondary uppercase">
+                      Data de Envio
+                    </span>
                     <span className="block text-sm font-semibold text-text-primary mt-1">
                       {new Date(selectedApp.createdAt).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="bg-bg-card border border-border-color rounded-xl p-3 text-center">
-                    <span className="text-[10px] font-bold text-text-secondary uppercase">Canal</span>
+                    <span className="text-[10px] font-bold text-text-secondary uppercase">
+                      Canal
+                    </span>
                     <span className="flex items-center justify-center gap-1.5 text-sm font-semibold text-text-primary mt-1">
-                      {selectedApp.appliedThroughSystem ? <SystemIcon size="md" /> : <LinkedInIcon size="md" />}
-                      {selectedApp.appliedThroughSystem ? 'Sistema' : 'LinkedIn'}
+                      {selectedApp.appliedThroughSystem ? (
+                        <SystemIcon size="md" />
+                      ) : (
+                        <LinkedInIcon size="md" />
+                      )}
+                      {selectedApp.appliedThroughSystem
+                        ? "Sistema"
+                        : "LinkedIn"}
                     </span>
                   </div>
                 </div>
 
                 {/* Job Description (Fetched) */}
                 <div className="space-y-2">
-                  <h4 className="font-bold text-xs uppercase tracking-wider text-text-secondary">Descrição da Vaga</h4>
+                  <h4 className="font-bold text-xs uppercase tracking-wider text-text-secondary">
+                    Descrição da Vaga
+                  </h4>
                   {loadingDetail ? (
                     <div className="flex items-center justify-center p-8 gap-2 bg-bg-card border border-border-color rounded-xl">
-                      <Loader2 className="animate-spin text-brand-blue" size={16} />
-                      <span className="text-xs text-text-secondary">Carregando descrição...</span>
+                      <Loader2
+                        className="animate-spin text-brand-blue"
+                        size={16}
+                      />
+                      <span className="text-xs text-text-secondary">
+                        Carregando descrição...
+                      </span>
                     </div>
                   ) : detailError ? (
                     <div className="p-4 bg-red-500/5 text-red-500 border border-red-500/10 rounded-xl flex items-center gap-2 text-xs">
@@ -440,9 +550,11 @@ export default function ApplicationsPage() {
                       <span>{detailError}</span>
                     </div>
                   ) : jobDetail ? (
-                    <div 
+                    <div
                       className="p-4 bg-bg-card border border-border-color rounded-xl text-sm leading-relaxed prose dark:prose-invert prose-xs text-text-primary max-h-[250px] overflow-y-auto scrollbar-hide"
-                      dangerouslySetInnerHTML={{ __html: jobDetail.description }}
+                      dangerouslySetInnerHTML={{
+                        __html: jobDetail.description,
+                      }}
                     />
                   ) : (
                     <div className="p-4 bg-bg-card border border-border-color rounded-xl text-center text-xs text-text-secondary">
@@ -454,33 +566,56 @@ export default function ApplicationsPage() {
                 {/* Applied Answers */}
                 {selectedApp.answers && (
                   <div className="space-y-2">
-                    <h4 className="font-bold text-xs uppercase tracking-wider text-text-secondary">Respostas Enviadas</h4>
+                    <h4 className="font-bold text-xs uppercase tracking-wider text-text-secondary">
+                      Respostas Enviadas
+                    </h4>
                     <div className="p-4 bg-bg-card border border-border-color rounded-xl text-xs space-y-3 max-h-[220px] overflow-y-auto">
                       {(() => {
                         try {
-                          const parsed = JSON.parse(selectedApp.answers || '{}');
+                          const parsed = JSON.parse(
+                            selectedApp.answers || "{}",
+                          );
                           const entries = Object.entries(parsed);
-                          if (entries.length === 0) return <span className="text-text-secondary italic">Nenhuma pergunta customizada foi feita.</span>;
+                          if (entries.length === 0)
+                            return (
+                              <span className="text-text-secondary italic">
+                                Nenhuma pergunta customizada foi feita.
+                              </span>
+                            );
                           return entries.map(([qUrn, rawAnswer]) => {
-                            const answerValue = typeof rawAnswer === 'object' && rawAnswer !== null && 'value' in rawAnswer 
-                              ? (rawAnswer as { value: string }).value 
-                              : String(rawAnswer);
+                            const answerValue =
+                              typeof rawAnswer === "object" &&
+                              rawAnswer !== null &&
+                              "value" in rawAnswer
+                                ? (rawAnswer as { value: string }).value
+                                : String(rawAnswer);
 
-                            let questionTitle = '';
+                            let questionTitle = "";
 
                             // 1. Check if the saved answer has a title stored with it
-                            if (typeof rawAnswer === 'object' && rawAnswer !== null && 'title' in rawAnswer && (rawAnswer as { title?: string }).title) {
-                              questionTitle = (rawAnswer as { title: string }).title;
+                            if (
+                              typeof rawAnswer === "object" &&
+                              rawAnswer !== null &&
+                              "title" in rawAnswer &&
+                              (rawAnswer as { title?: string }).title
+                            ) {
+                              questionTitle = (rawAnswer as { title: string })
+                                .title;
                             }
 
                             // 2. Fallback to matching with active applyForm questions
                             if (!questionTitle && jobDetail?.applyForm) {
-                              const directMatch = jobDetail.applyForm.questions?.find((q) => q.urn === qUrn);
+                              const directMatch =
+                                jobDetail.applyForm.questions?.find(
+                                  (q) => q.urn === qUrn,
+                                );
                               if (directMatch?.title) {
                                 questionTitle = directMatch.title;
                               } else if (jobDetail.applyForm.steps) {
                                 for (const step of jobDetail.applyForm.steps) {
-                                  const stepMatch = step.questions?.find((q) => q.urn === qUrn);
+                                  const stepMatch = step.questions?.find(
+                                    (q) => q.urn === qUrn,
+                                  );
                                   if (stepMatch?.title) {
                                     questionTitle = stepMatch.title;
                                     break;
@@ -491,14 +626,26 @@ export default function ApplicationsPage() {
 
                             // 2.5. Match common URN suffixes as fallback for older/external entries
                             if (!questionTitle) {
-                              if (qUrn.endsWith('phoneNumber~country)') || qUrn.includes('phoneNumber~country')) {
-                                questionTitle = 'Código do País (DDI)';
-                              } else if (qUrn.endsWith('phoneNumber~nationalNumber)') || qUrn.includes('phoneNumber~nationalNumber')) {
-                                questionTitle = 'Número de Telefone';
-                              } else if (qUrn.endsWith('emailAddress)') || qUrn.includes('emailAddress')) {
-                                questionTitle = 'Endereço de E-mail';
-                              } else if (qUrn.endsWith('document)') || qUrn.includes('document')) {
-                                questionTitle = 'Currículo / Documento';
+                              if (
+                                qUrn.endsWith("phoneNumber~country)") ||
+                                qUrn.includes("phoneNumber~country")
+                              ) {
+                                questionTitle = "Código do País (DDI)";
+                              } else if (
+                                qUrn.endsWith("phoneNumber~nationalNumber)") ||
+                                qUrn.includes("phoneNumber~nationalNumber")
+                              ) {
+                                questionTitle = "Número de Telefone";
+                              } else if (
+                                qUrn.endsWith("emailAddress)") ||
+                                qUrn.includes("emailAddress")
+                              ) {
+                                questionTitle = "Endereço de E-mail";
+                              } else if (
+                                qUrn.endsWith("document)") ||
+                                qUrn.includes("document")
+                              ) {
+                                questionTitle = "Currículo / Documento";
                               }
                             }
 
@@ -512,23 +659,30 @@ export default function ApplicationsPage() {
                               }
                             }
 
-                            const displayQuestion = loadingDetail 
-                              ? 'Carregando pergunta...' 
+                            const displayQuestion = loadingDetail
+                              ? "Carregando pergunta..."
                               : questionTitle;
 
                             return (
-                              <div key={qUrn} className="border-b border-border-color/30 pb-3 last:border-0 last:pb-0 space-y-1">
+                              <div
+                                key={qUrn}
+                                className="pb-3 last:border-0 last:pb-0 space-y-1"
+                              >
                                 <span className="font-bold text-text-primary block leading-tight">
                                   {displayQuestion}
                                 </span>
-                                <div className="bg-bg-app px-2.5 py-1.5 rounded-lg border border-border-color/50 text-[11px] font-mono text-text-secondary break-words whitespace-pre-wrap">
+                                <div className="bg-bg-app px-2.5 py-1.5 rounded-lg text-[11px] font-mono text-text-secondary break-words whitespace-pre-wrap">
                                   {String(answerValue)}
                                 </div>
                               </div>
                             );
                           });
                         } catch {
-                          return <span className="text-text-secondary">{selectedApp.answers}</span>;
+                          return (
+                            <span className="text-text-secondary">
+                              {selectedApp.answers}
+                            </span>
+                          );
                         }
                       })()}
                     </div>
@@ -542,7 +696,8 @@ export default function ApplicationsPage() {
                       <Sparkles size={12} className="text-brand-blue" />
                       Currículo Otimizado para esta Vaga
                     </h4>
-                    {selectedApp.resumePdfPath || selectedApp.resumePdfBase64 ? (
+                    {selectedApp.resumePdfPath ||
+                    selectedApp.resumePdfBase64 ? (
                       pdfUrl ? (
                         <div className="border border-border-color rounded-xl overflow-hidden bg-bg-input">
                           <object
@@ -559,7 +714,10 @@ export default function ApplicationsPage() {
                         </div>
                       ) : (
                         <div className="h-[450px] flex items-center justify-center border border-border-color rounded-xl bg-bg-card text-xs text-text-secondary">
-                          <Loader2 className="animate-spin text-brand-blue mr-2" size={16} />
+                          <Loader2
+                            className="animate-spin text-brand-blue mr-2"
+                            size={16}
+                          />
                           <span>Carregando visualizador de PDF...</span>
                         </div>
                       )
@@ -570,7 +728,6 @@ export default function ApplicationsPage() {
                     )}
                   </div>
                 )}
-
               </div>
 
               {/* Detail footer actions */}
@@ -599,10 +756,8 @@ export default function ApplicationsPage() {
                   </a>
                 )}
               </div>
-
             </aside>
           )}
-
         </main>
       </div>
     </div>

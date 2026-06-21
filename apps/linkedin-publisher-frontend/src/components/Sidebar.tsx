@@ -1,6 +1,7 @@
-import { LayoutDashboard, FilePenLine, BarChart3, Sun, Moon, CircleUser } from 'lucide-react';
+import { LayoutDashboard, FilePenLine, BarChart3, CircleUser } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useThemeStore, usePublisherStore } from '../stores';
+import { SidebarLayout } from '@linkedin-job-applier/shared';
 
 export function Sidebar() {
   const { theme, toggleTheme } = useThemeStore();
@@ -9,73 +10,51 @@ export function Sidebar() {
   const currentPath = location.pathname;
 
   return (
-    <aside className="hidden md:flex w-18 bg-bg-sidebar border-r border-border-color z-30 flex-col items-center py-6 shrink-0 transition-colors duration-200">
-      {/* Brand logo (Sober LinkedIn style) */}
-      <div className="w-8 h-8 bg-brand-blue rounded-lg flex items-center justify-center mb-8 shrink-0">
-        <span className="text-white font-extrabold text-lg tracking-tighter">in</span>
-      </div>
-      
-      {/* Navigation */}
-      <div className="flex flex-col gap-4 flex-1 w-full items-center">
-        <NavButton
-          icon={<LayoutDashboard size={18} />}
-          active={currentPath === '/dashboard' || currentPath === '/'}
-          to="/dashboard"
-          tooltip="Dashboard"
-        />
-        <NavButton
-          icon={<FilePenLine size={18} />}
-          active={currentPath.startsWith('/create')}
-          to="/create"
-          onClick={() => setSelectedPost(null)}
-          tooltip="Criar Postagem"
-        />
-        <NavButton
-          icon={<BarChart3 size={18} />}
-          active={currentPath === '/analytics'}
-          to="/analytics"
-          tooltip="Métricas"
-        />
-      </div>
-
-      {/* Footer / Theme & Profile actions */}
-      <div className="mt-auto flex flex-col gap-4 items-center w-full">
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className="w-10 h-10 rounded-lg flex items-center justify-center text-text-secondary hover:bg-bg-hover hover:text-text-primary transition-all border border-border-color bg-bg-card shadow-sm cursor-pointer"
-          aria-label="Alternar Tema"
-          title="Alternar Tema"
-        >
-          {theme === 'dark' ? <Sun size={18} className="text-amber-400" /> : <Moon size={18} />}
-        </button>
-
-        {/* Profile button */}
-        <Link
-          to="/profile"
-          title="Meu Perfil"
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border shadow-sm cursor-pointer ${
-            currentPath === '/profile'
-              ? 'bg-brand-blue text-white border-brand-blue hover:bg-brand-blue-hover'
-              : 'text-text-secondary bg-transparent border-transparent hover:bg-bg-hover hover:text-text-primary'
-          }`}
-        >
-          {profile?.photoUrl ? (
-            <img
-              src={profile.photoUrl}
-              alt={profile.name || ''}
-              className="w-7 h-7 rounded-full object-cover"
-              referrerPolicy="no-referrer"
-              onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-              }}
-            />
-          ) : (
-            <CircleUser size={20} />
-          )}
-        </Link>
-      </div>
-    </aside>
+    <SidebarLayout theme={theme} onThemeToggle={toggleTheme} footerActions={
+      <Link
+        to="/profile"
+        title="Meu Perfil"
+        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border shadow-sm cursor-pointer ${
+          currentPath === '/profile'
+            ? 'bg-brand-blue text-white border-brand-blue hover:bg-brand-blue-hover'
+            : 'text-text-secondary bg-transparent border-transparent hover:bg-bg-hover hover:text-text-primary'
+        }`}
+      >
+        {profile?.photoUrl ? (
+          <img
+            src={profile.photoUrl}
+            alt={profile.name || ''}
+            className="w-7 h-7 rounded-full object-cover"
+            referrerPolicy="no-referrer"
+            onError={(e) => {
+              (e.target as HTMLElement).style.display = 'none';
+            }}
+          />
+        ) : (
+          <CircleUser size={20} />
+        )}
+      </Link>
+    }>
+      <NavButton
+        icon={<LayoutDashboard size={18} />}
+        active={currentPath === '/dashboard' || currentPath === '/'}
+        to="/dashboard"
+        tooltip="Dashboard"
+      />
+      <NavButton
+        icon={<FilePenLine size={18} />}
+        active={currentPath.startsWith('/create')}
+        to="/create"
+        onClick={() => setSelectedPost(null)}
+        tooltip="Criar Postagem"
+      />
+      <NavButton
+        icon={<BarChart3 size={18} />}
+        active={currentPath === '/analytics'}
+        to="/analytics"
+        tooltip="Métricas"
+      />
+    </SidebarLayout>
   );
 }
 

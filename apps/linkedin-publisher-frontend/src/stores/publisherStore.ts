@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import api from '../services/api';
+import { apiService } from '../services/apiService';
 import type { LinkedInPost } from '../types';
 
 interface PublisherState {
@@ -13,7 +13,7 @@ interface PublisherState {
   fetchCredentialsStatus: () => Promise<void>;
   fetchPosts: () => Promise<void>;
   fetchProfile: () => Promise<void>;
-  createPost: (post: Omit<LinkedInPost, 'id' | 'createdAt' | 'updatedAt' | 'metrics'>) => Promise<void>;
+  createPost: (post: Omit<LinkedInPost, 'id' | 'createdAt' | 'updatedAt' | 'metrics'>, images?: File[]) => Promise<void>;
   updatePost: (id: string, updates: Partial<LinkedInPost>) => Promise<void>;
   deletePost: (id: string) => Promise<void>;
   setSelectedPost: (post: LinkedInPost | null) => void;
@@ -32,7 +32,7 @@ export const usePublisherStore = create<PublisherState>((set, get) => ({
 
   fetchCredentialsStatus: async () => {
     try {
-      const { data } = await api.get<{ hasCredentials: boolean }>('/api/credentials/status');
+      const { data } = await apiService.getCredentialsStatus();
       set({ hasCredentials: !!data?.hasCredentials });
     } catch (error) {
       console.error('Failed to fetch credentials status:', error);
@@ -43,7 +43,7 @@ export const usePublisherStore = create<PublisherState>((set, get) => ({
   fetchPosts: async () => {
     set({ loading: true });
     try {
-      const { data } = await api.get<LinkedInPost[]>('/api/posts');
+      const { data } = await apiService.getPosts();
       set({ posts: data || [], loading: false });
     } catch (error) {
       console.error('Failed to fetch posts:', error);
@@ -51,10 +51,10 @@ export const usePublisherStore = create<PublisherState>((set, get) => ({
     }
   },
 
-  createPost: async (post) => {
+  createPost: async (post, images) => {
     set({ loading: true });
     try {
-      const { data } = await api.post<LinkedInPost>('/api/posts', post);
+      const { data } = await apiService.createPost(post, images);
       set((state) => ({
         posts: [data, ...state.posts],
         selectedPost: data,
@@ -70,7 +70,7 @@ export const usePublisherStore = create<PublisherState>((set, get) => ({
   updatePost: async (id, updates) => {
     set({ loading: true });
     try {
-      const { data } = await api.put<LinkedInPost>(`/api/posts/${id}`, updates);
+      const { data } = await apiService.updatePost(id, updates);
       set((state) => {
         const updatedPosts = state.posts.map((p) => (p.id === id ? data : p));
         const nextSelected = state.selectedPost && state.selectedPost.id === id ? data : state.selectedPost;
@@ -90,7 +90,7 @@ export const usePublisherStore = create<PublisherState>((set, get) => ({
   deletePost: async (id) => {
     set({ loading: true });
     try {
-      await api.delete(`/api/posts/${id}`);
+      await apiService.deletePost(id);
       set((state) => ({
         posts: state.posts.filter((p) => p.id !== id),
         selectedPost: state.selectedPost?.id === id ? null : state.selectedPost,
@@ -108,7 +108,7 @@ export const usePublisherStore = create<PublisherState>((set, get) => ({
   publishPostNow: async (id) => {
     set({ loading: true });
     try {
-      const { data } = await api.post<LinkedInPost>(`/api/posts/${id}/publish`);
+      const { data } = await apiService.publishPost(id);
       set((state) => {
         const updatedPosts = state.posts.map((p) => (p.id === id ? data : p));
         const nextSelected = state.selectedPost && state.selectedPost.id === id ? data : state.selectedPost;
@@ -136,7 +136,7 @@ export const usePublisherStore = create<PublisherState>((set, get) => ({
   generateWithAi: async (prompt, tone) => {
     set({ aiGenerating: true });
     try {
-      const { data } = await api.post<{ text: string }>('/api/ai/generate-post', { prompt, tone });
+      const { data } = await apiService.generatePost(prompt, tone);
       set({ aiGenerating: false });
       return data.text || '';
     } catch (error) {
@@ -148,7 +148,7 @@ export const usePublisherStore = create<PublisherState>((set, get) => ({
 
   fetchProfile: async () => {
     try {
-      const { data } = await api.get('/api/profile');
+      const { data } = await apiService.getProfile();
       set({ profile: data });
     } catch (error) {
       console.error('Failed to fetch profile:', error);

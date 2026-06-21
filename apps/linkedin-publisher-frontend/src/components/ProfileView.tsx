@@ -1,7 +1,7 @@
 import { usePublisherStore } from '../stores';
 import { ProfileView as SharedProfileView } from '@linkedin-job-applier/shared';
 import { useToast } from './ui/Toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export function ProfileView() {
   const { profile, fetchProfile } = usePublisherStore();
@@ -19,6 +19,13 @@ export function ProfileView() {
       setIsRefreshing(false);
     }
   };
+
+  // Auto-fetch profile on mount if not loaded
+  useEffect(() => {
+    if (!profile) {
+      fetchProfile();
+    }
+  }, [profile, fetchProfile]);
 
   return (
     <SharedProfileView
