@@ -293,13 +293,13 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
   if (!isOpen) return null;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} zIndex={60} title="Criador de Carrossel de Slides (PDF)">
-      <div className="flex flex-col h-[80vh] overflow-hidden bg-bg-app">
+    <Modal isOpen={isOpen} onClose={onClose} zIndex={60} title="Criador de Carrossel de Slides (PDF)" className="max-w-5xl h-[85vh] max-h-[90vh]">
+      <div className="flex flex-col h-full overflow-hidden bg-bg-app">
         {/* Main Editor Body */}
         <div className="flex flex-1 overflow-hidden min-h-0">
           
           {/* Left panel - Inputs and Themes */}
-          <div className="w-[55%] border-r border-border-color p-4 space-y-4 overflow-y-auto h-full bg-bg-card">
+          <div className="w-[50%] border-r border-border-color p-5 space-y-5 overflow-y-auto h-full bg-bg-card">
             
             {/* AI Prompter */}
             <div className="p-3 bg-brand-blue/5 border border-brand-blue/15 rounded-lg space-y-2.5">
@@ -339,7 +339,7 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
             {/* Document Details */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-text-secondary uppercase">Título do Carrossel</label>
+                <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Título do Carrossel</label>
                 <Input
                   value={carouselTitle}
                   onChange={setCarouselTitle}
@@ -347,7 +347,7 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[9px] font-bold text-text-secondary uppercase">Assinatura</label>
+                <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Assinatura</label>
                 <Input
                   value={author}
                   onChange={setAuthor}
@@ -357,16 +357,16 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
             </div>
 
             {/* Theme selection grid */}
-            <div className="space-y-1.5">
-              <label className="text-[9px] font-bold text-text-secondary uppercase">Tema Visual (Carrossel)</label>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Tema Visual (Carrossel)</label>
               <div className="grid grid-cols-2 gap-2">
                 {THEME_OPTIONS.map((opt) => (
                   <button
                     key={opt.id}
                     onClick={() => setTheme(opt.id)}
-                    className={`p-2 rounded-lg text-left border flex flex-col justify-between h-16 transition-all cursor-pointer ${
+                    className={`p-2.5 rounded-lg text-left border flex flex-col justify-between h-16 transition-all cursor-pointer ${
                       theme === opt.id
-                        ? 'border-brand-blue bg-brand-blue/5'
+                        ? 'border-brand-blue bg-brand-blue/5 ring-1 ring-brand-blue shadow-sm'
                         : 'border-border-color bg-bg-card hover:bg-bg-hover'
                     }`}
                   >
@@ -384,7 +384,7 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
 
             {/* Current Slide text fields */}
             {activeSlide && (
-              <div className="border-t border-border-color pt-3.5 space-y-3">
+              <div className="border border-border-color rounded-xl p-4 bg-bg-card space-y-3.5 animate-fadeIn shadow-sm">
                 <div className="flex justify-between items-center">
                   <h4 className="text-xs font-bold text-text-primary">
                     Slide {activeIndex + 1} ({activeSlide.type.toUpperCase()})
@@ -401,7 +401,7 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
                 </div>
                 <div className="space-y-2.5">
                   <div className="space-y-1">
-                    <label className="text-[9px] font-bold text-text-secondary uppercase">Título do Slide</label>
+                    <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Título do Slide</label>
                     <Input
                       value={activeSlide.title}
                       onChange={(val) => handleUpdateSlide({ title: val })}
@@ -410,7 +410,7 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
                   </div>
                   {activeSlide.type !== 'content' ? (
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-text-secondary uppercase">Subtítulo</label>
+                      <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Subtítulo</label>
                       <Input
                         value={activeSlide.subtitle || ''}
                         onChange={(val) => handleUpdateSlide({ subtitle: val })}
@@ -419,7 +419,7 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
                     </div>
                   ) : (
                     <div className="space-y-1">
-                      <label className="text-[9px] font-bold text-text-secondary uppercase">Tópicos (um por linha)</label>
+                      <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Tópicos (um por linha)</label>
                       <Textarea
                         value={activeSlide.content || ''}
                         onChange={(val) => handleUpdateSlide({ content: val })}
@@ -456,17 +456,17 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
           </div>
 
           {/* Right panel - Live Preview & Slide nav */}
-          <div className="w-[45%] flex flex-col items-center justify-center p-6 space-y-4 bg-bg-hover">
+          <div className="w-[50%] flex flex-col items-center justify-center p-8 space-y-5 bg-bg-hover">
             {/* Live Card (4:5 Aspect Ratio) */}
-            <div className="w-full max-w-[260px] aspect-[4/5] relative rounded-xl overflow-hidden shadow-md border border-border-color/20 flex flex-col shrink-0">
+            <div className="w-full max-w-[340px] aspect-[4/5] relative rounded-xl overflow-hidden shadow-lg border border-border-color/20 flex flex-col shrink-0">
               {activeSlide ? (
-                <div className={`w-full h-full flex flex-col justify-between p-5 text-left relative ${activeTheme.bg} ${activeTheme.text}`}>
+                <div className={`w-full h-full flex flex-col justify-between p-6 text-left relative ${activeTheme.bg} ${activeTheme.text}`}>
                   <div className="flex-1 flex flex-col justify-between">
                     {renderPreviewContent()}
                   </div>
                   
                   {/* Foot block */}
-                  <div className="flex justify-between items-center w-full border-t border-current/10 pt-3 text-[8px] font-semibold opacity-90">
+                  <div className="flex justify-between items-center w-full border-t border-current/10 pt-3 text-[9px] font-semibold opacity-90">
                     <span className="truncate max-w-[90px]">{author}</span>
                     {activeIndex < slides.length - 1 ? (
                       <span>{activeSlide.footer || 'Deslize'} ➔</span>

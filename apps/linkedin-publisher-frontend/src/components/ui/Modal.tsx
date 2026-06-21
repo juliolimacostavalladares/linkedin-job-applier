@@ -12,6 +12,7 @@ interface ModalProps {
   children: React.ReactNode;
   showCloseButton?: boolean;
   title?: string;
+  className?: string;
 }
 
 export function Modal({
@@ -20,7 +21,8 @@ export function Modal({
   zIndex,
   children,
   showCloseButton = true,
-  title
+  title,
+  className
 }: ModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +53,7 @@ export function Modal({
       >
         <div
           ref={modalRef}
-          className="bg-bg-card rounded-lg shadow-subtle w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+          className={`bg-bg-card rounded-lg shadow-subtle w-full overflow-hidden flex flex-col ${className || 'max-w-2xl max-h-[90vh]'}`}
           onClick={(e) => e.stopPropagation()}
         >
           {(title || showCloseButton) && (
