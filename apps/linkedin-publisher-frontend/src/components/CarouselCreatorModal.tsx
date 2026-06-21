@@ -344,16 +344,6 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
           </h4>
           <div className="flex-1 flex flex-col justify-center my-2">
             <div className="w-full bg-[#1e1e2e] border border-slate-700/50 rounded-lg overflow-hidden shadow-md font-mono text-[9px] text-left">
-              <div className="bg-[#181825] px-3 py-1.5 flex items-center justify-between border-b border-slate-700/30">
-                <div className="flex gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#f38ba8]"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#f9e2af]"></span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#a6e3a1]"></span>
-                </div>
-                <span className="text-slate-400 font-semibold uppercase tracking-wider text-[8px]">
-                  {lang}
-                </span>
-              </div>
               <pre className="p-3 m-0 overflow-x-auto text-[#cdd6f4] whitespace-pre-wrap break-all leading-normal">
                 <code className="hljs" dangerouslySetInnerHTML={{ __html: highlightedCode }} />
               </pre>

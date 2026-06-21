@@ -115,14 +115,6 @@ export class CarouselService {
           <h2>${slide.title}</h2>
           <div class="slide-body">
             <div class="code-editor-window">
-              <div class="code-editor-header">
-                <div class="code-editor-dots">
-                  <span class="dot dot-red"></span>
-                  <span class="dot dot-yellow"></span>
-                  <span class="dot dot-green"></span>
-                </div>
-                <span class="code-editor-lang">${lang}</span>
-              </div>
               <pre class="code-editor-body"><code class="hljs ${lang}">${highlightedCode}</code></pre>
             </div>
           </div>
