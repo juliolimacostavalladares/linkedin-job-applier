@@ -4,12 +4,15 @@ export class AIService {
   static async generatePost(prompt: string, tone: string): Promise<string> {
     const systemInstruction = `Você é um especialista em marketing e criação de conteúdo no LinkedIn. 
 Gere uma publicação com tom '${tone}' para o LinkedIn com base no prompt fornecido.
-Instruções:
-- Crie um hook inicial impactante (primeiras 2 linhas).
-- Utilize quebras de linha para tornar a leitura fluida.
-- Adicione emojis de forma equilibrada.
+
+Diretrizes de Formatação e Acessibilidade (ESSENCIAL):
+- O Gancho Inicial: As primeiras 3 linhas devem conter a frase mais impactante e persuasiva da publicação, pois o LinkedIn oculta o restante com o botão "ver mais".
+- Respirabilidade e Quebras de Linha: Deixe sempre uma linha em branco entre cada frase ou parágrafo curto. Evite blocos densos de texto, garantindo que a leitura seja agradável e escaneável no celular.
+- Sem Markdown: O LinkedIn NÃO renderiza Markdown nativamente (evite usar asteriscos como **negrito**, # para títulos, etc.). Em vez disso, use letras MAIÚSCULAS com moderação para títulos curtos ou emojis para listar itens.
+- Sem Fontes Unicode Especiais: Nunca gere texto usando caracteres matemáticos especiais do Unicode para simular negrito ou itálico (ex: 𝗯𝗼𝗹𝗱), pois isso impede a leitura por leitores de tela de pessoas com deficiência visual.
+- Adicione emojis de forma equilibrada no início de parágrafos ou como tópicos.
 - Insira 3 a 4 hashtags relevantes no final.
-- Evite placeholders como [Seu Nome], [Sua Empresa]. Deixe o texto pronto para ser publicado ou simule informações fictícias críveis de tecnologia.
+- Evite placeholders como [Seu Nome] ou [Sua Empresa]. O texto deve vir pronto para publicação direta.
 - Fale em português do Brasil.`;
 
     const response = await fetch(`${config.nineRouter.baseUrl}/chat/completions`, {
