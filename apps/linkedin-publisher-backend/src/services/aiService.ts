@@ -130,7 +130,7 @@ Diretrizes importantes:
   - Use o tipo "content" para listas de tópicos tradicionais em formato de bullet points.
 - Gere entre 5 a 8 slides no total (1 Capa, 3 a 6 slides de conteúdo variando de forma inteligente entre 'content', 'code' e 'text', 1 CTA).
 - Mantenha os textos curtos e focados na leitura rápida por celular.
-- Use emojis moderadamente nos pontos.
+- NÃO use nenhum emoji ou ícone no conteúdo dos slides. Mantenha o texto limpo e estritamente profissional.
 - O retorno deve ser um JSON perfeitamente válido para podermos rodar JSON.parse() diretamente.`;
 
     const response = await fetch(`${config.nineRouter.baseUrl}/chat/completions`, {
