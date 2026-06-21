@@ -19,6 +19,10 @@ export const profileRouter = Router();
  *     responses:
  *       200:
  *         description: Successfully fetched profile info
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProfileInfo'
  *       401:
  *         description: Unauthorized
  *       500:
@@ -52,6 +56,10 @@ profileRouter.get('/info', profileController.getProfileInfo);
  *     responses:
  *       200:
  *         description: PDF downloaded and parsed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ResumePdfResult'
  *       400:
  *         description: Bad request
  *       401:

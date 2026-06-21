@@ -44,6 +44,10 @@ export const postsRouter = Router();
  *     responses:
  *       200:
  *         description: Post published successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CreatePostResult'
  *       400:
  *         description: Bad request
  *       401:
@@ -79,6 +83,10 @@ postsRouter.post('/', postsController.createPost);
  *     responses:
  *       200:
  *         description: Post deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/DeletePostResult'
  *       401:
  *         description: Unauthorized
  *       500:

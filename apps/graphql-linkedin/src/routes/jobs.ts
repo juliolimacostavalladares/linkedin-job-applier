@@ -43,6 +43,12 @@ export const jobsRouter = Router();
  *     responses:
  *       200:
  *         description: Successfully fetched jobs list
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Job'
  *       401:
  *         description: Unauthorized / invalid credentials
  *       500:
@@ -79,6 +85,10 @@ jobsRouter.get('/', jobsController.getJobs);
  *     responses:
  *       200:
  *         description: Successfully fetched job details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/JobDetail'
  *       401:
  *         description: Unauthorized
  *       500:
@@ -115,6 +125,10 @@ jobsRouter.get('/:id', jobsController.getJobDetail);
  *     responses:
  *       200:
  *         description: Form successfully retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApplyForm'
  *       401:
  *         description: Unauthorized
  *       500:
@@ -183,6 +197,10 @@ jobsRouter.get('/:id/apply-form', jobsController.getApplyForm);
  *     responses:
  *       200:
  *         description: Application submitted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ApplySubmissionResult'
  *       400:
  *         description: Bad request
  *       401:
