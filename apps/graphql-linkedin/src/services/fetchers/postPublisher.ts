@@ -30,17 +30,30 @@ export async function createPost(
     'referer': 'https://www.linkedin.com/feed/',
     'priority': 'u=1, i',
     'sec-ch-prefers-color-scheme': 'dark',
+    'x-restli-protocol-version': '2.0.0',
+    'x-li-pem-metadata': dynamicHeaders['x-li-pem-metadata'] || 'Voyager - Sharing - CreateShare=sharing-create-content',
   };
 
   // Add optional tracking headers if they exist in dynamicHeaders
   if (dynamicHeaders['x-li-page-instance']) {
     headers['x-li-page-instance'] = dynamicHeaders['x-li-page-instance'];
   }
-  if (dynamicHeaders['x-li-pem-metadata']) {
-    headers['x-li-pem-metadata'] = dynamicHeaders['x-li-pem-metadata'];
-  }
   if (dynamicHeaders['x-li-track']) {
     headers['x-li-track'] = dynamicHeaders['x-li-track'];
+  }
+
+  // Determine media category and payload format based on URN type
+  let mediaPayload = null;
+  if (mediaUrn) {
+    const isArticle = mediaUrn.startsWith('urn:li:article:');
+    mediaPayload = {
+      category: isArticle ? 'URN_REFERENCE' : 'IMAGE',
+      mediaUrn: mediaUrn,
+      ...(isArticle 
+        ? { originalUrl: null } 
+        : { tapTargets: [], altText: '' }
+      ),
+    };
   }
 
   // Build the GraphQL payload matching LinkedIn's internal API format
@@ -57,14 +70,7 @@ export async function createPost(
           text: text,
           attributesV2: [],
         },
-        ...(mediaUrn && {
-          media: {
-            category: 'IMAGE',
-            mediaUrn: mediaUrn,
-            tapTargets: [],
-            altText: '',
-          },
-        }),
+        ...(mediaPayload && { media: mediaPayload }),
       },
     },
     queryId: 'voyagerContentcreationDashShares.279996efa5064c01775d5aff003d9377',
