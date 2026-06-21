@@ -1,8 +1,8 @@
-import { useEffect, RefObject } from 'react';
+import { useEffect, type RefObject } from 'react';
 
 export function useModalFocusTrap(
   isOpen: boolean,
-  modalRef: RefObject<HTMLElement>
+  modalRef: RefObject<HTMLElement | null>
 ) {
   useEffect(() => {
     if (!isOpen || !modalRef.current) return;

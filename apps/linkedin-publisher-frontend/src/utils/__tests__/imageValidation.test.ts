@@ -1,6 +1,6 @@
 // src/utils/__tests__/imageValidation.test.ts
 import { describe, it, expect } from 'vitest';
-import { validateImageFile, validateImageFiles, ValidationResult } from '../imageValidation';
+import { validateImageFile, validateImageFiles } from '../imageValidation';
 
 describe('imageValidation', () => {
   it('should accept valid JPEG file', () => {
