@@ -50,9 +50,13 @@ export async function createPost(
     const isArticle = mediaUrn.startsWith('urn:li:article:');
     if (mediaCategory === 'DOCUMENT') {
       mediaPayload = {
-        category: 'DOCUMENT',
+        category: 'NATIVE_DOCUMENT',
         mediaUrn: mediaUrn,
-        documentSharingTitle: documentSharingTitle || 'Documento',
+        title: documentSharingTitle || 'Documento',
+        recipes: [
+          'urn:li:digitalmediaRecipe:feedshare-document-preview',
+          'urn:li:digitalmediaRecipe:feedshare-document'
+        ],
       };
     } else {
       mediaPayload = {
