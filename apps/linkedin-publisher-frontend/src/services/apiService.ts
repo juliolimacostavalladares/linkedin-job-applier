@@ -75,6 +75,13 @@ export const apiService = {
   generatePost: (prompt: string, tone: string) =>
     api.post<{ text: string }>('/api/ai/generate-post', { prompt, tone }),
 
+  generateCarousel: (prompt: string, tone: string) =>
+    api.post<{ title: string; slides: any[] }>('/api/ai/generate-carousel', { prompt, tone }),
+
+  // Carousel PDF
+  exportCarouselPdf: (config: { theme: string; title: string; authorName: string; slides: any[] }) =>
+    api.post('/api/carousel/generate-pdf', config, { responseType: 'blob' }),
+
   // Profile
   getProfile: () =>
     api.get('/api/profile'),

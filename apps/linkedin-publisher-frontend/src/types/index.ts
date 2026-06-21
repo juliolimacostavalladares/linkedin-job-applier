@@ -1,4 +1,4 @@
-export type PostType = 'text' | 'image' | 'video' | 'link';
+export type PostType = 'text' | 'image' | 'video' | 'link' | 'document';
 
 export type PostStatus = 'draft' | 'scheduled' | 'published';
 

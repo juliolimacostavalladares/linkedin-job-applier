@@ -17,6 +17,8 @@ export async function createPost(
   dynamicHeaders: Record<string, string>,
   text: string,
   mediaUrn?: string,
+  mediaCategory?: string,
+  documentSharingTitle?: string,
 ): Promise<CreatePostResult> {
   // LinkedIn's internal GraphQL endpoint for creating posts
   const apiUrl = 'https://www.linkedin.com/voyager/api/graphql?action=execute&queryId=voyagerContentcreationDashShares.279996efa5064c01775d5aff003d9377';
@@ -46,14 +48,26 @@ export async function createPost(
   let mediaPayload = null;
   if (mediaUrn) {
     const isArticle = mediaUrn.startsWith('urn:li:article:');
-    mediaPayload = {
-      category: isArticle ? 'URN_REFERENCE' : 'IMAGE',
-      mediaUrn: mediaUrn,
-      ...(isArticle 
-        ? { originalUrl: null } 
-        : { tapTargets: [], altText: '' }
-      ),
-    };
+    if (mediaCategory === 'DOCUMENT') {
+      mediaPayload = {
+        category: 'NATIVE_DOCUMENT',
+        mediaUrn: mediaUrn,
+        title: documentSharingTitle || 'Documento',
+        recipes: [
+          'urn:li:digitalmediaRecipe:feedshare-document-preview',
+          'urn:li:digitalmediaRecipe:feedshare-document'
+        ],
+      };
+    } else {
+      mediaPayload = {
+        category: isArticle ? 'URN_REFERENCE' : 'IMAGE',
+        mediaUrn: mediaUrn,
+        ...(isArticle 
+          ? { originalUrl: null } 
+          : { tapTargets: [], altText: '' }
+        ),
+      };
+    }
   }
 
   // Build the GraphQL payload matching LinkedIn's internal API format
