@@ -49,7 +49,7 @@
         ],
         "operationId": "getProfileInfo",
         "summary": "Retrieve profile info",
-        "description": "Fetches full profile info including bio, experiences, and education parsed from the user's PDF profile.",
+        "description": "Downloads the member's profile summary in PDF format directly from LinkedIn, parses the text stream, and extracts structured info including work experiences, bio descriptions, and education details in a clean JSON hierarchy.\n",
         "security": [
           {
             "LinkedInCookie": [],
@@ -76,7 +76,7 @@
         ],
         "operationId": "getResumePdf",
         "summary": "Retrieve resume PDF",
-        "description": "Downloads the user's profile PDF from LinkedIn and returns parsed text along with a base64-encoded PDF.",
+        "description": "Generates and downloads the user's resume PDF from LinkedIn. Returns the raw text payload along with a base64-encoded representation of the PDF file.\n\n### Query Parameters\n- `profileId` (string, required): The target member URN ID on LinkedIn (e.g. `ACoAAB...`).\n",
         "security": [
           {
             "LinkedInCookie": [],
@@ -117,7 +117,7 @@
         ],
         "operationId": "createPost",
         "summary": "Create a post on LinkedIn",
-        "description": "Publishes a text post (with optional media or documents) to LinkedIn.",
+        "description": "Publishes a text post to your LinkedIn feed. Supports optional attachments such as images, articles, or PDF documents.\n\n> [!IMPORTANT]\n> For posts containing images or document files, you must first upload the media to LinkedIn and obtain its URN using the standard LinkedIn media upload endpoints, then pass the URN in `mediaUrn`.\n",
         "security": [
           {
             "LinkedInCookie": [],
@@ -183,7 +183,7 @@
         ],
         "operationId": "deletePost",
         "summary": "Delete a post",
-        "description": "Deletes a specific post by its LinkedIn sharing ID.",
+        "description": "Deletes a specific post by its LinkedIn sharing ID.\n\n### Path Parameters\n- `id` (string, required): The unique sharing URN identifier of the post.\n",
         "security": [
           {
             "LinkedInCookie": [],
@@ -221,7 +221,7 @@
         ],
         "operationId": "listJobs",
         "summary": "List easy-apply jobs",
-        "description": "Retrieves easy-apply jobs matching the keywords and filters.",
+        "description": "Retrieves a list of easy-apply jobs from LinkedIn matching the keywords and filters.\n\n### Query Parameters\n- `keywords` (string, optional): Job title or skill keywords (e.g. `React`, `Node.js`).\n- `remote` (boolean, optional): If `true`, filters for remote positions.\n- `past24h` (boolean, optional): If `true`, restricts search results to jobs posted in the past 24 hours.\n\n> [!TIP]\n> For better performance and search precision, always specify `keywords`.\n",
         "security": [
           {
             "LinkedInCookie": [],
@@ -274,7 +274,7 @@
         ],
         "operationId": "getJobDetail",
         "summary": "Retrieve job details",
-        "description": "Gets detailed information for a specific job posting.",
+        "description": "Gets detailed information for a specific LinkedIn job posting by its unique job ID.\n\n### Path Parameters\n- `id` (string, required): The unique LinkedIn job posting ID.\n\n### Response Content\nReturns the job title, company name, location, and the full description text of the job, which is parsed to extract key requirements.\n",
         "security": [
           {
             "LinkedInCookie": [],
@@ -312,7 +312,7 @@
         ],
         "operationId": "getApplyForm",
         "summary": "Retrieve job application form",
-        "description": "Fetches the multi-step form questions for a LinkedIn Easy Apply job.",
+        "description": "Fetches the structured multi-step form questions for a LinkedIn Easy Apply job posting.\n\n### Path Parameters\n- `id` (string, required): The unique LinkedIn job posting ID.\n\n> [!IMPORTANT]\n> This endpoint parses the raw form fields (text boxes, dropdowns, radio buttons) and outputs their URN identifiers. These URNs are required when submitting answers via the **Submit application form** endpoint.\n",
         "security": [
           {
             "LinkedInCookie": [],
@@ -350,7 +350,7 @@
         ],
         "operationId": "submitApplication",
         "summary": "Submit application form",
-        "description": "Submits Easy Apply form answers and file uploads for a job posting.",
+        "description": "Submits Easy Apply form answers and file uploads for a job posting.\n\n### Request Body Properties\n- `formValues` (object, required): A flat map of URN string identifiers to answer values (e.g., `{\"urn:li:fs_easyApplyFormElement:123456\": \"Yes\"}`).\n- `referenceId` (string, optional): The form reference ID returned by the application form retrieval endpoint.\n- `resumeUrn` (string, optional): The LinkedIn URN of the uploaded resume document to attach to this application.\n",
         "security": [
           {
             "LinkedInCookie": [],

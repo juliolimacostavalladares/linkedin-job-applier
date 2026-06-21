@@ -11,7 +11,16 @@ export const jobsRouter = Router();
  *       - Jobs
  *     operationId: listJobs
  *     summary: List easy-apply jobs
- *     description: Retrieves easy-apply jobs matching the keywords and filters.
+ *     description: |
+ *       Retrieves a list of easy-apply jobs from LinkedIn matching the keywords and filters.
+ *
+ *       ### Query Parameters
+ *       - `keywords` (string, optional): Job title or skill keywords (e.g. `React`, `Node.js`).
+ *       - `remote` (boolean, optional): If `true`, filters for remote positions.
+ *       - `past24h` (boolean, optional): If `true`, restricts search results to jobs posted in the past 24 hours.
+ *
+ *       > [!TIP]
+ *       > For better performance and search precision, always specify `keywords`.
  *     security:
  *       - LinkedInCookie: []
  *         LinkedInCsrf: []
@@ -49,7 +58,14 @@ jobsRouter.get('/', jobsController.getJobs);
  *       - Jobs
  *     operationId: getJobDetail
  *     summary: Retrieve job details
- *     description: Gets detailed information for a specific job posting.
+ *     description: |
+ *       Gets detailed information for a specific LinkedIn job posting by its unique job ID.
+ *
+ *       ### Path Parameters
+ *       - `id` (string, required): The unique LinkedIn job posting ID.
+ *
+ *       ### Response Content
+ *       Returns the job title, company name, location, and the full description text of the job, which is parsed to extract key requirements.
  *     security:
  *       - LinkedInCookie: []
  *         LinkedInCsrf: []
@@ -78,7 +94,14 @@ jobsRouter.get('/:id', jobsController.getJobDetail);
  *       - Jobs
  *     operationId: getApplyForm
  *     summary: Retrieve job application form
- *     description: Fetches the multi-step form questions for a LinkedIn Easy Apply job.
+ *     description: |
+ *       Fetches the structured multi-step form questions for a LinkedIn Easy Apply job posting.
+ *
+ *       ### Path Parameters
+ *       - `id` (string, required): The unique LinkedIn job posting ID.
+ *
+ *       > [!IMPORTANT]
+ *       > This endpoint parses the raw form fields (text boxes, dropdowns, radio buttons) and outputs their URN identifiers. These URNs are required when submitting answers via the **Submit application form** endpoint.
  *     security:
  *       - LinkedInCookie: []
  *         LinkedInCsrf: []
@@ -107,7 +130,13 @@ jobsRouter.get('/:id/apply-form', jobsController.getApplyForm);
  *       - Jobs
  *     operationId: submitApplication
  *     summary: Submit application form
- *     description: Submits Easy Apply form answers and file uploads for a job posting.
+ *     description: |
+ *       Submits Easy Apply form answers and file uploads for a job posting.
+ *
+ *       ### Request Body Properties
+ *       - `formValues` (object, required): A flat map of URN string identifiers to answer values (e.g., `{"urn:li:fs_easyApplyFormElement:123456": "Yes"}`).
+ *       - `referenceId` (string, optional): The form reference ID returned by the application form retrieval endpoint.
+ *       - `resumeUrn` (string, optional): The LinkedIn URN of the uploaded resume document to attach to this application.
  *     security:
  *       - LinkedInCookie: []
  *         LinkedInCsrf: []

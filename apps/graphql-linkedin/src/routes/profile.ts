@@ -11,7 +11,8 @@ export const profileRouter = Router();
  *       - Profile
  *     operationId: getProfileInfo
  *     summary: Retrieve profile info
- *     description: Fetches full profile info including bio, experiences, and education parsed from the user's PDF profile.
+ *     description: |
+ *       Downloads the member's profile summary in PDF format directly from LinkedIn, parses the text stream, and extracts structured info including work experiences, bio descriptions, and education details in a clean JSON hierarchy.
  *     security:
  *       - LinkedInCookie: []
  *         LinkedInCsrf: []
@@ -33,7 +34,11 @@ profileRouter.get('/info', profileController.getProfileInfo);
  *       - Profile
  *     operationId: getResumePdf
  *     summary: Retrieve resume PDF
- *     description: Downloads the user's profile PDF from LinkedIn and returns parsed text along with a base64-encoded PDF.
+ *     description: |
+ *       Generates and downloads the user's resume PDF from LinkedIn. Returns the raw text payload along with a base64-encoded representation of the PDF file.
+ *
+ *       ### Query Parameters
+ *       - `profileId` (string, required): The target member URN ID on LinkedIn (e.g. `ACoAAB...`).
  *     security:
  *       - LinkedInCookie: []
  *         LinkedInCsrf: []

@@ -1,13 +1,54 @@
 ---
-title: Hello World
-description: Your first document
+title: LinkedIn Gateway API
+description: Secure REST and GraphQL integration gateway for LinkedIn Voyager queries
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+# LinkedIn Gateway API
 
-## What is Next?
+Welcome to the official documentation for the **LinkedIn Gateway Service**. This microservice is a secure, decoupled gateway that exposes both **REST** and **GraphQL** endpoints to interface dynamically with LinkedIn Voyager APIs. It allows developers to search jobs, submit applications, manage posts, and parse profile data using browser session cookies.
+
+---
+
+## Key Features
 
 <Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.dev" />
+  <Card
+    title="Jobs Explorer"
+    description="Search easy-apply jobs, parse multi-step application forms dynamically, and submit responses."
+    href="/docs/api/jobs/listJobs"
+  />
+  <Card
+    title="Post Publisher"
+    description="Publish articles, images, and text posts directly to your LinkedIn feed securely."
+    href="/docs/api/posts/createPost"
+  />
+  <Card
+    title="Profile Parser"
+    description="Download and parse profile information, experiences, and resume PDFs into clean JSON formats."
+    href="/docs/api/profile/getProfileInfo"
+  />
+  <Card
+    title="Decoupled Credentials"
+    description="Every request accepts session cookies dynamically in headers to support multi-account environments."
+    href="/docs/quickstart"
+  />
+</Cards>
+
+---
+
+## Architectural Highlights
+
+- **Dual-Interface support**: Query endpoints via high-efficiency GraphQL or standard OpenAPI/REST interfaces.
+- **Dynamic Session Handling**: Does not store or fix credentials. Cookies and CSRF tokens are parsed from request headers.
+- **Credential Redaction**: Middleware automatically sanitizes and redacts sensitive cookie strings from logs to prevent leaks.
+- **Strict Typing**: Implemented entirely in TypeScript with strict compile-time type validation.
+
+---
+
+## Explore Next
+
+<Cards>
+  <Card title="Quick Start Guide" href="/docs/quickstart" />
+  <Card title="Security & Compliance" href="/docs/security" />
+  <Card title="API Reference" href="/docs/api/jobs/listJobs" />
 </Cards>

@@ -1,0 +1,38 @@
+---
+title: Gateway Architecture
+description: Comparative overview of REST and GraphQL interfaces in the LinkedIn Gateway
+---
+
+# Gateway Architecture
+
+The gateway is built with a dual-interface architecture: it exposes a traditional **REST API** (documented via OpenAPI/Swagger) and a flexible **GraphQL API** on the same server, allowing clients to choose the interface that best suits their integration patterns.
+
+---
+
+## Feature Comparison Table
+
+| Feature | REST API | GraphQL API | Detail |
+| :--- | :---: | :---: | :--- |
+| **List Jobs** | Yes | Yes | Filter jobs by keyword, remote status, and date. |
+| **Retrieve Job Details** | Yes | Yes | Retrieve full description and requirements. |
+| **Retrieve Apply Form** | Yes | Yes | Parse multi-step form fields and validation rules. |
+| **Submit Application** | Yes | Yes | Send responses to forms and upload files. |
+| **Create LinkedIn Post** | Yes | Yes | Publish text posts, images, and documents. |
+| **Delete Post** | Yes | Yes | Delete posts by their sharing ID. |
+| **Retrieve Profile Info** | Yes | Yes | Parse profile data (bio, experiences, education). |
+| **Download Resume PDF** | Yes | Yes | Download profile summary in PDF binary format. |
+| **Log Redaction** | Yes | Yes | Sanitizes cookies from server console automatically. |
+
+---
+
+## GraphQL vs REST Choice
+
+### When to choose REST
+- **Simplicity**: Best when integrating with standard cURL, webhook handlers, or third-party workflow automation tools (e.g. Make, Zapier, n8n).
+- **Interactive Playground**: Great for testing specific operations inside our built-in Swagger UI sandbox page.
+- **Predictable Output**: Standard endpoints return fixed schemas, ideal for static client mappings.
+
+### When to choose GraphQL
+- **Data Selection**: Query only the fields you need (e.g. fetching only job titles to minimize response size).
+- **Single-Endpoint Execution**: Consolidate multiple resource fetches (e.g., fetch profile info and list matching jobs in a single request).
+- **Dynamic Client Generation**: Generate TypeScript client interfaces automatically using toolchains like GraphQL Codegen.

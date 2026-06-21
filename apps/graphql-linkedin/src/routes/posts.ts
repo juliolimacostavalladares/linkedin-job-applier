@@ -11,7 +11,11 @@ export const postsRouter = Router();
  *       - Posts
  *     operationId: createPost
  *     summary: Create a post on LinkedIn
- *     description: Publishes a text post (with optional media or documents) to LinkedIn.
+ *     description: |
+ *       Publishes a text post to your LinkedIn feed. Supports optional attachments such as images, articles, or PDF documents.
+ *
+ *       > [!IMPORTANT]
+ *       > For posts containing images or document files, you must first upload the media to LinkedIn and obtain its URN using the standard LinkedIn media upload endpoints, then pass the URN in `mediaUrn`.
  *     security:
  *       - LinkedInCookie: []
  *         LinkedInCsrf: []
@@ -57,7 +61,11 @@ postsRouter.post('/', postsController.createPost);
  *       - Posts
  *     operationId: deletePost
  *     summary: Delete a post
- *     description: Deletes a specific post by its LinkedIn sharing ID.
+ *     description: |
+ *       Deletes a specific post by its LinkedIn sharing ID.
+ *
+ *       ### Path Parameters
+ *       - `id` (string, required): The unique sharing URN identifier of the post.
  *     security:
  *       - LinkedInCookie: []
  *         LinkedInCsrf: []

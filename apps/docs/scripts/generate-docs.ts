@@ -92,6 +92,39 @@ async function main() {
     groupBy: 'tag',
   });
 
+  // Write meta.json files to organize sidebar structure under content/docs/api
+  writeFileSync(
+    path.join(outputDir, 'meta.json'),
+    JSON.stringify({
+      title: 'API Reference',
+      pages: ['jobs', 'posts', 'profile'],
+    }, null, 2)
+  );
+
+  writeFileSync(
+    path.join(outputDir, 'jobs/meta.json'),
+    JSON.stringify({
+      title: 'Jobs API',
+      pages: ['listJobs', 'getJobDetail', 'getApplyForm', 'submitApplication'],
+    }, null, 2)
+  );
+
+  writeFileSync(
+    path.join(outputDir, 'posts/meta.json'),
+    JSON.stringify({
+      title: 'Posts API',
+      pages: ['createPost', 'deletePost'],
+    }, null, 2)
+  );
+
+  writeFileSync(
+    path.join(outputDir, 'profile/meta.json'),
+    JSON.stringify({
+      title: 'Profile API',
+      pages: ['getProfileInfo', 'getResumePdf'],
+    }, null, 2)
+  );
+
   console.log('Fumadocs API documentation files generated successfully!');
 }
 

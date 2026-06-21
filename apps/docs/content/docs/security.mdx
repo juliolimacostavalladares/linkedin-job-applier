@@ -1,0 +1,59 @@
+---
+title: Security & Compliance
+description: Credential validation, secure headers, and log sanitization in the LinkedIn Gateway
+---
+
+# Security & Compliance
+
+Interfacing with browser session cookies requires strict security guardrails. The LinkedIn Gateway implements several mechanisms to validate cookies on the fly and sanitize diagnostic log outputs.
+
+---
+
+## Log Sanitization
+
+To prevent accidental cookie leakage into production log streams (e.g. AWS CloudWatch, Datadog), a dedicated log sanitizer middleware intercepts logs and replaces sensitive tokens with redacting placeholders.
+
+### Sanitized Target Patterns
+The logger automatically replaces:
+- `li_at` cookie values
+- `JSESSIONID` cookie values
+- Values in headers `x-linkedin-cookie` and `x-linkedin-csrf`
+
+```js
+// Raw Log Entry
+"Headers: { 'x-linkedin-cookie': 'li_at=AQED12345; JSESSIONID=\"ajax:98765\";' }"
+
+// Sanitized Log Output
+"Headers: { 'x-linkedin-cookie': '[REDACTED_COOKIE]' }"
+```
+
+---
+
+## Cookie & CSRF Validation
+
+Before forwarding request payloads to LinkedIn's servers, the gateway validates the headers format using strict regular expression schemas.
+
+### Regex Check Schema
+
+The gateway enforces the following format rules:
+- **`x-linkedin-cookie`**: Must contain both `li_at=` (containing hex/alphanumeric characters) and `JSESSIONID="ajax:...` (enclosed in double quotes).
+- **`x-linkedin-csrf`**: Must start with `ajax:` and match the value contained inside the cookie.
+
+```typescript
+// Example validator code in utils/security.ts
+export function validateHeaders(cookie: string, csrf: string): boolean {
+  if (!cookie.includes('li_at=') || !cookie.includes('JSESSIONID=')) {
+    return false;
+  }
+  
+  const csrfMatch = cookie.match(/JSESSIONID="([^"]+)"/);
+  if (!csrfMatch || csrfMatch[1] !== csrf) {
+    return false; // CSRF token mismatch
+  }
+  
+  return true;
+}
+```
+
+> [!IMPORTANT]
+> This validation prevents malformed payloads from reaching LinkedIn, reducing unnecessary requests and protecting the service from brute-force token scans.

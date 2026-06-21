@@ -1,0 +1,11 @@
+{
+  "title": "LinkedIn Gateway",
+  "pages": [
+    "index",
+    "quickstart",
+    "security",
+    "architecture",
+    "---API Reference---",
+    "api"
+  ]
+}

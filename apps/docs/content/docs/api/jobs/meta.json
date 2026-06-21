@@ -1,0 +1,9 @@
+{
+  "title": "Jobs API",
+  "pages": [
+    "listJobs",
+    "getJobDetail",
+    "getApplyForm",
+    "submitApplication"
+  ]
+}
