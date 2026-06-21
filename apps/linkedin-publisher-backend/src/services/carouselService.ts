@@ -3,12 +3,14 @@ import path from 'path';
 import fs from 'fs';
 
 export interface SlideData {
-  type: 'cover' | 'content' | 'cta';
+  type: 'cover' | 'content' | 'cta' | 'code' | 'text';
   title: string;
   subtitle?: string;
   content?: string; // Markdown or simple list lines separated by \n
   footer?: string;
   authorName?: string;
+  code?: string;
+  language?: string;
 }
 
 export interface CarouselConfig {
@@ -16,6 +18,38 @@ export interface CarouselConfig {
   title: string;
   authorName: string;
   slides: SlideData[];
+}
+
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function parseMarkdown(text: string): string {
+  if (text.includes('|') && text.split('\n').some(line => line.trim().startsWith('|'))) {
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const rows = lines.map(line => {
+      const cells = line.split('|').map(c => c.trim()).filter((c, idx, arr) => idx > 0 && idx < arr.length - 1);
+      return cells;
+    }).filter(row => row.length > 0);
+    
+    if (rows.length > 1) {
+      const hasSeparator = rows[1].every(cell => /^[-:|]+$/.test(cell));
+      const headers = rows[0];
+      const dataRows = hasSeparator ? rows.slice(2) : rows.slice(1);
+      
+      let tableHtml = '<table class="slide-table">';
+      tableHtml += '<thead><tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr></thead>';
+      tableHtml += '<tbody>' + dataRows.map(row => '<tr>' + row.map(cell => `<td>${cell}</td>`).join('') + '</tr>').join('') + '</tbody>';
+      tableHtml += '</table>';
+      return tableHtml;
+    }
+  }
+  return text.split('\n').map(p => `<p class="slide-paragraph">${p}</p>`).join('');
 }
 
 export class CarouselService {
@@ -60,6 +94,36 @@ export class CarouselService {
             <div class="author-badge" style="justify-content: center; width: 100%;">
               <div class="author-avatar">${authorAbbrev}</div>
               <div class="author-name">${slide.authorName || authorName}</div>
+            </div>
+          </div>
+        `;
+      } else if (slide.type === 'code') {
+        bodyContent = `
+          <div>
+            <h2>${slide.title}</h2>
+            <div class="slide-body">
+              <div class="code-editor-window">
+                <div class="code-editor-header">
+                  <div class="code-editor-dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                  </div>
+                  <span class="code-editor-lang">${slide.language || 'code'}</span>
+                </div>
+                <pre class="code-editor-body"><code>${escapeHtml(slide.code || '')}</code></pre>
+              </div>
+            </div>
+          </div>
+        `;
+      } else if (slide.type === 'text') {
+        bodyContent = `
+          <div>
+            <h2>${slide.title}</h2>
+            <div class="slide-body">
+              <div class="text-content-wrapper">
+                ${parseMarkdown(slide.content || '')}
+              </div>
             </div>
           </div>
         `;
@@ -125,7 +189,7 @@ export class CarouselService {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${config.title || 'LinkedIn Carousel'}</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,700;1,700&family=Outfit:wght@600;700;800;900&family=Fira+Code:wght@500;700&display=swap');
 
     *, *::before, *::after {
       box-sizing: border-box;
@@ -151,6 +215,92 @@ export class CarouselService {
       padding: 90px;
       page-break-after: always;
       box-sizing: border-box;
+    }
+
+    /* Code Editor Window */
+    .code-editor-window {
+      background-color: #1e1e2e;
+      border: 1px solid #313244;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      margin-top: 20px;
+      font-family: 'Fira Code', 'Courier New', Courier, monospace;
+      text-align: left;
+    }
+    .code-editor-header {
+      background-color: #181825;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #313244;
+    }
+    .code-editor-dots {
+      display: flex;
+      gap: 8px;
+    }
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-red { background-color: #f38ba8; }
+    .dot-yellow { background-color: #f9e2af; }
+    .dot-green { background-color: #a6e3a1; }
+    .code-editor-lang {
+      color: #cdd6f4;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+    .code-editor-body {
+      padding: 24px;
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.5;
+      color: #cdd6f4;
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Slide Table and Text Paragraphs */
+    .slide-paragraph {
+      font-size: 30px;
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .slide-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .theme-startup-clean .slide-table {
+      background: rgba(0, 0, 0, 0.02);
+      color: #0f172a;
+    }
+    .slide-table th, .slide-table td {
+      padding: 16px 20px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .theme-startup-clean .slide-table th, 
+    .theme-startup-clean .slide-table td {
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+    .slide-table th {
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .theme-startup-clean .slide-table th {
+      background: rgba(0, 0, 0, 0.04);
     }
 
     /* ─── Themes styles ─── */

@@ -17,12 +17,14 @@ import {
 } from 'lucide-react';
 
 interface SlideData {
-  type: 'cover' | 'content' | 'cta';
+  type: 'cover' | 'content' | 'cta' | 'code' | 'text';
   title: string;
   subtitle?: string;
   content?: string;
   footer?: string;
   authorName?: string;
+  code?: string;
+  language?: string;
 }
 
 const THEME_OPTIONS = [
@@ -125,15 +127,22 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
     );
   };
 
-  const handleAddSlide = (type: 'content' | 'cta') => {
+  const handleAddSlide = (type: 'content' | 'cta' | 'code' | 'text') => {
     const newSlide: SlideData = {
       type,
-      title: type === 'cta' ? 'Gostou do Post?' : 'Novo Slide de Conteúdo',
-      content: type === 'content' ? '● Ponto 1\n● Ponto 2' : undefined,
+      title: type === 'cta' ? 'Gostou do Post?' 
+           : type === 'code' ? 'Exemplo de Código'
+           : type === 'text' ? 'Explicação de Conteúdo'
+           : 'Novo Slide de Conteúdo',
+      content: type === 'content' ? '● Ponto 1\n● Ponto 2' 
+             : type === 'text' ? 'Digite parágrafos ou tabelas aqui' 
+             : undefined,
       subtitle: type === 'cta' ? 'Siga para acompanhar mais dicas!' : undefined,
+      code: type === 'code' ? '// Adicione seu código aqui\nconsole.log("Olá Mundo!");' : undefined,
+      language: type === 'code' ? 'javascript' : undefined,
     };
     const ctaIdx = slides.findIndex(s => s.type === 'cta');
-    if (ctaIdx !== -1 && type === 'content') {
+    if (ctaIdx !== -1 && type !== 'cta') {
       const updated = [...slides];
       updated.splice(ctaIdx, 0, newSlide);
       setSlides(updated);
@@ -191,7 +200,7 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
       });
 
       const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
-      const filename = `${carouselTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`;
+      const filename = 'carrossel.pdf';
       
       // Auto-generate caption
       const captionText = `Acabei de criar esse carrossel sobre **${carouselTitle}** utilizando nosso assistente com Inteligência Artificial! 🚀\n\nConfira o arquivo PDF em anexo abaixo e arraste para o lado para ler os slides.`;
@@ -208,6 +217,58 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
   };
 
   const activeTheme = THEME_OPTIONS.find(t => t.id === theme) || THEME_OPTIONS[0];
+
+  const renderTextMarkdown = (text: string) => {
+    if (!text) return null;
+    
+    // Check if it contains markdown table
+    if (text.includes('|') && text.split('\n').some(line => line.trim().startsWith('|'))) {
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      const rows = lines.map(line => {
+        return line.split('|').map(c => c.trim()).filter((_, idx, arr) => idx > 0 && idx < arr.length - 1);
+      }).filter(row => row.length > 0);
+
+      if (rows.length > 1) {
+        const hasSeparator = rows[1].every(cell => cell.split('').every(ch => ch === '-' || ch === ':' || ch === '|'));
+        const headers = rows[0];
+        const dataRows = hasSeparator ? rows.slice(2) : rows.slice(1);
+
+        return (
+          <div className="overflow-x-auto my-2 w-full">
+            <table className="w-full border-collapse text-[10px] text-left" style={{
+              background: theme === 'startup-clean' ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.05)',
+              color: theme === 'startup-clean' ? '#0f172a' : 'inherit',
+              borderRadius: '6px'
+            }}>
+              <thead>
+                <tr className="border-b border-current/10" style={{ background: theme === 'startup-clean' ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.08)' }}>
+                  {headers.map((h, idx) => (
+                    <th key={idx} className="p-2 font-bold">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {dataRows.map((row, rIdx) => (
+                  <tr key={rIdx} className="border-b border-current/10 last:border-b-0">
+                    {row.map((cell, cIdx) => (
+                      <td key={cIdx} className="p-2">{cell}</td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        );
+      }
+    }
+
+    // Otherwise render as paragraphs
+    return text.split('\n').map((p, idx) => (
+      <p key={idx} className="text-[11px] leading-relaxed mb-2 last:mb-0">
+        {p}
+      </p>
+    ));
+  };
 
   const renderPreviewContent = () => {
     if (!activeSlide) return null;
@@ -256,6 +317,48 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
               {authorAbbrev}
             </div>
             <span className="text-xs font-semibold">{author}</span>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeSlide.type === 'code') {
+      return (
+        <div className="flex flex-col justify-between h-full px-6 text-left py-4">
+          <div>
+            <h4 className={`text-lg font-extrabold mb-2 leading-snug ${theme === 'warm-creative' ? 'font-serif text-[#431407]' : ''}`}>
+              {activeSlide.title}
+            </h4>
+            <div className="w-full bg-[#1e1e2e] border border-slate-700/50 rounded-lg overflow-hidden shadow-md font-mono text-[9px] text-left mt-2">
+              <div className="bg-[#181825] px-3 py-1.5 flex items-center justify-between border-b border-slate-700/30">
+                <div className="flex gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f38ba8]"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#f9e2af]"></span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#a6e3a1]"></span>
+                </div>
+                <span className="text-slate-400 font-semibold uppercase tracking-wider text-[8px]">
+                  {activeSlide.language || 'code'}
+                </span>
+              </div>
+              <pre className="p-3 m-0 overflow-x-auto text-[#cdd6f4] whitespace-pre-wrap break-all leading-normal">
+                <code>{activeSlide.code || ''}</code>
+              </pre>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeSlide.type === 'text') {
+      return (
+        <div className="flex flex-col justify-between h-full px-6 text-left py-4">
+          <div>
+            <h4 className={`text-lg font-extrabold mb-3 leading-snug ${theme === 'warm-creative' ? 'font-serif text-[#431407]' : ''}`}>
+              {activeSlide.title}
+            </h4>
+            <div className="opacity-90 leading-relaxed font-medium">
+              {renderTextMarkdown(activeSlide.content || '')}
+            </div>
           </div>
         </div>
       );
@@ -408,7 +511,8 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
                       className="text-xs"
                     />
                   </div>
-                  {activeSlide.type !== 'content' ? (
+
+                  {(activeSlide.type === 'cover' || activeSlide.type === 'cta') && (
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Subtítulo</label>
                       <Input
@@ -417,7 +521,9 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
                         className="text-xs"
                       />
                     </div>
-                  ) : (
+                  )}
+
+                  {activeSlide.type === 'content' && (
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Tópicos (um por linha)</label>
                       <Textarea
@@ -428,27 +534,81 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
                       />
                     </div>
                   )}
+
+                  {activeSlide.type === 'text' && (
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Conteúdo (Parágrafos ou tabela markdown)</label>
+                      <Textarea
+                        value={activeSlide.content || ''}
+                        onChange={(val) => handleUpdateSlide({ content: val })}
+                        placeholder={`Adicione parágrafos ou uma tabela no formato markdown, por exemplo:\n| Coluna 1 | Coluna 2 |\n| Conteúdo | Detalhe |`}
+                        className="text-xs font-mono"
+                        rows={6}
+                      />
+                    </div>
+                  )}
+
+                  {activeSlide.type === 'code' && (
+                    <>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Linguagem</label>
+                        <Input
+                          value={activeSlide.language || ''}
+                          onChange={(val) => handleUpdateSlide({ language: val })}
+                          placeholder="javascript, typescript, python, etc."
+                          className="text-xs"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-bold text-text-secondary uppercase tracking-wider">Código</label>
+                        <Textarea
+                          value={activeSlide.code || ''}
+                          onChange={(val) => handleUpdateSlide({ code: val })}
+                          className="text-xs font-mono"
+                          rows={6}
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             )}
 
             {/* Slide Action Buttons */}
-            <div className="flex gap-2 pt-2 border-t border-border-color">
+            <div className="grid grid-cols-2 gap-2 pt-2 border-t border-border-color w-full">
               <Button
                 variant="secondary"
                 size="sm"
                 icon={<Plus size={12} />}
                 onClick={() => handleAddSlide('content')}
-                className="text-[10px] py-1 flex-1"
+                className="text-[10px] py-1 justify-center"
               >
-                + Conteúdo
+                + Lista/Bullets
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<Plus size={12} />}
+                onClick={() => handleAddSlide('text')}
+                className="text-[10px] py-1 justify-center"
+              >
+                + Texto/Tabela
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={<Plus size={12} />}
+                onClick={() => handleAddSlide('code')}
+                className="text-[10px] py-1 justify-center"
+              >
+                + Código
               </Button>
               <Button
                 variant="secondary"
                 size="sm"
                 icon={<Plus size={12} />}
                 onClick={() => handleAddSlide('cta')}
-                className="text-[10px] py-1 flex-1"
+                className="text-[10px] py-1 justify-center"
               >
                 + CTA final
               </Button>

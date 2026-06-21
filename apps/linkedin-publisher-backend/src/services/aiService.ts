@@ -100,24 +100,20 @@ Estrutura do JSON a ser retornado (retorne APENAS o JSON válido, sem blocos de 
       "subtitle": "Subtítulo da capa para incentivar o clique/arrastar"
     },
     {
-      "type": "content",
-      "title": "Título do Slide 1 (focado no problema ou introdução)",
+      "type": "content", // Para listas em tópicos (bullet points)
+      "title": "Título do Slide",
       "content": "Ponto 1\\nPonto 2\\nPonto 3 (conteúdo resumido e direto, use \\n para separar os tópicos)"
     },
     {
-      "type": "content",
-      "title": "Título do Slide 2 (dica prática 1)",
-      "content": "Ponto 1\\nPonto 2\\nPonto 3"
+      "type": "code", // Para exemplos de código (snippets de código reais)
+      "title": "Título do Slide de Código",
+      "code": "const x = 10;\\nconsole.log(x); // Exemplo de código",
+      "language": "javascript" // Opcional (ex: javascript, typescript, python, html, css, json)
     },
     {
-      "type": "content",
-      "title": "Título do Slide 3 (dica prática 2 ou estudo)",
-      "content": "Ponto 1\\nPonto 2\\nPonto 3"
-    },
-    {
-      "type": "content",
-      "title": "Título do Slide 4 (dica prática 3 ou conclusão)",
-      "content": "Ponto 1\\nPonto 2\\nPonto 3"
+      "type": "text", // Para parágrafos explicativos, citações, estatísticas ou tabelas comparativas
+      "title": "Título do Slide de Texto/Tabela",
+      "content": "Texto explicativo corrido ou uma tabela markdown comparativa. Exemplo de tabela:\\n| Feature | React | Vue |\\n|---|---|---|\\n| Speed | Fast | Fast |"
     },
     {
       "type": "cta",
@@ -128,7 +124,11 @@ Estrutura do JSON a ser retornado (retorne APENAS o JSON válido, sem blocos de 
 }
 
 Diretrizes importantes:
-- Gere entre 5 a 7 slides no total (1 Capa, 3 a 5 slides de conteúdo, 1 CTA).
+- Analise o tema solicitado pelo usuário e decida estrategicamente quais tipos de slides usar:
+  - Se for um tutorial ou dica técnica de programação/infra, use de forma de destaque slides do tipo "code" para exemplos de código.
+  - Se for uma comparação, estatística, ou explicação de conceitos, use slides do tipo "text" (ou crie tabelas markdown comparativas curtas).
+  - Use o tipo "content" para listas de tópicos tradicionais em formato de bullet points.
+- Gere entre 5 a 8 slides no total (1 Capa, 3 a 6 slides de conteúdo variando de forma inteligente entre 'content', 'code' e 'text', 1 CTA).
 - Mantenha os textos curtos e focados na leitura rápida por celular.
 - Use emojis moderadamente nos pontos.
 - O retorno deve ser um JSON perfeitamente válido para podermos rodar JSON.parse() diretamente.`;
