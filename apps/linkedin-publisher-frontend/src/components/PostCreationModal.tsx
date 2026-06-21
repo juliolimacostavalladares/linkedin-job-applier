@@ -7,8 +7,9 @@ import { ImagePreviewGrid } from './ImagePreviewGrid';
 import { usePublisherStore } from '../stores/publisherStore';
 import { useToast } from './ui/Toast';
 import type { EditedImage } from '../types/imageEditor';
-import { Image as ImageIcon, Calendar, Sparkles, Loader2, Globe } from 'lucide-react';
+import { Image as ImageIcon, Calendar, Sparkles, Loader2, Globe, Presentation, FileText, Trash2 } from 'lucide-react';
 import { convertMarkdownToUnicode } from '../utils/markdownFormatter';
+import { CarouselCreatorModal } from './CarouselCreatorModal';
 
 interface PostCreationModalProps {
   isOpen: boolean;
@@ -19,6 +20,8 @@ export function PostCreationModal({ isOpen, onClose }: PostCreationModalProps) {
   const [text, setText] = useState('');
   const [editedImages, setEditedImages] = useState<EditedImage[]>([]);
   const [showImageEditor, setShowImageEditor] = useState(false);
+  const [showCarouselCreator, setShowCarouselCreator] = useState(false);
+  const [carouselPdf, setCarouselPdf] = useState<{ file: File; name: string } | null>(null);
   
   // Scheduling states
   const [isScheduled, setIsScheduled] = useState(false);
@@ -47,21 +50,31 @@ export function PostCreationModal({ isOpen, onClose }: PostCreationModalProps) {
     }
 
     try {
-      const imageFiles = editedImages.map(
-        (img) => new File([img.blob], img.originalName, { type: 'image/jpeg' })
-      );
+      let filesToUpload: File[] | undefined = undefined;
+      let postType: 'text' | 'image' | 'document' = 'text';
+
+      if (carouselPdf) {
+        filesToUpload = [carouselPdf.file];
+        postType = 'document';
+      } else if (editedImages.length > 0) {
+        filesToUpload = editedImages.map(
+          (img) => new File([img.blob], img.originalName, { type: 'image/jpeg' })
+        );
+        postType = 'image';
+      }
 
       const formattedText = convertMarkdownToUnicode(text);
 
       await createPost(
         {
           text: formattedText,
-          type: editedImages.length > 0 ? 'image' : 'text',
+          type: postType,
+          mediaName: carouselPdf ? carouselPdf.name : undefined,
           status: isScheduled ? 'scheduled' : 'published',
           scheduledAt: isScheduled ? new Date(scheduledAt).toISOString() : undefined,
           publishedAt: isScheduled ? undefined : new Date().toISOString()
         },
-        imageFiles.length > 0 ? imageFiles : undefined
+        filesToUpload
       );
 
       showToastSuccess(
@@ -81,9 +94,11 @@ export function PostCreationModal({ isOpen, onClose }: PostCreationModalProps) {
   const handleClose = () => {
     setText('');
     setEditedImages([]);
+    setCarouselPdf(null);
     setIsScheduled(false);
     setScheduledAt('');
     setShowAiAssistant(false);
+    setShowCarouselCreator(false);
     setAiPrompt('');
     onClose();
   };
@@ -94,6 +109,12 @@ export function PostCreationModal({ isOpen, onClose }: PostCreationModalProps) {
 
   const handleRemoveImage = (index: number) => {
     setEditedImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleCarouselComplete = (pdfBlob: Blob, filename: string, captionText: string) => {
+    const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+    setCarouselPdf({ file, name: filename });
+    setText(captionText);
   };
 
   const handleAiGenerate = async () => {
@@ -153,7 +174,7 @@ export function PostCreationModal({ isOpen, onClose }: PostCreationModalProps) {
                 <button
                   type="button"
                   onClick={() => setShowAiAssistant(false)}
-                  className="text-xs text-red-500 hover:underline"
+                  className="text-xs text-red-500 hover:underline cursor-pointer"
                 >
                   Cancelar
                 </button>
@@ -209,6 +230,33 @@ export function PostCreationModal({ isOpen, onClose }: PostCreationModalProps) {
           {/* Image Previews */}
           <ImagePreviewGrid images={editedImages} onRemove={handleRemoveImage} />
 
+          {/* PDF Preview */}
+          {carouselPdf && (
+            <div className="flex items-center justify-between p-3.5 bg-brand-blue/5 border border-brand-blue/20 rounded-xl animate-fadeIn">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-red-500/10 flex items-center justify-center text-red-500 shrink-0">
+                  <FileText size={20} />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-text-primary truncate max-w-[200px] sm:max-w-[300px]">
+                    {carouselPdf.name}
+                  </p>
+                  <p className="text-[10px] text-text-secondary">
+                    Documento PDF • {(carouselPdf.file.size / 1024 / 1024).toFixed(2)} MB
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCarouselPdf(null)}
+                className="p-1 text-text-secondary hover:text-red-500 hover:bg-red-500/5 rounded-full transition-colors cursor-pointer"
+                title="Remover documento"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+          )}
+
           {/* Scheduling date-picker */}
           {isScheduled && (
             <div className="p-3 bg-brand-blue/5 border border-brand-blue/25 rounded-lg space-y-1.5 animate-fadeIn">
@@ -232,11 +280,22 @@ export function PostCreationModal({ isOpen, onClose }: PostCreationModalProps) {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowImageEditor(true)}
-                disabled={editedImages.length >= 9}
+                disabled={editedImages.length >= 9 || !!carouselPdf}
               >
                 <ImageIcon className="w-5 h-5 text-text-secondary" />
                 <span className="sr-only sm:not-sr-only sm:ml-2 text-xs text-text-secondary font-medium">Mídia</span>
               </Button>
+              
+              <Button
+                variant={showCarouselCreator ? 'primary' : 'ghost'}
+                size="sm"
+                onClick={() => setShowCarouselCreator(true)}
+                disabled={editedImages.length > 0}
+              >
+                <Presentation className="w-5 h-5 text-text-secondary" />
+                <span className="sr-only sm:not-sr-only sm:ml-2 text-xs text-text-secondary font-medium">Carrossel PDF</span>
+              </Button>
+
               <Button
                 variant={isScheduled ? 'primary' : 'ghost'}
                 size="sm"
@@ -286,6 +345,12 @@ export function PostCreationModal({ isOpen, onClose }: PostCreationModalProps) {
         isOpen={showImageEditor}
         onClose={() => setShowImageEditor(false)}
         onComplete={handleImagesComplete}
+      />
+
+      <CarouselCreatorModal
+        isOpen={showCarouselCreator}
+        onClose={() => setShowCarouselCreator(false)}
+        onComplete={handleCarouselComplete}
       />
     </>
   );

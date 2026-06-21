@@ -5,6 +5,7 @@ import postsRouter from './routes/posts';
 import aiRouter from './routes/ai';
 import credentialsRouter from './routes/credentials';
 import profileRouter from './routes/profile';
+import carouselRouter from './routes/carousel';
 import { prisma } from './lib/prisma';
 
 const app = express();
@@ -22,6 +23,7 @@ app.use('/api/posts', postsRouter);
 app.use('/api/ai', aiRouter);
 app.use('/api/credentials', credentialsRouter);
 app.use('/api/profile', profileRouter);
+app.use('/api/carousel', carouselRouter);
 
 // Health check
 app.get('/health', (req, res) => {
@@ -56,8 +58,8 @@ setInterval(async () => {
           }
 
           const query = `
-            mutation CreatePost($cookie: String!, $csrf: String!, $headersJson: String, $text: String!, $mediaUrn: String) {
-              createPost(cookie: $cookie, csrf: $csrf, headersJson: $headersJson, text: $text, mediaUrn: $mediaUrn) {
+            mutation CreatePost($cookie: String!, $csrf: String!, $headersJson: String, $text: String!, $mediaUrn: String, $mediaCategory: String, $documentSharingTitle: String) {
+              createPost(cookie: $cookie, csrf: $csrf, headersJson: $headersJson, text: $text, mediaUrn: $mediaUrn, mediaCategory: $mediaCategory, documentSharingTitle: $documentSharingTitle) {
                 success
                 postId
                 error
@@ -78,6 +80,8 @@ setInterval(async () => {
                 headersJson: creds.headersJson,
                 text: post.text,
                 mediaUrn: post.mediaUrn || null,
+                mediaCategory: post.type === 'document' ? 'DOCUMENT' : null,
+                documentSharingTitle: post.type === 'document' ? (post.mediaName || 'Documento') : null,
               },
             }),
           });

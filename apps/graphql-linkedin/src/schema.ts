@@ -116,6 +116,8 @@ export const typeDefs = `#graphql
       headersJson: String
       text: String!
       mediaUrn: String
+      mediaCategory: String
+      documentSharingTitle: String
     ): CreatePostResult!
 
     deletePost(

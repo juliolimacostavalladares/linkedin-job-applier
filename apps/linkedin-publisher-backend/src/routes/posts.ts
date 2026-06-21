@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { prisma } from '../lib/prisma';
 import { credentialsService } from '../services/credentialsService';
 import { queryGraphQL } from '../utils/graphqlClient';
-import { uploadImages } from '../services/imageUploadService';
+import { uploadImages, uploadDocument } from '../services/imageUploadService';
 import multer from 'multer';
 
 const router = Router();
@@ -15,11 +15,11 @@ const upload = multer({
     files: 9, // LinkedIn supports up to 9 images per post
   },
   fileFilter: (_req, file, cb) => {
-    // Accept only image files
-    if (file.mimetype.startsWith('image/')) {
+    // Accept image and PDF files
+    if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'));
+      cb(new Error('Only image and PDF files are allowed'));
     }
   },
 });
@@ -35,6 +35,8 @@ interface CreatePostResponse {
 async function publishToLinkedIn(
   text: string,
   mediaUrn?: string,
+  mediaCategory?: string,
+  documentSharingTitle?: string,
 ): Promise<{ success: boolean; postId?: string; error?: string }> {
   const creds = await credentialsService.getLatest();
   if (!creds) {
@@ -45,8 +47,8 @@ async function publishToLinkedIn(
   }
 
   const query = `
-    mutation CreatePost($cookie: String!, $csrf: String!, $headersJson: String, $text: String!, $mediaUrn: String) {
-      createPost(cookie: $cookie, csrf: $csrf, headersJson: $headersJson, text: $text, mediaUrn: $mediaUrn) {
+    mutation CreatePost($cookie: String!, $csrf: String!, $headersJson: String, $text: String!, $mediaUrn: String, $mediaCategory: String, $documentSharingTitle: String) {
+      createPost(cookie: $cookie, csrf: $csrf, headersJson: $headersJson, text: $text, mediaUrn: $mediaUrn, mediaCategory: $mediaCategory, documentSharingTitle: $documentSharingTitle) {
         success
         postId
         error
@@ -61,6 +63,8 @@ async function publishToLinkedIn(
       headersJson: creds.headersJson,
       text,
       mediaUrn: mediaUrn || null,
+      mediaCategory: mediaCategory || null,
+      documentSharingTitle: documentSharingTitle || null,
     });
 
     return data.createPost;
@@ -167,7 +171,7 @@ router.post('/', upload.array('images', 9), async (req, res) => {
     let mediaUrn: string | undefined = bodyMediaUrn || undefined;
     let publishedPostId: string | undefined = undefined;
 
-    // Se houver imagens, fazer upload automaticamente
+    // Se houver imagens ou PDF, fazer upload automaticamente
     if (files && files.length > 0) {
       const creds = await credentialsService.getLatest();
       if (!creds) {
@@ -186,11 +190,24 @@ router.post('/', upload.array('images', 9), async (req, res) => {
         }
       }
 
-      const imageBuffers = files.map((file) => file.buffer);
-      const uploadResult = await uploadImages(creds.cookie, creds.csrf, dynamicHeaders, imageBuffers);
+      const isPdf = files[0].mimetype === 'application/pdf';
+      let uploadResult;
+
+      if (isPdf) {
+        uploadResult = await uploadDocument(
+          creds.cookie,
+          creds.csrf,
+          dynamicHeaders,
+          files[0].buffer,
+          files[0].originalname
+        );
+      } else {
+        const imageBuffers = files.map((file) => file.buffer);
+        uploadResult = await uploadImages(creds.cookie, creds.csrf, dynamicHeaders, imageBuffers);
+      }
 
       if (!uploadResult.success) {
-        res.status(500).json({ error: uploadResult.error || 'Falha ao fazer upload das imagens' });
+        res.status(500).json({ error: uploadResult.error || 'Falha ao fazer upload dos arquivos' });
         return;
       }
 
@@ -199,7 +216,13 @@ router.post('/', upload.array('images', 9), async (req, res) => {
 
     // Publicar no LinkedIn se status for 'published'
     if (isPublished) {
-      const result = await publishToLinkedIn(text, mediaUrn);
+      const isPdf = files && files.length > 0 && files[0].mimetype === 'application/pdf';
+      const result = await publishToLinkedIn(
+        text,
+        mediaUrn,
+        isPdf || type === 'document' ? 'DOCUMENT' : undefined,
+        isPdf ? files[0].originalname : mediaName
+      );
       if (!result.success) {
         res.status(400).json({ error: result.error || 'Falha ao publicar no LinkedIn' });
         return;
@@ -208,12 +231,13 @@ router.post('/', upload.array('images', 9), async (req, res) => {
     }
 
     // Salvar no banco de dados
+    const isPdf = files && files.length > 0 && files[0].mimetype === 'application/pdf';
     const post = await prisma.post.create({
       data: {
         text,
-        type: type || (mediaUrn ? 'image' : 'text'),
+        type: type || (isPdf ? 'document' : mediaUrn ? 'image' : 'text'),
         mediaUrl: mediaUrl || null,
-        mediaName: mediaName || null,
+        mediaName: mediaName || (isPdf ? files[0].originalname : null),
         mediaUrn: mediaUrn || null,
         linkedinId: publishedPostId || bodyLinkedinId || null,
         status: status || 'draft',
@@ -252,12 +276,18 @@ router.put('/:id', async (req, res) => {
     if (isPublishing && !wasPublished) {
       const postText = text !== undefined ? text : existing.text;
       const finalMediaUrn = mediaUrn !== undefined ? mediaUrn : (existing.mediaUrn || undefined);
-      const result = await publishToLinkedIn(postText, finalMediaUrn);
+      const isDocument = type === 'document' || existing.type === 'document';
+      const result = await publishToLinkedIn(
+        postText,
+        finalMediaUrn,
+        isDocument ? 'DOCUMENT' : undefined,
+        mediaName || existing.mediaName || undefined
+      );
       if (!result.success) {
         res.status(400).json({ error: result.error || 'Falha ao publicar no LinkedIn' });
         return;
       }
-      publishedPostId = result.postId;
+      publishedPostId = result.postId || null;
     }
 
     const post = await prisma.post.update({
@@ -348,8 +378,13 @@ router.post('/:id/publish', async (req, res) => {
     }
 
     const finalMediaUrn = mediaUrn || existing.mediaUrn || undefined;
-
-    const result = await publishToLinkedIn(existing.text, finalMediaUrn);
+    const isDocument = existing.type === 'document';
+    const result = await publishToLinkedIn(
+      existing.text,
+      finalMediaUrn,
+      isDocument ? 'DOCUMENT' : undefined,
+      existing.mediaName || undefined
+    );
     if (!result.success) {
       res.status(400).json({ error: result.error || 'Falha ao publicar no LinkedIn' });
       return;

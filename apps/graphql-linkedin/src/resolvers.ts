@@ -87,16 +87,25 @@ export const resolvers = {
         headersJson,
         text,
         mediaUrn,
+        mediaCategory,
+        documentSharingTitle,
       }: {
         cookie: string;
         csrf: string;
         headersJson?: string | null;
         text: string;
         mediaUrn?: string | null;
+        mediaCategory?: string | null;
+        documentSharingTitle?: string | null;
       }
     ) => {
       const svc = new LinkedInService(cookie, csrf, headersJson);
-      return svc.createPost(text, mediaUrn ?? undefined);
+      return svc.createPost(
+        text,
+        mediaUrn ?? undefined,
+        mediaCategory ?? undefined,
+        documentSharingTitle ?? undefined
+      );
     },
 
     deletePost: async (

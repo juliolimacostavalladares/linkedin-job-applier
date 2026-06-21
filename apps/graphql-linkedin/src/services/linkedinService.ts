@@ -28,8 +28,21 @@ export class LinkedInService {
     this.dynamicHeaders = parseDynamicHeaders(headersJson);
   }
 
-  createPost(text: string, mediaUrn?: string): Promise<CreatePostResult> {
-    return createPost(this.cookie, this.csrf, this.dynamicHeaders, text, mediaUrn);
+  createPost(
+    text: string,
+    mediaUrn?: string,
+    mediaCategory?: string,
+    documentSharingTitle?: string,
+  ): Promise<CreatePostResult> {
+    return createPost(
+      this.cookie,
+      this.csrf,
+      this.dynamicHeaders,
+      text,
+      mediaUrn,
+      mediaCategory,
+      documentSharingTitle
+    );
   }
 
   deletePost(linkedinId: string): Promise<DeletePostResult> {

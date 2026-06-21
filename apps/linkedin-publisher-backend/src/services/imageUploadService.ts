@@ -10,12 +10,13 @@ export interface ImageUploadResult {
  * Registers an image upload with LinkedIn and gets the upload URL.
  * This is step 1 of the image upload process.
  */
-async function registerImageUpload(
+async function registerUpload(
   cookie: string,
   csrf: string,
   dynamicHeaders: Record<string, string>,
   fileSize: number,
   filename: string,
+  mediaUploadType: 'IMAGE_SHARING' | 'DOCUMENT_SHARING',
 ): Promise<{ uploadUrl: string; asset: string; mediaArtifact: string } | null> {
   const apiUrl = 'https://www.linkedin.com/voyager/api/voyagerVideoDashMediaUploadMetadata?action=upload';
 
@@ -43,12 +44,12 @@ async function registerImageUpload(
   }
 
   const payload = {
-    mediaUploadType: 'IMAGE_SHARING',
+    mediaUploadType: mediaUploadType,
     fileSize: fileSize,
     filename: filename,
   };
 
-  logger.info('Registering image upload', { apiUrl, payload });
+  logger.info('Registering media upload', { apiUrl, payload });
 
   try {
     const response = await fetch(apiUrl, {
@@ -61,7 +62,7 @@ async function registerImageUpload(
 
     if (!response.ok) {
       const errorText = await response.text();
-      logger.error('Failed to register image upload', { 
+      logger.error('Failed to register media upload', { 
         status: response.status, 
         statusText: response.statusText,
         errorBody: errorText
@@ -90,6 +91,7 @@ async function registerImageUpload(
           };
           uploadUrl?: string;
         };
+        uploadUrl?: string;
       };
       urn?: string;
       asset?: string;
@@ -154,13 +156,33 @@ async function registerImageUpload(
       mediaArtifact,
     };
   } catch (error) {
-    logger.error('Error registering image upload', { 
+    logger.error('Error registering media upload', { 
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       errorType: error?.constructor?.name
     });
     return null;
   }
+}
+
+async function registerImageUpload(
+  cookie: string,
+  csrf: string,
+  dynamicHeaders: Record<string, string>,
+  fileSize: number,
+  filename: string,
+): Promise<{ uploadUrl: string; asset: string; mediaArtifact: string } | null> {
+  return registerUpload(cookie, csrf, dynamicHeaders, fileSize, filename, 'IMAGE_SHARING');
+}
+
+async function registerDocumentUpload(
+  cookie: string,
+  csrf: string,
+  dynamicHeaders: Record<string, string>,
+  fileSize: number,
+  filename: string,
+): Promise<{ uploadUrl: string; asset: string; mediaArtifact: string } | null> {
+  return registerUpload(cookie, csrf, dynamicHeaders, fileSize, filename, 'DOCUMENT_SHARING');
 }
 
 /**
@@ -332,5 +354,43 @@ export async function uploadImages(
   return {
     success: true,
     mediaUrn,
+  };
+}
+
+/**
+ * Main function to upload a PDF document to LinkedIn and get the mediaUrn.
+ */
+export async function uploadDocument(
+  cookie: string,
+  csrf: string,
+  dynamicHeaders: Record<string, string>,
+  documentBuffer: Buffer,
+  filename: string,
+): Promise<ImageUploadResult> {
+  logger.info('Starting document upload process', { filename, fileSize: documentBuffer.length });
+
+  // Register the upload
+  const registrationResult = await registerDocumentUpload(cookie, csrf, dynamicHeaders, documentBuffer.length, filename);
+  if (!registrationResult) {
+    return {
+      success: false,
+      error: 'Failed to register document upload',
+    };
+  }
+
+  // Upload the document
+  const uploadSuccess = await uploadImageToUrl(registrationResult.uploadUrl, documentBuffer, cookie);
+  if (!uploadSuccess) {
+    return {
+      success: false,
+      error: 'Failed to upload document',
+    };
+  }
+
+  logger.info('Document upload completed successfully', { mediaUrn: registrationResult.asset });
+
+  return {
+    success: true,
+    mediaUrn: registrationResult.asset,
   };
 }
