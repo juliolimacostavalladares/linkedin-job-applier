@@ -1,9 +1,6 @@
-import { Router, Response, NextFunction } from 'express';
-import { LinkedInRequest } from '../types/express';
-import { LinkedInService } from '../services/linkedinService';
+import { Router } from 'express';
 import { linkedinAuthMiddleware } from '../middlewares/auth';
-import { logger } from '../utils/logger';
-import { redactSensitiveData } from '../utils/security';
+import * as linkedinController from '../controllers/linkedinController';
 
 export const apiRouter = Router();
 
@@ -16,7 +13,8 @@ apiRouter.use(linkedinAuthMiddleware);
  *     summary: List easy-apply jobs
  *     description: Retrieves easy-apply jobs matching the keywords and filters.
  *     security:
- *       - LinkedInAuth: []
+ *       - LinkedInCookie: []
+ *         LinkedInCsrf: []
  *     parameters:
  *       - in: query
  *         name: keywords
@@ -41,23 +39,7 @@ apiRouter.use(linkedinAuthMiddleware);
  *       500:
  *         description: Internal server error
  */
-apiRouter.get('/jobs', async (req: LinkedInRequest, res: Response, next: NextFunction) => {
-  try {
-    const creds = req.linkedinCredentials!;
-    const { keywords, remote, past24h } = req.query;
-
-    const svc = new LinkedInService(creds.cookie, creds.csrf, creds.headersJson);
-    const jobs = await svc.fetchJobs(
-      typeof keywords === 'string' ? keywords : null,
-      remote === 'true',
-      past24h === 'true'
-    );
-
-    res.json(jobs);
-  } catch (err) {
-    next(err);
-  }
-});
+apiRouter.get('/jobs', linkedinController.getJobs);
 
 /**
  * @openapi
@@ -66,7 +48,8 @@ apiRouter.get('/jobs', async (req: LinkedInRequest, res: Response, next: NextFun
  *     summary: Retrieve job details
  *     description: Gets detailed information for a specific job posting.
  *     security:
- *       - LinkedInAuth: []
+ *       - LinkedInCookie: []
+ *         LinkedInCsrf: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -82,19 +65,7 @@ apiRouter.get('/jobs', async (req: LinkedInRequest, res: Response, next: NextFun
  *       500:
  *         description: Internal server error
  */
-apiRouter.get('/jobs/:id', async (req: LinkedInRequest, res: Response, next: NextFunction) => {
-  try {
-    const creds = req.linkedinCredentials!;
-    const jobId = req.params.id;
-
-    const svc = new LinkedInService(creds.cookie, creds.csrf, creds.headersJson);
-    const jobDetail = await svc.fetchJobDetail(jobId);
-
-    res.json(jobDetail);
-  } catch (err) {
-    next(err);
-  }
-});
+apiRouter.get('/jobs/:id', linkedinController.getJobDetail);
 
 /**
  * @openapi
@@ -103,7 +74,8 @@ apiRouter.get('/jobs/:id', async (req: LinkedInRequest, res: Response, next: Nex
  *     summary: Retrieve job application form
  *     description: Fetches the multi-step form questions for a LinkedIn Easy Apply job.
  *     security:
- *       - LinkedInAuth: []
+ *       - LinkedInCookie: []
+ *         LinkedInCsrf: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -119,19 +91,7 @@ apiRouter.get('/jobs/:id', async (req: LinkedInRequest, res: Response, next: Nex
  *       500:
  *         description: Internal server error
  */
-apiRouter.get('/jobs/:id/apply-form', async (req: LinkedInRequest, res: Response, next: NextFunction) => {
-  try {
-    const creds = req.linkedinCredentials!;
-    const jobId = req.params.id;
-
-    const svc = new LinkedInService(creds.cookie, creds.csrf, creds.headersJson);
-    const applyForm = await svc.fetchApplyForm(jobId);
-
-    res.json(applyForm);
-  } catch (err) {
-    next(err);
-  }
-});
+apiRouter.get('/jobs/:id/apply-form', linkedinController.getApplyForm);
 
 /**
  * @openapi
@@ -140,7 +100,8 @@ apiRouter.get('/jobs/:id/apply-form', async (req: LinkedInRequest, res: Response
  *     summary: Submit application form
  *     description: Submits Easy Apply form answers and file uploads for a job posting.
  *     security:
- *       - LinkedInAuth: []
+ *       - LinkedInCookie: []
+ *         LinkedInCsrf: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -191,45 +152,7 @@ apiRouter.get('/jobs/:id/apply-form', async (req: LinkedInRequest, res: Response
  *       500:
  *         description: Internal server error
  */
-apiRouter.post('/jobs/:id/apply', async (req: LinkedInRequest, res: Response, next: NextFunction) => {
-  try {
-    const creds = req.linkedinCredentials!;
-    const jobId = req.params.id;
-    const {
-      formValues,
-      formResponses,
-      referenceId,
-      fileUploadResponses,
-      resumeUrn,
-      resumeUploadFormElementUrn,
-    } = req.body;
-
-    if (!formValues || typeof formValues !== 'object') {
-      res.status(400).json({ error: 'Bad Request', message: 'formValues object is required' });
-      return;
-    }
-
-    const svc = new LinkedInService(creds.cookie, creds.csrf, creds.headersJson);
-
-    let finalFileUploads = fileUploadResponses;
-    if (!finalFileUploads && resumeUrn && resumeUploadFormElementUrn) {
-      finalFileUploads = [{
-        inputUrn: resumeUrn,
-        formElementUrn: resumeUploadFormElementUrn,
-      }];
-    }
-
-    const result = await svc.submitApplyForm(jobId, formValues, {
-      formResponses,
-      referenceId,
-      fileUploadResponses: finalFileUploads,
-    });
-
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-});
+apiRouter.post('/jobs/:id/apply', linkedinController.submitApplication);
 
 /**
  * @openapi
@@ -238,7 +161,8 @@ apiRouter.post('/jobs/:id/apply', async (req: LinkedInRequest, res: Response, ne
  *     summary: Create a post on LinkedIn
  *     description: Publishes a text post (with optional media or documents) to LinkedIn.
  *     security:
- *       - LinkedInAuth: []
+ *       - LinkedInCookie: []
+ *         LinkedInCsrf: []
  *     requestBody:
  *       required: true
  *       content:
@@ -271,29 +195,7 @@ apiRouter.post('/jobs/:id/apply', async (req: LinkedInRequest, res: Response, ne
  *       500:
  *         description: Internal server error
  */
-apiRouter.post('/posts', async (req: LinkedInRequest, res: Response, next: NextFunction) => {
-  try {
-    const creds = req.linkedinCredentials!;
-    const { text, mediaUrn, mediaCategory, documentSharingTitle } = req.body;
-
-    if (!text || typeof text !== 'string') {
-      res.status(400).json({ error: 'Bad Request', message: 'text field is required and must be a string' });
-      return;
-    }
-
-    const svc = new LinkedInService(creds.cookie, creds.csrf, creds.headersJson);
-    const result = await svc.createPost(
-      text,
-      mediaUrn,
-      mediaCategory,
-      documentSharingTitle
-    );
-
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-});
+apiRouter.post('/posts', linkedinController.createPost);
 
 /**
  * @openapi
@@ -302,7 +204,8 @@ apiRouter.post('/posts', async (req: LinkedInRequest, res: Response, next: NextF
  *     summary: Delete a post
  *     description: Deletes a specific post by its LinkedIn sharing ID.
  *     security:
- *       - LinkedInAuth: []
+ *       - LinkedInCookie: []
+ *         LinkedInCsrf: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -318,19 +221,7 @@ apiRouter.post('/posts', async (req: LinkedInRequest, res: Response, next: NextF
  *       500:
  *         description: Internal server error
  */
-apiRouter.delete('/posts/:id', async (req: LinkedInRequest, res: Response, next: NextFunction) => {
-  try {
-    const creds = req.linkedinCredentials!;
-    const postId = req.params.id;
-
-    const svc = new LinkedInService(creds.cookie, creds.csrf, creds.headersJson);
-    const result = await svc.deletePost(postId);
-
-    res.json(result);
-  } catch (err) {
-    next(err);
-  }
-});
+apiRouter.delete('/posts/:id', linkedinController.deletePost);
 
 /**
  * @openapi
@@ -339,7 +230,8 @@ apiRouter.delete('/posts/:id', async (req: LinkedInRequest, res: Response, next:
  *     summary: Retrieve profile info
  *     description: Fetches full profile info including bio, experiences, and education parsed from the user's PDF profile.
  *     security:
- *       - LinkedInAuth: []
+ *       - LinkedInCookie: []
+ *         LinkedInCsrf: []
  *     responses:
  *       200:
  *         description: Successfully fetched profile info
@@ -348,17 +240,7 @@ apiRouter.delete('/posts/:id', async (req: LinkedInRequest, res: Response, next:
  *       500:
  *         description: Internal server error
  */
-apiRouter.get('/profile/info', async (req: LinkedInRequest, res: Response, next: NextFunction) => {
-  try {
-    const creds = req.linkedinCredentials!;
-    const svc = new LinkedInService(creds.cookie, creds.csrf, creds.headersJson);
-    const profileInfo = await svc.fetchProfileInfo();
-
-    res.json(profileInfo);
-  } catch (err) {
-    next(err);
-  }
-});
+apiRouter.get('/profile/info', linkedinController.getProfileInfo);
 
 /**
  * @openapi
@@ -367,7 +249,8 @@ apiRouter.get('/profile/info', async (req: LinkedInRequest, res: Response, next:
  *     summary: Retrieve resume PDF
  *     description: Downloads the user's profile PDF from LinkedIn and returns parsed text along with a base64-encoded PDF.
  *     security:
- *       - LinkedInAuth: []
+ *       - LinkedInCookie: []
+ *         LinkedInCsrf: []
  *     parameters:
  *       - in: query
  *         name: profileId
@@ -385,30 +268,4 @@ apiRouter.get('/profile/info', async (req: LinkedInRequest, res: Response, next:
  *       500:
  *         description: Internal server error
  */
-apiRouter.get('/profile/resume-pdf', async (req: LinkedInRequest, res: Response, next: NextFunction) => {
-  try {
-    const creds = req.linkedinCredentials!;
-    const { profileId } = req.query;
-
-    if (!profileId || typeof profileId !== 'string') {
-      res.status(400).json({ error: 'Bad Request', message: 'profileId query parameter is required' });
-      return;
-    }
-
-    const svc = new LinkedInService(creds.cookie, creds.csrf, creds.headersJson);
-    const pdfBuffer = await svc.fetchResumePdf(profileId);
-    
-    // Lazy load pdf-parse dynamically to optimize imports
-    const pdfParse = (await import('pdf-parse')).default;
-    const nodeBuffer = Buffer.from(pdfBuffer);
-    const parsed = await pdfParse(nodeBuffer);
-
-    res.json({
-      success: true,
-      text: parsed.text,
-      pdfBase64: nodeBuffer.toString('base64'),
-    });
-  } catch (err) {
-    next(err);
-  }
-});
+apiRouter.get('/profile/resume-pdf', linkedinController.getResumePdf);
