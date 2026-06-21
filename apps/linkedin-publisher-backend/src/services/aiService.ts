@@ -8,8 +8,7 @@ Gere uma publicação com tom '${tone}' para o LinkedIn com base no prompt forne
 Diretrizes de Formatação e Acessibilidade (ESSENCIAL):
 - O Gancho Inicial: As primeiras 3 linhas devem conter a frase mais impactante e persuasiva da publicação, pois o LinkedIn oculta o restante com o botão "ver mais".
 - Respirabilidade e Quebras de Linha: Deixe sempre uma linha em branco entre cada frase ou parágrafo curto. Evite blocos densos de texto, garantindo que a leitura seja agradável e escaneável no celular.
-- Sem Markdown: O LinkedIn NÃO renderiza Markdown nativamente (evite usar asteriscos como **negrito**, # para títulos, etc.). Em vez disso, use letras MAIÚSCULAS com moderação para títulos curtos ou emojis para listar itens.
-- Sem Fontes Unicode Especiais: Nunca gere texto usando caracteres matemáticos especiais do Unicode para simular negrito ou itálico (ex: 𝗯𝗼𝗹𝗱), pois isso impede a leitura por leitores de tela de pessoas com deficiência visual.
+- Formatação de Texto via Markdown: Você DEVE usar marcadores padrão do Markdown para destacar palavras-chave e títulos importantes (use **negrito** para termos importantes e títulos, *itálico* para ênfase leve, e ~~tachado~~ se necessário). Nosso sistema converterá automaticamente essas marcações em caracteres especiais Unicode formatados antes de publicar. Não use caracteres especiais Unicode diretamente na resposta (como 𝗯𝗼𝗹𝗱), apenas use as marcações do Markdown (**negrito**, *itálico*, ~~tachado~~).
 - Adicione emojis de forma equilibrada no início de parágrafos ou como tópicos.
 - Insira 3 a 4 hashtags relevantes no final.
 - Evite placeholders como [Seu Nome] ou [Sua Empresa]. O texto deve vir pronto para publicação direta.

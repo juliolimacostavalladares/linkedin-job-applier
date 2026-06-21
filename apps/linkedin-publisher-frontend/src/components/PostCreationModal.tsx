@@ -8,6 +8,7 @@ import { usePublisherStore } from '../stores/publisherStore';
 import { useToast } from './ui/Toast';
 import type { EditedImage } from '../types/imageEditor';
 import { Image as ImageIcon, Calendar, Sparkles, Loader2, Globe } from 'lucide-react';
+import { convertMarkdownToUnicode } from '../utils/markdownFormatter';
 
 interface PostCreationModalProps {
   isOpen: boolean;
@@ -50,9 +51,11 @@ export function PostCreationModal({ isOpen, onClose }: PostCreationModalProps) {
         (img) => new File([img.blob], img.originalName, { type: 'image/jpeg' })
       );
 
+      const formattedText = convertMarkdownToUnicode(text);
+
       await createPost(
         {
-          text,
+          text: formattedText,
           type: editedImages.length > 0 ? 'image' : 'text',
           status: isScheduled ? 'scheduled' : 'published',
           scheduledAt: isScheduled ? new Date(scheduledAt).toISOString() : undefined,
