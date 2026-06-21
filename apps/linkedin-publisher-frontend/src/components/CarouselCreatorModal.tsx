@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import hljs from 'highlight.js';
+import 'highlight.js/styles/github-dark.css';
 import { Modal } from './ui/Modal';
 import { Button } from './ui/Button';
 import { Input, Textarea } from './ui/Input';
@@ -323,13 +325,25 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
     }
 
     if (activeSlide.type === 'code') {
+      const lang = activeSlide.language || 'javascript';
+      let highlightedCode = '';
+      try {
+        if (hljs.getLanguage(lang)) {
+          highlightedCode = hljs.highlight(activeSlide.code || '', { language: lang }).value;
+        } else {
+          highlightedCode = hljs.highlightAuto(activeSlide.code || '').value;
+        }
+      } catch (error) {
+        highlightedCode = activeSlide.code || '';
+      }
+
       return (
         <div className="flex flex-col justify-between h-full px-6 text-left py-4">
-          <div>
-            <h4 className={`text-lg font-extrabold mb-2 leading-snug ${theme === 'warm-creative' ? 'font-serif text-[#431407]' : ''}`}>
-              {activeSlide.title}
-            </h4>
-            <div className="w-full bg-[#1e1e2e] border border-slate-700/50 rounded-lg overflow-hidden shadow-md font-mono text-[9px] text-left mt-2">
+          <h4 className={`text-lg font-extrabold mb-2 leading-snug ${theme === 'warm-creative' ? 'font-serif text-[#431407]' : ''}`}>
+            {activeSlide.title}
+          </h4>
+          <div className="flex-1 flex flex-col justify-center my-2">
+            <div className="w-full bg-[#1e1e2e] border border-slate-700/50 rounded-lg overflow-hidden shadow-md font-mono text-[9px] text-left">
               <div className="bg-[#181825] px-3 py-1.5 flex items-center justify-between border-b border-slate-700/30">
                 <div className="flex gap-1">
                   <span className="w-1.5 h-1.5 rounded-full bg-[#f38ba8]"></span>
@@ -337,11 +351,11 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
                   <span className="w-1.5 h-1.5 rounded-full bg-[#a6e3a1]"></span>
                 </div>
                 <span className="text-slate-400 font-semibold uppercase tracking-wider text-[8px]">
-                  {activeSlide.language || 'code'}
+                  {lang}
                 </span>
               </div>
               <pre className="p-3 m-0 overflow-x-auto text-[#cdd6f4] whitespace-pre-wrap break-all leading-normal">
-                <code>{activeSlide.code || ''}</code>
+                <code className="hljs" dangerouslySetInnerHTML={{ __html: highlightedCode }} />
               </pre>
             </div>
           </div>
@@ -352,10 +366,10 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
     if (activeSlide.type === 'text') {
       return (
         <div className="flex flex-col justify-between h-full px-6 text-left py-4">
-          <div>
-            <h4 className={`text-lg font-extrabold mb-3 leading-snug ${theme === 'warm-creative' ? 'font-serif text-[#431407]' : ''}`}>
-              {activeSlide.title}
-            </h4>
+          <h4 className={`text-lg font-extrabold mb-2 leading-snug ${theme === 'warm-creative' ? 'font-serif text-[#431407]' : ''}`}>
+            {activeSlide.title}
+          </h4>
+          <div className="flex-1 flex flex-col justify-center my-2">
             <div className="opacity-90 leading-relaxed font-medium">
               {renderTextMarkdown(activeSlide.content || '')}
             </div>
@@ -371,10 +385,10 @@ export function CarouselCreatorModal({ isOpen, onClose, onComplete }: CarouselCr
 
     return (
       <div className="flex flex-col justify-between h-full px-6 text-left py-4">
-        <div>
-          <h4 className={`text-lg font-extrabold mb-4 leading-snug ${theme === 'warm-creative' ? 'font-serif text-[#431407]' : ''}`}>
-            {activeSlide.title}
-          </h4>
+        <h4 className={`text-lg font-extrabold mb-2 leading-snug ${theme === 'warm-creative' ? 'font-serif text-[#431407]' : ''}`}>
+          {activeSlide.title}
+        </h4>
+        <div className="flex-1 flex flex-col justify-center my-2">
           <ul className="space-y-2.5 text-xs opacity-90 leading-relaxed font-medium">
             {lines.map((line, i) => {
               const cleaned = line.replace(/^[-*•■]\s*/, '');

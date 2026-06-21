@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger';
+import hljs from 'highlight.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -98,32 +99,40 @@ export class CarouselService {
           </div>
         `;
       } else if (slide.type === 'code') {
+        const lang = slide.language || 'javascript';
+        let highlightedCode = '';
+        try {
+          if (hljs.getLanguage(lang)) {
+            highlightedCode = hljs.highlight(slide.code || '', { language: lang }).value;
+          } else {
+            highlightedCode = hljs.highlightAuto(slide.code || '').value;
+          }
+        } catch (error) {
+          highlightedCode = escapeHtml(slide.code || '');
+        }
+
         bodyContent = `
-          <div>
-            <h2>${slide.title}</h2>
-            <div class="slide-body">
-              <div class="code-editor-window">
-                <div class="code-editor-header">
-                  <div class="code-editor-dots">
-                    <span class="dot dot-red"></span>
-                    <span class="dot dot-yellow"></span>
-                    <span class="dot dot-green"></span>
-                  </div>
-                  <span class="code-editor-lang">${slide.language || 'code'}</span>
+          <h2>${slide.title}</h2>
+          <div class="slide-body">
+            <div class="code-editor-window">
+              <div class="code-editor-header">
+                <div class="code-editor-dots">
+                  <span class="dot dot-red"></span>
+                  <span class="dot dot-yellow"></span>
+                  <span class="dot dot-green"></span>
                 </div>
-                <pre class="code-editor-body"><code>${escapeHtml(slide.code || '')}</code></pre>
+                <span class="code-editor-lang">${lang}</span>
               </div>
+              <pre class="code-editor-body"><code class="hljs ${lang}">${highlightedCode}</code></pre>
             </div>
           </div>
         `;
       } else if (slide.type === 'text') {
         bodyContent = `
-          <div>
-            <h2>${slide.title}</h2>
-            <div class="slide-body">
-              <div class="text-content-wrapper">
-                ${parseMarkdown(slide.content || '')}
-              </div>
+          <h2>${slide.title}</h2>
+          <div class="slide-body">
+            <div class="text-content-wrapper">
+              ${parseMarkdown(slide.content || '')}
             </div>
           </div>
         `;
@@ -143,13 +152,11 @@ export class CarouselService {
           .join('');
 
         bodyContent = `
-          <div>
-            <h2>${slide.title}</h2>
-            <div class="slide-body">
-              <ul class="points-list">
-                ${listItemsHtml}
-              </ul>
-            </div>
+          <h2>${slide.title}</h2>
+          <div class="slide-body">
+            <ul class="points-list">
+              ${listItemsHtml}
+            </ul>
           </div>
         `;
       }
@@ -174,7 +181,7 @@ export class CarouselService {
 
       return `
         <div class="slide theme-${theme}">
-          <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%;">
             ${bodyContent}
             ${footerHtml}
           </div>
@@ -228,6 +235,23 @@ export class CarouselService {
       font-family: 'Fira Code', 'Courier New', Courier, monospace;
       text-align: left;
     }
+    
+    /* Highlight.js GitHub Dark Theme Styles */
+    .hljs { color: #c9d1d9; background: #0d1117 }
+    .hljs-doctag, .hljs-keyword, .hljs-meta .hljs-keyword, .hljs-template-tag, .hljs-template-variable, .hljs-type, .hljs-variable.language_ { color: #ff7b72 }
+    .hljs-title, .hljs-title.class_, .hljs-title.class_.inherited__, .hljs-title.function_ { color: #d2a8ff }
+    .hljs-attr, .hljs-attribute, .hljs-literal, .hljs-meta, .hljs-number, .hljs-operator, .hljs-selector-attr, .hljs-selector-class, .hljs-selector-id, .hljs-variable { color: #79c0ff }
+    .hljs-meta .hljs-string, .hljs-regexp, .hljs-string { color: #a5d6ff }
+    .hljs-built_in, .hljs-symbol { color: #ffa657 }
+    .hljs-code, .hljs-comment, .hljs-formula { color: #8b949e }
+    .hljs-name, .hljs-quote, .hljs-selector-pseudo, .hljs-selector-tag { color: #7ee787 }
+    .hljs-subst { color: #c9d1d9 }
+    .hljs-section { color: #1f6feb; font-weight: 700 }
+    .hljs-bullet { color: #f2cc60 }
+    .hljs-emphasis { color: #c9d1d9; font-style: italic }
+    .hljs-strong { color: #c9d1d9; font-weight: 700 }
+    .hljs-addition { color: #aff5b4; background-color: #033a16 }
+    .hljs-deletion { color: #ffdcd7; background-color: #67060c }
     .code-editor-header {
       background-color: #181825;
       padding: 12px 20px;
@@ -584,11 +608,26 @@ export class CarouselService {
     }
 
     @media print {
-      body {
-        background-color: transparent;
+      html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        background-color: transparent !important;
+        width: 1080px !important;
+        height: 1350px !important;
+        overflow: visible !important;
       }
       .slide {
-        page-break-after: always;
+        width: 1080px !important;
+        height: 1350px !important;
+        page-break-before: always !important;
+        page-break-inside: avoid !important;
+        page-break-after: always !important;
+        margin: 0 !important;
+        border: none !important;
+        box-sizing: border-box !important;
+      }
+      .slide:first-child {
+        page-break-before: avoid !important;
       }
     }
   </style>
@@ -625,6 +664,13 @@ export class CarouselService {
     try {
       const page = await browser.newPage();
 
+      // Set exact viewport size to match target print resolution
+      await page.setViewport({
+        width: 1080,
+        height: 1350,
+        deviceScaleFactor: 1,
+      });
+
       // Render the HTML slides
       await page.setContent(html, {
         waitUntil: 'load',
@@ -636,6 +682,7 @@ export class CarouselService {
         width: '1080px',
         height: '1350px',
         printBackground: true,
+        preferCSSPageSize: true,
         margin: { top: '0', right: '0', bottom: '0', left: '0' },
       });
 
