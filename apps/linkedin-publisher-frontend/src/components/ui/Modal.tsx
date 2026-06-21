@@ -51,7 +51,7 @@ export function Modal({
       >
         <div
           ref={modalRef}
-          className="bg-card rounded-lg shadow-subtle w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
+          className="bg-bg-card rounded-lg shadow-subtle w-full max-w-2xl max-h-[90vh] overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {(title || showCloseButton) && (
