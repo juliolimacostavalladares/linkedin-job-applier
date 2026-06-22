@@ -248,30 +248,38 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch w-full mt-12 relative z-10 text-left">
       
       {/* 1. Real Job Applier UI Mockup (Colspan 7) */}
-      <div className="md:col-span-7 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="h-2 w-2 rounded-full bg-[#70b5f9] animate-pulse" />
-            <span className="text-[10px] font-mono font-bold text-[#70b5f9] uppercase tracking-wider">
-              {lang === 'pt-BR' ? 'Módulo Job Finder / Applier' : 'Job Finder / Applier UI'}
-            </span>
+      <div className="md:col-span-7 group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] p-8 hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        <div className="mb-6 text-left relative z-10">
+          <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-blue-400 shrink-0">
+            <Briefcase className="h-5 w-5 text-blue-400" />
           </div>
-          <h3 className="text-xl font-bold text-white">
-            {lang === 'pt-BR' ? 'Mockup da UI de Candidaturas' : 'Real Job Application Dashboard'}
+          <h3 className="font-display text-xl font-bold text-white mb-3">
+            {lang === 'pt-BR' ? 'Interface de Candidatura Automatizada' : 'Real Job Application Dashboard'}
           </h3>
-          <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
+          <p className="text-slate-400 mb-6 text-sm leading-relaxed">
             {lang === 'pt-BR'
               ? 'Interface real de busca integrada. Analise scores de match e preencha formulários Easy Apply automaticamente através do assistente de IA.'
               : 'Interactive view of our application dashboard. Evaluate match scores and trigger AI autofill scripts directly inside candidate streams.'}
           </p>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {(lang === 'pt-BR' 
+              ? ['Candidatura Automática', 'Filtro por Match', 'Questões Resolvidas por IA', 'Dashboard Integrado'] 
+              : ['Automated Apply', 'Match Filtering', 'AI Questionnaire Solver', 'Integrated Dashboard']
+            ).map((tag, tIdx) => (
+              <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Dashboard UI Simulation viewport */}
-        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/90 overflow-hidden flex flex-row min-h-[300px] shadow-inner text-slate-300 font-sans relative">
+        <div className="border border-white/10 rounded-xl bg-black/40 overflow-hidden flex flex-row min-h-[300px] shadow-inner text-slate-300 font-sans relative z-10 w-full">
           
           {/* Narrow left sidebar representing JobsPage.tsx Sidebar */}
-          <div className="w-12 bg-[#12161a] border-r border-[#2f3539]/40 flex flex-col items-center py-4 gap-4 shrink-0">
+          <div className="w-12 bg-black/40 border-r border-white/10 flex flex-col items-center py-4 gap-4 shrink-0">
             <div className="size-6 bg-[#0a66c2] text-white flex items-center justify-center font-bold text-xs rounded select-none shadow">in</div>
             <div className="flex flex-col gap-3.5 mt-2 flex-1">
               <Briefcase className="size-4 text-[#70b5f9]" />
@@ -282,13 +290,13 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
           </div>
 
           {/* Job List Panel (w-[180px]) */}
-          <div className="w-[180px] border-r border-[#2f3539]/40 flex flex-col bg-[#0f1316] shrink-0">
-            <div className="p-2 border-b border-[#2f3539]/30">
+          <div className="w-[180px] border-r border-white/10 flex flex-col bg-black/20 shrink-0">
+            <div className="p-2 border-b border-white/10">
               <input 
                 type="text" 
                 readOnly 
                 placeholder={lang === 'pt-BR' ? 'Pesquisar vagas...' : 'Search jobs...'} 
-                className="w-full bg-[#090e11] border border-[#2f3539]/40 rounded px-2 py-0.5 text-[9px] outline-none text-slate-300 placeholder-[#8f969b]"
+                className="w-full bg-black/40 border border-white/10 rounded px-2 py-0.5 text-[9px] outline-none text-slate-300 placeholder-slate-500"
               />
             </div>
             <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
@@ -300,12 +308,12 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                       setSelectedMockJob(idx);
                     }
                   }}
-                  className={`p-2 rounded text-left transition-all text-[10px] ${
+                  className={`p-2 rounded transition-all text-[10px] ${
                     applyState !== 'idle' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                   } ${
                     selectedMockJob === idx 
-                      ? 'bg-[#1d2226] border border-[#70b5f9]/20 text-white' 
-                      : 'hover:bg-[#12161a] border border-transparent'
+                      ? 'bg-white/10 border border-white/10 text-white' 
+                      : 'hover:bg-white/5 border border-transparent'
                   }`}
                 >
                   <div className="font-semibold truncate">{job.title}</div>
@@ -320,7 +328,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
           </div>
 
           {/* Job Details & Easy Apply Simulator (flex-1) */}
-          <div className="flex-1 flex flex-col p-4 bg-[#090e11] relative overflow-hidden">
+          <div className="flex-1 flex flex-col p-4 bg-black/20 relative overflow-hidden">
             {applyState === 'idle' ? (
               <div className="flex-grow flex flex-col justify-between text-left">
                 <div>
@@ -332,22 +340,22 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                   </div>
                   <div className="text-[9px] text-[#8f969b] mt-0.5">{mockJobs[selectedMockJob].company} · {mockJobs[selectedMockJob].location}</div>
                   
-                  <div className="mt-3 border-t border-[#2f3539]/30 pt-3 space-y-1.5">
+                  <div className="mt-3 border-t border-white/10 pt-3 space-y-1.5">
                     <div className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">{lang === 'pt-BR' ? 'Requisitos da Vaga' : 'Requirements'}</div>
                     <p className="text-[9px] text-[#8f969b] leading-relaxed">
                       {selectedMockJob === 0 
                         ? (lang === 'pt-BR' ? 'Necessário domínio de React, Next.js App Router, TypeScript e Server Components para refatorar fluxos existentes.' : 'Requires solid React, Next.js App Router, TypeScript, and Server Components to refactor core layout modules.')
                         : selectedMockJob === 1
-                        ? (lang === 'pt-BR' ? 'Profundo entendimento de compiladores, AST parsing e strict types para integração com pipelines de LLM.' : 'Deep understanding of AST compiling rules, TypeScript typings, and strict payload structural verification.')
+                        ? (lang === 'pt-BR' ? 'Profundo entendimento de compiladores, AST parsing e strict types para integration com pipelines de LLM.' : 'Deep understanding of AST compiling rules, TypeScript typings, and strict payload structural verification.')
                         : (lang === 'pt-BR' ? 'Lidar com workers assíncronos no backend com BullMQ e Redis para processamento de filas financeiras.' : 'Experience building high concurrency workers with Redis and BullMQ to decouple heavy client requests.')}
                     </p>
                   </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-[#2f3539]/30">
+                <div className="mt-4 pt-3 border-t border-white/10">
                   <button
                     onClick={runApplySimulation}
-                    className="w-full py-1.5 rounded bg-[#0a66c2] text-white font-bold text-[10px] hover:bg-[#004182] transition-colors active:scale-95 cursor-pointer flex items-center justify-center gap-1 shadow"
+                    className="w-full py-1.5 rounded-lg bg-[#0a66c2] text-white font-bold text-[10px] hover:bg-[#004182] transition-colors active:scale-95 cursor-pointer flex items-center justify-center gap-1 shadow"
                   >
                     <Sparkles className="size-3 fill-white/10" />
                     {lang === 'pt-BR' ? 'Candidatura Rápida com IA' : 'Easy Apply with AI'}
@@ -357,14 +365,14 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
             ) : (
               /* Simulated ApplyModal overlay UI */
               <div className="flex-grow flex flex-col justify-between text-left animate-fadeIn">
-                <div className="border-b border-[#2f3539]/30 pb-2 flex justify-between items-center">
+                <div className="border-b border-white/10 pb-2 flex justify-between items-center">
                   <span className="text-[9px] font-bold text-white font-mono flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
                     {lang === 'pt-BR' ? 'Candidatura Fácil LinkedIn' : 'LinkedIn Easy Apply Dialog'}
                   </span>
                   <button 
                     onClick={resetApplySimulation}
-                    className="text-[#8f969b] hover:text-white text-xs cursor-pointer font-bold px-1"
+                    className="text-slate-400 hover:text-white text-xs cursor-pointer font-bold px-1"
                   >
                     ×
                   </button>
@@ -374,7 +382,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                   {/* Field 1 */}
                   <div className="space-y-1">
                     <div className="text-[#8f969b]">{mockJobs[selectedMockJob].q1}</div>
-                    <div className="bg-[#12161a] border border-[#2f3539]/60 rounded p-1.5 text-white min-h-[22px] flex items-center">
+                    <div className="bg-black/40 border border-white/10 rounded-lg p-1.5 text-white min-h-[22px] flex items-center">
                       {applyState === 'scraping' ? (
                         <span className="text-[#70b5f9] animate-pulse">● {lang === 'pt-BR' ? 'Mapeando campo...' : 'Parsing field...'}</span>
                       ) : (
@@ -387,7 +395,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                   {(applyState === 'solving' || applyState === 'submitting' || applyState === 'success') && (
                     <div className="space-y-1 animate-fadeIn">
                       <div className="text-[#8f969b]">{mockJobs[selectedMockJob].q2}</div>
-                      <div className="bg-[#12161a] border border-[#2f3539]/60 rounded p-1.5 text-white min-h-[22px] flex items-center">
+                      <div className="bg-black/40 border border-white/10 rounded-lg p-1.5 text-white min-h-[22px] flex items-center">
                         {typedAnswers.q1.length < mockJobs[selectedMockJob].a1.length ? (
                           <span className="text-[#8f969b] animate-pulse">...</span>
                         ) : (
@@ -399,13 +407,13 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
 
                   {/* Status Overlay messages */}
                   {applyState === 'submitting' && (
-                    <div className="text-[#70b5f9] font-bold animate-pulse py-1 text-center border border-[#70b5f9]/20 bg-[#0a66c2]/5 rounded">
+                    <div className="text-[#70b5f9] font-bold animate-pulse py-1.5 text-center border border-white/10 bg-[#0a66c2]/10 rounded-lg">
                       {lang === 'pt-BR' ? '✓ Respostas geradas. Enviando via API...' : '✓ AI Form filled. Submitting payload...'}
                     </div>
                   )}
 
                   {applyState === 'success' && (
-                    <div className="text-emerald-400 font-bold bg-emerald-500/5 border border-emerald-500/20 py-2 px-3 rounded text-center space-y-1 animate-fadeIn">
+                    <div className="text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 py-2 px-3 rounded text-center space-y-1 animate-fadeIn">
                       <div className="flex items-center justify-center gap-1.5">
                         <Check className="size-3.5 text-emerald-400" />
                         <span>{lang === 'pt-BR' ? 'Candidatura Enviada!' : 'Application Sent Successfully!'}</span>
@@ -415,10 +423,10 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                   )}
                 </div>
 
-                <div className="pt-2 border-t border-[#2f3539]/20">
+                <div className="pt-2 border-t border-white/10">
                   <button
                     onClick={resetApplySimulation}
-                    className="w-full py-1 rounded border border-[#2f3539] bg-[#1d2226] hover:bg-[#2f3539] text-[#e9ecef] font-semibold text-[10px] active:scale-95 cursor-pointer"
+                    className="w-full py-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-white font-semibold text-[10px] active:scale-[0.98] cursor-pointer transition-all"
                   >
                     {applyState === 'success' ? (lang === 'pt-BR' ? 'Voltar para Vagas' : 'Back to Listings') : (lang === 'pt-BR' ? 'Cancelar' : 'Cancel')}
                   </button>
@@ -431,28 +439,36 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
       </div>
 
       {/* 2. AI Resume Optimizer & Match Analysis (Colspan 5) */}
-      <div className="md:col-span-5 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider">
-              {lang === 'pt-BR' ? 'Otimização ATS' : 'ATS Optimization'}
-            </span>
+      <div className="md:col-span-5 group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] p-8 hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        <div className="mb-6 text-left relative z-10">
+          <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-emerald-400 shrink-0">
+            <FileCheck2 className="h-5 w-5 text-emerald-400" />
           </div>
-          <h3 className="text-xl font-bold text-white">
-            {lang === 'pt-BR' ? 'Otimizador de Currículos' : 'AI Resume Optimizer'}
+          <h3 className="font-display text-xl font-bold text-white mb-3">
+            {lang === 'pt-BR' ? 'Otimizador de Currículos com IA' : 'AI Resume Optimizer'}
           </h3>
-          <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
+          <p className="text-slate-400 mb-6 text-sm leading-relaxed">
             {lang === 'pt-BR'
               ? 'Compare currículos e injete de forma cirúrgica palavras-chave e descrições para atingir compatibilidade máxima de ATS.'
               : 'Analyze candidate profiles against requirements to dynamically inject structural keywords and summaries.'}
           </p>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {(lang === 'pt-BR' 
+              ? ['Otimização ATS', 'Palavras-chave', 'Score de Match', 'Geração Baseada em Vagas'] 
+              : ['ATS Optimization', 'Keywords Injection', 'Match Scoring', 'Contextual Rephrasing']
+            ).map((tag, tIdx) => (
+              <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Tailor UI card */}
-        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 flex flex-col gap-3.5 min-h-[300px] justify-between shadow-inner font-sans">
-          <div className="flex justify-between items-center pb-2 border-b border-[#2f3539]/30">
+        <div className="border border-white/10 rounded-xl bg-black/40 p-4 flex flex-col gap-3.5 min-h-[300px] justify-between shadow-inner font-sans relative z-10 w-full">
+          <div className="flex justify-between items-center pb-2 border-b border-white/10">
             <span className="text-[11px] font-bold text-[#e9ecef] uppercase font-mono tracking-wide">
               {lang === 'pt-BR' ? 'Análise de ATS' : 'ATS Analysis'}
             </span>
@@ -462,7 +478,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                 className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
                   resumeView === 'original'
                     ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-                    : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
+                    : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white'
                 }`}
               >
                 Original
@@ -472,7 +488,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                 className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
                   resumeView === 'optimized'
                     ? 'bg-[#0a66c2]/10 text-[#70b5f9] border-[#0a66c2]/20'
-                    : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
+                    : 'bg-white/5 border border-white/10 text-slate-400 hover:text-white'
                 }`}
               >
                 Optimized
@@ -488,7 +504,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
               </span>
             </div>
             {/* Progress line */}
-            <div className="w-full bg-[#12161a] border border-[#2f3539]/30 h-2 rounded-full overflow-hidden">
+            <div className="w-full bg-black/40 border border-white/10 h-2 rounded-full overflow-hidden">
               <div
                 className={`h-full transition-all duration-500 ${resumeView === 'original' ? 'bg-orange-400' : 'bg-[#0a66c2]'}`}
                 style={{ width: resumeView === 'original' ? '58%' : '94%' }}
@@ -497,11 +513,11 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
 
             {/* Keyword badges status */}
             <div className="space-y-2 pt-1 text-xs">
-              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20">
+              <div className="flex justify-between items-center p-2 rounded-lg bg-black/20 border border-white/10">
                 <span className="text-[#8f969b]">TypeScript Core</span>
                 <span className="text-[10px] font-bold text-emerald-400 font-mono">Matched ✓</span>
               </div>
-              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20 font-sans">
+              <div className="flex justify-between items-center p-2 rounded-lg bg-black/20 border border-white/10 font-sans">
                 <div className="flex flex-col text-left">
                   <span className="text-[#e9ecef] font-semibold">Redis & BullMQ</span>
                   {resumeView === 'optimized' && (
@@ -514,7 +530,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                   <span className="text-[10px] font-bold text-[#70b5f9] font-mono animate-pulse shrink-0">[+] Inserted</span>
                 )}
               </div>
-              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20 font-sans">
+              <div className="flex justify-between items-center p-2 rounded-lg bg-black/20 border border-white/10 font-sans">
                 <div className="flex flex-col text-left">
                   <span className="text-[#e9ecef] font-semibold">Next.js App Router</span>
                   {resumeView === 'optimized' && (
@@ -533,29 +549,37 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
       </div>
 
       {/* 3. Real Post Creator UI (Colspan 5) */}
-      <div className="md:col-span-5 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="h-2 w-2 rounded-full bg-purple-400 animate-pulse" />
-            <span className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-wider">
-              {lang === 'pt-BR' ? 'Módulo Publisher' : 'Publisher Module'}
-            </span>
+      <div className="md:col-span-5 group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] p-8 hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        <div className="mb-6 text-left relative z-10">
+          <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-purple-400 shrink-0">
+            <PenTool className="h-5 w-5 text-purple-400" />
           </div>
-          <h3 className="text-xl font-bold text-white">
-            {lang === 'pt-BR' ? 'Interface Real do Criador de Posts' : 'Post Creation Workspace'}
+          <h3 className="font-display text-xl font-bold text-white mb-3">
+            {lang === 'pt-BR' ? 'Criador de Posts & Carrosséis' : 'Post Creation Workspace'}
           </h3>
-          <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
+          <p className="text-slate-400 mb-6 text-sm leading-relaxed">
             {lang === 'pt-BR'
-              ? 'Mockup real do nosso editor de publicações. Acesse o assistente inteligente de IA e anexe slides carrosséis dinâmicos.'
+              ? 'Interface real do nosso editor de publicações. Acesse o assistente inteligente de IA e anexe slides carrosséis dinâmicos.'
               : 'Fidelity mockup of our post creator modal. Toggle AI assistance filters, draft posts, and compile PDF slides.'}
           </p>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {(lang === 'pt-BR' 
+              ? ['Geração por IA', 'PDF Slides Compiler', 'Anexos de Mídia', 'Publicação Automática'] 
+              : ['AI Writing Assistant', 'PDF Slides Compiler', 'Media Attachments', 'Automated Publishing']
+            ).map((tag, tIdx) => (
+              <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Post Creation Modal UI Mockup */}
-        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/90 p-4 flex flex-col gap-3 min-h-[300px] justify-between shadow-inner font-sans text-slate-300 relative text-left">
-          <div className="flex justify-between items-center pb-2 border-b border-[#2f3539]/30">
-            <span className="text-[10px] font-bold text-white">
+        <div className="border border-white/10 rounded-xl bg-black/40 p-4 flex flex-col gap-3 min-h-[300px] justify-between shadow-inner font-sans text-slate-300 relative text-left z-10 w-full">
+          <div className="flex justify-between items-center pb-2 border-b border-white/10">
+            <span className="text-[10px] font-bold text-white font-mono uppercase tracking-wide">
               {lang === 'pt-BR' ? 'Criar uma publicação' : 'Create a post'}
             </span>
             <span className="text-[9px] font-bold text-purple-400 uppercase font-mono bg-purple-500/10 border border-purple-500/20 px-1.5 py-0.5 rounded">
@@ -569,8 +593,8 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
               <div className="size-7 rounded-full bg-[#0a66c2] text-white flex items-center justify-center font-bold text-[10px]">JL</div>
               <div>
                 <div className="text-[10px] font-semibold text-white">Julio Lima</div>
-                <div className="flex items-center gap-1 text-[8px] text-[#8f969b] border border-[#2f3539]/60 rounded-full px-1.5 py-0.2 bg-[#12161a] mt-0.5">
-                  <Globe className="size-2.5 text-[#8f969b]" />
+                <div className="flex items-center gap-1 text-[8px] text-slate-400 border border-white/10 rounded-full px-1.5 py-0.5 bg-black/40 mt-0.5">
+                  <Globe className="size-2.5 text-slate-400" />
                   <span>{lang === 'pt-BR' ? 'Qualquer pessoa' : 'Anyone'}</span>
                 </div>
               </div>
@@ -578,7 +602,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
 
             {/* AI Assistant Section (If visible) */}
             {showAiAssistant ? (
-              <div className="p-2.5 bg-[#0a66c2]/5 border border-[#0a66c2]/20 rounded-lg space-y-2 animate-fadeIn">
+              <div className="p-2.5 bg-[#0a66c2]/10 border border-[#0a66c2]/20 rounded-lg space-y-2 animate-fadeIn">
                 <div className="flex justify-between items-center text-[9px] font-bold text-[#70b5f9]">
                   <span className="flex items-center gap-1">
                     <Sparkles className="size-3 fill-[#70b5f9]/10" />
@@ -597,12 +621,12 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                     value={aiPrompt}
                     onChange={(e) => setAiPrompt(e.target.value)}
                     placeholder={lang === 'pt-BR' ? 'Ex: Dicas de BullMQ...' : 'Ex: BullMQ queue tips...'}
-                    className="flex-1 bg-[#090e11] border border-[#2f3539]/60 rounded px-2 py-1 text-[9px] outline-none"
+                    className="flex-1 bg-black/40 border border-white/10 rounded px-2 py-1 text-[9px] outline-none text-white placeholder-slate-500"
                   />
                   <button
                     onClick={runAiGeneration}
                     disabled={aiGenerating}
-                    className="px-2 bg-[#0a66c2] hover:bg-[#004182] text-white font-bold rounded text-[9px] transition-colors cursor-pointer shrink-0"
+                    className="px-2.5 py-1 bg-[#0a66c2] hover:bg-[#004182] text-white font-bold rounded text-[9px] transition-colors cursor-pointer shrink-0"
                   >
                     {aiGenerating ? (
                       <span className="inline-block animate-spin">●</span>
@@ -618,12 +642,12 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
             <textarea
               value={postDraft}
               onChange={(e) => setPostDraft(e.target.value)}
-              className="w-full flex-1 bg-[#12161a]/40 border border-[#2f3539]/30 p-2 rounded-lg text-[10px] text-slate-300 resize-none font-mono focus:outline-none focus:border-[#70b5f9]/40 min-h-[90px]"
+              className="w-full flex-1 bg-black/20 border border-white/10 p-2.5 rounded-lg text-[10.5px] text-slate-300 resize-none font-sans focus:outline-none focus:border-[#70b5f9]/40 min-h-[90px]"
             />
 
             {/* Carousel PDF Preview attachment (If added) */}
             {carouselPdfAdded && (
-              <div className="flex items-center justify-between p-2 bg-[#0a66c2]/5 border border-[#0a66c2]/20 rounded-lg animate-fadeIn text-[9px]">
+              <div className="flex items-center justify-between p-2 bg-[#0a66c2]/10 border border-[#0a66c2]/20 rounded-lg animate-fadeIn text-[9px]">
                 <div className="flex items-center gap-2">
                   <div className="size-6 bg-red-500/10 rounded flex items-center justify-center text-red-500 font-bold font-mono text-[9px]">PDF</div>
                   <div>
@@ -643,18 +667,18 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
           </div>
 
           {/* Action Toolbar */}
-          <div className="flex items-center justify-between border-t border-[#2f3539]/30 pt-2 text-[9px] text-[#8f969b]">
+          <div className="flex items-center justify-between border-t border-white/10 pt-2 text-[9px] text-[#8f969b]">
             <div className="flex gap-2">
               <button
                 onClick={() => setShowAiAssistant(!showAiAssistant)}
-                className={`p-1.5 rounded hover:bg-[#12161a] hover:text-white cursor-pointer transition-colors ${showAiAssistant ? 'text-[#70b5f9] bg-[#0a66c2]/10' : ''}`}
+                className={`p-1.5 rounded hover:bg-white/5 hover:text-white cursor-pointer transition-colors ${showAiAssistant ? 'text-[#70b5f9] bg-[#0a66c2]/10' : ''}`}
                 title={lang === 'pt-BR' ? 'Perguntar para IA' : 'Ask AI'}
               >
                 <Sparkles className="size-3.5" />
               </button>
               <button
                 onClick={() => setCarouselPdfAdded(!carouselPdfAdded)}
-                className={`p-1.5 rounded hover:bg-[#12161a] hover:text-white cursor-pointer transition-colors ${carouselPdfAdded ? 'text-purple-400 bg-purple-500/10' : ''}`}
+                className={`p-1.5 rounded hover:bg-white/5 hover:text-white cursor-pointer transition-colors ${carouselPdfAdded ? 'text-purple-400 bg-purple-500/10' : ''}`}
                 title={lang === 'pt-BR' ? 'Compilar Slides Carrossel' : 'Attach Carousel PDF'}
               >
                 <Layers className="size-3.5" />
@@ -676,27 +700,35 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
       </div>
 
       {/* 4. LinkedIn Feed Post Carousel Preview (Colspan 7) */}
-      <div className="md:col-span-7 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-        <div className="mb-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
-            <span className="text-[10px] font-mono font-bold text-blue-400 uppercase tracking-wider">
-              {lang === 'pt-BR' ? 'Feed do LinkedIn' : 'LinkedIn Timeline'}
-            </span>
+      <div className="md:col-span-7 group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] p-8 hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        
+        <div className="mb-6 text-left relative z-10">
+          <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-white/5 border border-white/10 text-blue-400 shrink-0">
+            <Rss className="h-5 w-5 text-blue-400" />
           </div>
-          <h3 className="text-xl font-bold text-white">
+          <h3 className="font-display text-xl font-bold text-white mb-3">
             {lang === 'pt-BR' ? 'Simulação de Post com Slides Carrossel' : 'LinkedIn Feed Carousel Post Preview'}
           </h3>
-          <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
+          <p className="text-slate-400 mb-6 text-sm leading-relaxed">
             {lang === 'pt-BR'
               ? 'Como o post com os slides estruturados com IA é visualizado diretamente na timeline do LinkedIn pelos usuários.'
               : 'Simulates how AI-tailored content and slide carousels render inside the standard LinkedIn timeline view.'}
           </p>
+          <div className="flex flex-wrap gap-2 mb-2">
+            {(lang === 'pt-BR' 
+              ? ['Visualizador PDF', 'Navegação Linear', 'Feed de Posts', 'Engajamento'] 
+              : ['PDF Viewer', 'Swipe Navigation', 'Timeline Post', 'Engagement']
+            ).map((tag, tIdx) => (
+              <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
+                {tag}
+              </span>
+            ))}
+          </div>
         </div>
 
         {/* Simulated LinkedIn Timeline Post Card */}
-        <div className="border border-[#2f3539]/60 rounded-xl bg-[#1d2226]/85 p-4 flex flex-col gap-3 min-h-[300px] justify-between shadow-inner font-sans text-slate-300 text-left">
+        <div className="border border-white/10 rounded-xl bg-black/40 p-4 flex flex-col gap-3 min-h-[300px] justify-between shadow-inner font-sans text-slate-300 text-left relative z-10">
           
           {/* Post Header */}
           <div className="flex items-center justify-between">
@@ -731,7 +763,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
           </div>
 
           {/* PDF Slides Carousel Widget Container */}
-          <div className="relative overflow-hidden w-full bg-[#0f1316] rounded-xl border border-[#2f3539]/60 p-3 h-[340px] flex items-center shadow-inner group/carousel">
+          <div className="relative overflow-hidden w-full bg-black/30 rounded-xl border border-white/5 p-3 h-[340px] flex items-center shadow-inner group/carousel">
             
             {/* Slide translator wrapper */}
             <div 
@@ -849,20 +881,20 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
             <button
               onClick={() => setCurrentSlide(prev => Math.max(0, prev - 1))}
               disabled={currentSlide === 0}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold w-9 h-9 rounded-full flex items-center justify-center bg-[#1d2226]/90 hover:bg-[#2f3539] border border-[#2f3539] text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-0 select-none shadow transition-opacity duration-200 z-20"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold w-9 h-9 rounded-full flex items-center justify-center bg-black/80 hover:bg-zinc-800 border border-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-0 select-none shadow transition-opacity duration-200 z-20"
             >
               <ChevronLeft className="size-4" />
             </button>
             <button
               onClick={() => setCurrentSlide(prev => Math.min(1, prev + 1))}
               disabled={currentSlide === 1}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold w-9 h-9 rounded-full flex items-center justify-center bg-[#1d2226]/90 hover:bg-[#2f3539] border border-[#2f3539] text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-0 select-none shadow transition-opacity duration-200 z-20"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold w-9 h-9 rounded-full flex items-center justify-center bg-black/80 hover:bg-zinc-800 border border-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-0 select-none shadow transition-opacity duration-200 z-20"
             >
               <ChevronRight className="size-4" />
             </button>
 
             {/* Fullscreen Button Mock */}
-            <div className="absolute bottom-2.5 right-2.5 z-20 bg-[#1d2226]/90 border border-[#2f3539] hover:bg-[#2f3539] rounded-full w-9 h-9 flex items-center justify-center cursor-pointer transition-all shadow text-white">
+            <div className="absolute bottom-2.5 right-2.5 z-20 bg-black/80 border border-white/10 hover:bg-zinc-800 rounded-full w-9 h-9 flex items-center justify-center cursor-pointer transition-all shadow text-white">
               <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
               </svg>
@@ -870,7 +902,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
           </div>
 
           {/* Social Stats indicators line */}
-          <div className="flex justify-between items-center text-[9px] text-[#8f969b] border-b border-[#2f3539]/30 pb-2">
+          <div className="flex justify-between items-center text-[9px] text-[#8f969b] border-b border-white/5 pb-2">
             <span className="flex items-center gap-1.5 hover:text-[#70b5f9] hover:underline cursor-pointer">
               <span>👍 2</span>
             </span>
@@ -879,19 +911,19 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
 
           {/* Feed Post Interactive Action buttons footer */}
           <div className="flex justify-between items-center px-1 text-[10px] text-[#8f969b] font-semibold select-none">
-            <button className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-[#12161a] hover:text-[#70b5f9] cursor-pointer transition-colors">
+            <button className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-white/5 hover:text-[#70b5f9] cursor-pointer transition-colors">
               <ThumbsUp className="size-3.5" />
               <span>{lang === 'pt-BR' ? 'Gostei' : 'Like'}</span>
             </button>
-            <button className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-[#12161a] hover:text-[#70b5f9] cursor-pointer transition-colors">
+            <button className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-white/5 hover:text-[#70b5f9] cursor-pointer transition-colors">
               <MessageSquare className="size-3.5" />
               <span>{lang === 'pt-BR' ? 'Comentar' : 'Comment'}</span>
             </button>
-            <button className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-[#12161a] hover:text-[#70b5f9] cursor-pointer transition-colors">
+            <button className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-white/5 hover:text-[#70b5f9] cursor-pointer transition-colors">
               <Share2 className="size-3.5" />
               <span>{lang === 'pt-BR' ? 'Compartilhar' : 'Repost'}</span>
             </button>
-            <button className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-[#12161a] hover:text-[#70b5f9] cursor-pointer transition-colors">
+            <button className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-white/5 hover:text-[#70b5f9] cursor-pointer transition-colors">
               <Send className="size-3.5" />
               <span>{lang === 'pt-BR' ? 'Enviar' : 'Send'}</span>
             </button>
