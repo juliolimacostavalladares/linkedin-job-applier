@@ -1,0 +1,12 @@
+{
+  "title": "Posts",
+  "pages": [
+    "createPost",
+    "listPosts",
+    "getPost",
+    "updatePost",
+    "deletePost",
+    "publishPost",
+    "uploadImagesToLinkedIn"
+  ]
+}

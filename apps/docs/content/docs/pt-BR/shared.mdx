@@ -1,0 +1,139 @@
+---
+title: Pacote Compartilhado
+description: Tipos TypeScript e componentes UI React usados em todos os apps
+---
+
+# Pacote Compartilhado
+
+`packages/shared` (`@linkedin-job-applier/shared`) fornece o sistema de tipos compartilhado e componentes UI React reutilizáveis consumidos por aplicações frontend e serviços backend.
+
+---
+
+## Tipos
+
+Interfaces TypeScript principais que definem os contratos de dados em todo o monorepo.
+
+### Tipos de Vaga
+
+| Tipo | Descrição |
+| :--- | :--- |
+| `Job` | Listagem de vaga (id, title, companyInfo, companyLogo, applied, language) |
+| `JobDetail` | Detalhe completo da vaga (description, location, url, employmentStatus, applyForm, applied, closed) |
+
+### Tipos de Formulário
+
+| Tipo | Descrição |
+| :--- | :--- |
+| `FormQuestion` | Campo de formulário de candidatura (urn, type, options, suggestedAnswer, prefilledValue) |
+| `ApplyForm` | Estrutura completa do formulário (steps, questions, referenceId, resumeUploadFormElementUrn) |
+| `FormResponse` | Formato de submissão LinkedIn (formElementUrn + valores de entrada de união discriminada) |
+| `FileUploadResponse` | Mapeamento de upload de currículo (inputUrn + formElementUrn) |
+
+### Tipos de Perfil
+
+| Tipo | Descrição |
+| :--- | :--- |
+| `WorkExperience` | Experiência de trabalho estruturada (company, role, duration, description) |
+| `Education` | Entrada de educação estruturada (institution, degree, duration) |
+| `ParsedResume` | Currículo analisado por IA (about + experiences + education) |
+
+### Tipos de Candidatura
+
+| Tipo | Descrição |
+| :--- | :--- |
+| `Application` | Registro de candidatura de vaga com metadados |
+| `AIAnswer` | Formato de resposta gerada por IA |
+| `AIResponse` | Wrapper de resposta de IA |
+
+---
+
+## Componentes
+
+Componentes React reutilizáveis compartilhados entre `linkedin-job-frontend` e `linkedin-publisher-frontend`.
+
+### Card
+
+Container de cartão com estados ativos/hover para itens de lista.
+
+```tsx
+import { Card } from '@linkedin-job-applier/shared';
+
+<Card active onClick={() => select(item)}>
+  <h3>{item.title}</h3>
+  <p>{item.description}</p>
+</Card>
+```
+
+### Button
+
+Componente de botão com variantes e tamanhos.
+
+```tsx
+import { Button } from '@linkedin-job-applier/shared';
+
+<Button variant="primary" size="md" icon={<RocketIcon />}>
+  Lançar
+</Button>
+```
+
+**Variantes**: `primary`, `secondary`, `ghost`
+**Tamanhos**: `sm`, `md`, `lg`
+
+### Input
+
+Componentes Input e Textarea com slots de ícone.
+
+```tsx
+import { Input } from '@linkedin-job-applier/shared';
+
+<Input
+  placeholder="Buscar vagas..."
+  startIcon={<SearchIcon />}
+  endIcon={<FilterIcon />}
+/>
+```
+
+### ProfileView
+
+Exibição completa de perfil com avatar, sobre, experiência e seções de educação.
+
+```tsx
+import { ProfileView } from '@linkedin-job-applier/shared';
+
+<ProfileView profile={userProfile} />
+```
+
+### Toast
+
+Sistema de notificação toast com provedor de contexto e hook.
+
+```tsx
+import { ToastProvider, useToast } from '@linkedin-job-applier/shared';
+
+// No root do seu app
+<ToastProvider>
+  <App />
+</ToastProvider>
+
+// Nos componentes
+const { addToast } = useToast();
+addToast({ type: 'success', title: 'Salvo!', description: 'Perfil atualizado.' });
+```
+
+**Tipos**: `success`, `error`, `info`, `warning`
+
+### SidebarLayout
+
+Shell de app com sidebar, logo da marca, navegação e alternância de tema.
+
+```tsx
+import { SidebarLayout } from '@linkedin-job-applier/shared';
+
+<SidebarLayout
+  brand={{ name: 'Meu App', icon: <LogoIcon /> }}
+  navigation={navItems}
+  theme="dark"
+>
+  {children}
+</SidebarLayout>
+```

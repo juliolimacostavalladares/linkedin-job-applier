@@ -23,8 +23,8 @@ export function DynamicNavTitle() {
   const pathname = usePathname();
   
   let currentService: { title: string; icon: React.ReactNode } = {
-    title: 'All Services',
-    icon: <Layers className="size-5 text-zinc-500" />,
+    title: 'LinkedIn Job Explorer',
+    icon: <img src="/logo.svg" alt="LinkedIn Job Explorer" className="size-5 rounded object-cover border border-fd-border/30" />,
   };
 
   for (const [prefix, data] of Object.entries(serviceData)) {

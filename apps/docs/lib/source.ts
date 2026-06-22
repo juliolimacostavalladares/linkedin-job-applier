@@ -8,6 +8,10 @@ import { docsContentRoute, docsImageRoute, docsRoute } from './shared';
 export const source = loader({
   baseUrl: docsRoute,
   source: docs.toFumadocsSource(),
+  i18n: {
+    languages: ['pt-BR', 'en'],
+    defaultLanguage: 'pt-BR',
+  },
   plugins: [lucideIconsPlugin(), openapiPlugin()],
 });
 

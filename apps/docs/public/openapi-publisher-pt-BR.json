@@ -1,0 +1,1356 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LinkedIn Publisher Backend API",
+    "version": "1.0.0",
+    "description": "Plataforma de criação e publicação de conteúdo para posts, carrosséis e conteúdo gerado por IA no LinkedIn."
+  },
+  "components": {
+    "securitySchemes": {
+      "LinkedInCookie": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-linkedin-cookie",
+        "description": "Cookie de sessão do LinkedIn (contém li_at, JSESSIONID, etc.)"
+      },
+      "LinkedInCsrf": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-linkedin-csrf",
+        "description": "Token CSRF do LinkedIn (deve corresponder ao JSESSIONID do cookie)"
+      }
+    },
+    "schemas": {
+      "Job": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "companyInfo"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador único da vaga de emprego no LinkedIn.",
+            "example": "3827649182"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título da vaga.",
+            "example": "Senior React Developer"
+          },
+          "companyInfo": {
+            "type": "string",
+            "description": "Nome da empresa ou metadados resumidos.",
+            "example": "Google"
+          },
+          "companyLogo": {
+            "type": "string",
+            "description": "URL da imagem do logotipo da empresa (se disponível).",
+            "example": "https://media.licdn.com/dms/image/..."
+          },
+          "applied": {
+            "type": "boolean",
+            "description": "Se o usuário já se candidatou a esta vaga.",
+            "example": false
+          },
+          "appliedThroughSystem": {
+            "type": "boolean",
+            "description": "Se o usuário se candidatou usando este serviço de gateway.",
+            "example": false
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "pt"
+            ],
+            "description": "Código de idioma da vaga de emprego.",
+            "example": "en"
+          }
+        }
+      },
+      "JobDetail": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "location",
+          "url",
+          "employmentStatus",
+          "companyName"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID único da vaga de emprego no LinkedIn.",
+            "example": "3827649182"
+          },
+          "title": {
+            "type": "string",
+            "description": "O título do cargo.",
+            "example": "Senior React Developer"
+          },
+          "description": {
+            "type": "string",
+            "description": "Texto completo da descrição da vaga em formato HTML.",
+            "example": "We are looking for a Senior React Developer..."
+          },
+          "location": {
+            "type": "string",
+            "description": "Localização formatada da vaga.",
+            "example": "San Francisco, CA (Hybrid)"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL direto para visualizar a vaga no LinkedIn.",
+            "example": "https://www.linkedin.com/jobs/view/3827649182"
+          },
+          "employmentStatus": {
+            "type": "string",
+            "description": "Classificação do tipo de emprego.",
+            "example": "FULL_TIME"
+          },
+          "companyName": {
+            "type": "string",
+            "description": "Nome da empresa contratante.",
+            "example": "Google"
+          },
+          "companyLogo": {
+            "type": "string",
+            "description": "URL do logotipo da empresa contratante.",
+            "example": "https://media.licdn.com/dms/image/..."
+          },
+          "applyForm": {
+            "$ref": "#/components/schemas/ApplyForm"
+          },
+          "applied": {
+            "type": "boolean",
+            "description": "Se o usuário já se candidatou.",
+            "example": false
+          },
+          "appliedThroughSystem": {
+            "type": "boolean",
+            "description": "Se candidatou usando este serviço de gateway.",
+            "example": false
+          },
+          "appliedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp ISO da candidatura (se candidatado através do sistema).",
+            "example": "2026-06-21T18:00:00.000Z"
+          },
+          "appliedOnLinkedIn": {
+            "type": "boolean",
+            "description": "Se os registros do LinkedIn mostram uma candidatura.",
+            "example": false
+          },
+          "viewedByJobPosterAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Timestamp ISO de quando o anunciante da vaga visualizou a candidatura.",
+            "example": null
+          },
+          "closed": {
+            "type": "boolean",
+            "description": "Se a vaga está fechada para candidaturas.",
+            "example": false
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "pt"
+            ],
+            "description": "Código de idioma da descrição da vaga.",
+            "example": "en"
+          }
+        }
+      },
+      "ApplyForm": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indica se a recuperação do formulário foi bem-sucedida.",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensagem de erro ou status.",
+            "example": "Form loaded successfully"
+          },
+          "steps": {
+            "type": "array",
+            "description": "Se for um formulário de várias etapas, etapas e perguntas estruturadas.",
+            "items": {
+              "type": "object",
+              "required": [
+                "title",
+                "questions"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "Título da etapa.",
+                  "example": "Contact Info"
+                },
+                "questions": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FormQuestion"
+                  }
+                }
+              }
+            }
+          },
+          "questions": {
+            "type": "array",
+            "description": "Se for um formulário simples, lista todas as perguntas.",
+            "items": {
+              "$ref": "#/components/schemas/FormQuestion"
+            }
+          },
+          "referenceId": {
+            "type": "string",
+            "description": "Token base64 exclusivo gerado pelo cliente representando esta sessão de formulário, necessário para envio.",
+            "example": "YWJjZGVmZ2hpamtsbW5vcA=="
+          },
+          "resumeUploadFormElementUrn": {
+            "type": "string",
+            "description": "URN do campo de upload de arquivo de currículo, se presente.",
+            "example": "urn:li:fs_easyApplyFormElement:(3827649182,7,fileUpload)"
+          },
+          "resumeUrns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URNs de documentos de currículo disponíveis no LinkedIn, ordenados por recência de uso.",
+            "example": [
+              "urn:li:fsd_resume:123456789"
+            ]
+          },
+          "optimizedResume": {
+            "type": "string",
+            "description": "Versão de texto otimizada do currículo.",
+            "example": "John Doe - Software Engineer..."
+          },
+          "optimizedResumePdfBase64": {
+            "type": "string",
+            "description": "Payload base64 do PDF de currículo otimizado.",
+            "example": "JVBER..."
+          }
+        }
+      },
+      "FormQuestion": {
+        "type": "object",
+        "required": [
+          "urn",
+          "required",
+          "title",
+          "type"
+        ],
+        "properties": {
+          "urn": {
+            "type": "string",
+            "description": "O identificador URN exclusivo do LinkedIn do elemento/pergunta do formulário.",
+            "example": "urn:li:fs_easyApplyFormElement:(3827649182,12,text)"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Se uma resposta é obrigatória.",
+            "example": true
+          },
+          "title": {
+            "type": "string",
+            "description": "A pergunta em texto ou rótulo apresentado ao usuário.",
+            "example": "How many years of experience do you have with React?"
+          },
+          "type": {
+            "type": "string",
+            "description": "O tipo de pergunta.",
+            "example": "text"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Para opções de múltipla escolha/lista suspensa, strings de exibição.",
+            "example": [
+              "Yes",
+              "No"
+            ]
+          },
+          "optionUrns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array paralelo de URNs correspondentes às opções.",
+            "example": [
+              "urn:li:fs_easyApplyFormElementOption:1",
+              "urn:li:fs_easyApplyFormElementOption:2"
+            ]
+          },
+          "optionEnumStrings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array paralelo de strings enum brutas para opções.",
+            "example": [
+              "YES",
+              "NO"
+            ]
+          },
+          "suggestedAnswer": {
+            "type": "string",
+            "description": "Resposta sugerida ou gerada por IA.",
+            "example": "Yes"
+          },
+          "prefilledValue": {
+            "type": "string",
+            "description": "Valor de resposta pré-preenchido se analisado do LinkedIn.",
+            "example": "John Doe"
+          }
+        }
+      },
+      "ApplySubmissionResult": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indica se a candidatura foi enviada com sucesso.",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Detalhe da mensagem de status ou erro.",
+            "example": "Application submitted successfully"
+          }
+        }
+      },
+      "CreatePostResult": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Se a publicação foi criada com sucesso.",
+            "example": true
+          },
+          "postId": {
+            "type": "string",
+            "description": "O URN/ID de compartilhamento da publicação criada.",
+            "example": "7209384729"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalhes do erro se a criação falhou.",
+            "example": "Invalid cookies"
+          }
+        }
+      },
+      "DeletePostResult": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Se a exclusão foi bem-sucedida.",
+            "example": true
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalhes do erro se a exclusão falhar.",
+            "example": "Post not found"
+          }
+        }
+      },
+      "ProfileInfo": {
+        "type": "object",
+        "required": [
+          "success",
+          "profileId",
+          "name",
+          "headline",
+          "photoUrl",
+          "about",
+          "experiences",
+          "education"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indica se a busca de identidade foi bem-sucedida.",
+            "example": true
+          },
+          "profileId": {
+            "type": "string",
+            "description": "O ID URN do membro alvo.",
+            "example": "ACoAAB..."
+          },
+          "name": {
+            "type": "string",
+            "description": "O nome completo do usuário.",
+            "example": "John Doe"
+          },
+          "headline": {
+            "type": "string",
+            "description": "O headline do usuário.",
+            "example": "Senior Software Engineer"
+          },
+          "photoUrl": {
+            "type": "string",
+            "description": "A URL da foto de perfil do usuário.",
+            "example": "https://media.licdn.com/dms/image/..."
+          },
+          "about": {
+            "type": "string",
+            "description": "A descrição 'Sobre' do usuário extraída do PDF do perfil.",
+            "example": "Passionate engineer with experience in React and Node..."
+          },
+          "experiences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkExperience"
+            }
+          },
+          "education": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Education"
+            }
+          }
+        }
+      },
+      "WorkExperience": {
+        "type": "object",
+        "required": [
+          "company",
+          "role",
+          "duration",
+          "description"
+        ],
+        "properties": {
+          "company": {
+            "type": "string",
+            "description": "O nome da empresa.",
+            "example": "Google"
+          },
+          "role": {
+            "type": "string",
+            "description": "O cargo/título ocupado.",
+            "example": "Senior Software Engineer"
+          },
+          "duration": {
+            "type": "string",
+            "description": "A duração do emprego.",
+            "example": "Jan 2020 - Present"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição de responsabilidades e conquistas.",
+            "example": "Led development of core front-end applications..."
+          }
+        }
+      },
+      "Education": {
+        "type": "object",
+        "required": [
+          "institution",
+          "degree",
+          "duration"
+        ],
+        "properties": {
+          "institution": {
+            "type": "string",
+            "description": "O nome da escola/universidade.",
+            "example": "Stanford University"
+          },
+          "degree": {
+            "type": "string",
+            "description": "O diploma obtido.",
+            "example": "B.S. Computer Science"
+          },
+          "duration": {
+            "type": "string",
+            "description": "A duração dos estudos.",
+            "example": "2016 - 2020"
+          }
+        }
+      },
+      "ResumePdfResult": {
+        "type": "object",
+        "required": [
+          "success",
+          "text",
+          "pdfBase64"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Se a recuperação e análise do PDF foi bem-sucedida.",
+            "example": true
+          },
+          "text": {
+            "type": "string",
+            "description": "O texto completo extraído do arquivo PDF.",
+            "example": "John Doe Resume..."
+          },
+          "pdfBase64": {
+            "type": "string",
+            "description": "A representação codificada em base64 do arquivo PDF.",
+            "example": "JVBER..."
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Posts",
+      "description": "Operações de CRUD de posts, publicação e upload de mídia"
+    },
+    {
+      "name": "AI",
+      "description": "Geração de conteúdo com IA para posts e carrosséis"
+    },
+    {
+      "name": "Carousel",
+      "description": "Geração de PDF de carrossel com suporte a temas"
+    },
+    {
+      "name": "Credentials",
+      "description": "Sincronização de credenciais de sessão do LinkedIn"
+    },
+    {
+      "name": "Profile",
+      "description": "Recuperação de dados do perfil"
+    }
+  ],
+  "paths": {
+    "/api/profile": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "operationId": "getPublisherProfile",
+        "summary": "Obter dados do perfil",
+        "description": "Retorna o perfil sincronizado mais recente do banco de dados, incluindo identidade, experiências e formação acadêmica.",
+        "responses": {
+          "200": {
+            "description": "Perfil recuperado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "profileId": {
+                      "type": "string",
+                      "example": "ACoAAB..."
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "John Doe"
+                    },
+                    "headline": {
+                      "type": "string",
+                      "example": "Senior Software Engineer"
+                    },
+                    "photoUrl": {
+                      "type": "string"
+                    },
+                    "about": {
+                      "type": "string"
+                    },
+                    "experiences": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "company": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "string"
+                          },
+                          "duration": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "education": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "institution": {
+                            "type": "string"
+                          },
+                          "degree": {
+                            "type": "string"
+                          },
+                          "duration": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Nenhum perfil sincronizado"
+          }
+        }
+      }
+    },
+    "/api/posts/upload-images": {
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "uploadImagesToLinkedIn",
+        "summary": "Enviar imagens para o LinkedIn",
+        "description": "Envia arquivos de imagem para o CDN Ambry do LinkedIn e retorna URNs de mídia para anexar em posts.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "images"
+                ],
+                "properties": {
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Arquivos de imagem (máx. 9, 10MB cada)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Imagens enviadas com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mediaUrn": {
+                      "type": "string",
+                      "description": "URNs de mídia separados por vírgula",
+                      "example": "urn:li:share:7209384729,urn:li:share:7209384730"
+                    },
+                    "imageCount": {
+                      "type": "integer",
+                      "example": 2
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Nenhuma imagem fornecida"
+          },
+          "401": {
+            "description": "Credenciais do LinkedIn não conectadas"
+          }
+        }
+      }
+    },
+    "/api/posts": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "listPosts",
+        "summary": "Listar todos os posts",
+        "description": "Retorna todos os posts armazenados no banco de dados, ordenados por data de criação.",
+        "responses": {
+          "200": {
+            "description": "Posts recuperados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "clx1234..."
+                      },
+                      "text": {
+                        "type": "string",
+                        "example": "Excited to share my latest project!"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "published",
+                          "scheduled"
+                        ],
+                        "example": "published"
+                      },
+                      "linkedinId": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "7209384729"
+                      },
+                      "scheduledAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "createPost",
+        "summary": "Criar um post",
+        "description": "Cria um novo post. Se o status for 'published', publica imediatamente no LinkedIn via Gateway.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "Texto do conteúdo do post",
+                    "example": "Excited to share my latest project!"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "published",
+                      "scheduled"
+                    ],
+                    "description": "Status do post, padrão é draft"
+                  },
+                  "scheduledAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Timestamp ISO para publicação agendada"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "text",
+                      "image",
+                      "document"
+                    ],
+                    "description": "Tipo do post (detectado automaticamente da mídia)"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Arquivos de imagem ou PDF (máx. 9)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Post criado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "linkedinId": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Texto é obrigatório"
+          },
+          "401": {
+            "description": "Credenciais do LinkedIn não conectadas"
+          }
+        }
+      }
+    },
+    "/api/posts/{id}": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "getPost",
+        "summary": "Obter um único post",
+        "description": "Retorna um único post pelo seu ID do banco de dados.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID do post no banco de dados"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Post recuperado com sucesso"
+          },
+          "404": {
+            "description": "Post não encontrado"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "updatePost",
+        "summary": "Atualizar uma publicação",
+        "description": "Atualiza o conteúdo ou status de uma publicação. Se transitar para 'published', envia para o LinkedIn.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID do post no banco de dados"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "published",
+                      "scheduled"
+                    ]
+                  },
+                  "scheduledAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Publicação atualizada com sucesso"
+          },
+          "404": {
+            "description": "Post não encontrado"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "deletePost",
+        "summary": "Excluir uma publicação",
+        "description": "Exclui uma publicação do banco de dados e do LinkedIn se ela foi publicada.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID do post no banco de dados"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Publicação excluída com sucesso"
+          },
+          "404": {
+            "description": "Post não encontrado"
+          }
+        }
+      }
+    },
+    "/api/posts/{id}/publish": {
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "publishPost",
+        "summary": "Publicar um rascunho imediatamente",
+        "description": "Publica um rascunho no LinkedIn imediatamente, independentemente de seu status atual.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID do post no banco de dados"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mediaUrn": {
+                    "type": "string",
+                    "description": "URN de mídia pré-carregada para anexar"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Publicação publicada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "published"
+                    },
+                    "linkedinId": {
+                      "type": "string"
+                    },
+                    "publishedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Falha ao publicar"
+          },
+          "404": {
+            "description": "Post não encontrado"
+          }
+        }
+      }
+    },
+    "/api/credentials/status": {
+      "get": {
+        "tags": [
+          "Credentials"
+        ],
+        "operationId": "getPublisherCredentialsStatus",
+        "summary": "Verificar status das credenciais",
+        "description": "Retorna se o backend do publicador armazena credenciais de sessão atualmente e quando foram atualizadas.",
+        "responses": {
+          "200": {
+            "description": "Status das credenciais verificado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "hasCredentials": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true,
+                      "example": "2026-06-21T18:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/credentials": {
+      "post": {
+        "tags": [
+          "Credentials"
+        ],
+        "operationId": "savePublisherCredentials",
+        "summary": "Salvar credenciais de sessão",
+        "description": "Recebe os cookies de sessão do LinkedIn, tokens CSRF e cabeçalhos de ambiente do cliente sincronizados da extensão do Chrome.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "cookie",
+                  "csrf"
+                ],
+                "properties": {
+                  "cookie": {
+                    "type": "string",
+                    "description": "String completa do cookie de sessão do LinkedIn",
+                    "example": "li_at=AQED...; JSESSIONID=\"ajax:123456\";"
+                  },
+                  "csrf": {
+                    "type": "string",
+                    "description": "Token CSRF plano extraído do JSESSIONID",
+                    "example": "ajax:123456"
+                  },
+                  "headers": {
+                    "type": "object",
+                    "description": "Cabeçalhos de ambiente do cliente"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Credenciais salvas com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Campos obrigatórios ausentes"
+          }
+        }
+      }
+    },
+    "/api/carousel/generate-pdf": {
+      "post": {
+        "tags": [
+          "Carousel"
+        ],
+        "operationId": "generateCarouselPdf",
+        "summary": "Gerar PDF de carrossel",
+        "description": "Gera um PDF de carrossel otimizado para LinkedIn (1080x1350px) a partir de uma configuração de slides. Usa Puppeteer para renderizar slides HTML com destaque de sintaxe.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "slides"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Título do carrossel",
+                    "example": "TypeScript Tips"
+                  },
+                  "authorName": {
+                    "type": "string",
+                    "description": "Nome do autor exibido nos slides",
+                    "example": "John Doe"
+                  },
+                  "theme": {
+                    "type": "string",
+                    "enum": [
+                      "dark-premium",
+                      "gradient-purple",
+                      "startup-clean",
+                      "bold-yellow",
+                      "warm-creative"
+                    ],
+                    "description": "Tema visual, padrão é dark-premium"
+                  },
+                  "slides": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "title",
+                        "content"
+                      ],
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "content": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "description": "Array de objetos de slide"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PDF gerado com sucesso",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Os slides são obrigatórios"
+          }
+        }
+      }
+    },
+    "/api/ai/generate-post": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "operationId": "generatePost",
+        "summary": "Gerar conteúdo de post do LinkedIn",
+        "description": "Usa Gemini para gerar conteúdo de post do LinkedIn com base em um prompt e tom.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "prompt"
+                ],
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "Tópico ou ideia para o post",
+                    "example": "React Server Components best practices"
+                  },
+                  "tone": {
+                    "type": "string",
+                    "enum": [
+                      "professional",
+                      "casual",
+                      "technical",
+                      "inspirational"
+                    ],
+                    "description": "Tom do conteúdo, padrão é professional"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Conteúdo do post gerado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "description": "Texto do post gerado"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "O prompt é obrigatório"
+          }
+        }
+      }
+    },
+    "/api/ai/generate-carousel": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "operationId": "generateCarousel",
+        "summary": "Gerar estrutura de slides do carrossel",
+        "description": "Usa Gemini para gerar uma estrutura JSON de carrossel a partir de um prompt. A saída pode ser passada para o endpoint de Geração de PDF.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "prompt"
+                ],
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "Tópico para o carrossel",
+                    "example": "10 TypeScript tips every developer should know"
+                  },
+                  "tone": {
+                    "type": "string",
+                    "enum": [
+                      "professional",
+                      "casual",
+                      "technical",
+                      "inspirational"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Estrutura do carrossel gerada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "authorName": {
+                      "type": "string"
+                    },
+                    "slides": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string"
+                          },
+                          "content": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "O prompt é obrigatório"
+          }
+        }
+      }
+    }
+  }
+}

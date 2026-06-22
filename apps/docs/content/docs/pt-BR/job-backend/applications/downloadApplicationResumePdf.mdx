@@ -1,0 +1,31 @@
+---
+title: Baixar PDF de currículo da candidatura
+full: true
+_openapi:
+  preload:
+    - >-
+      /Users/macbookpro/Documents/linkedin-job-explorer/apps/docs/public/openapi-backend-pt-BR.json
+  method: GET
+  webhook: false
+  toc: []
+  structuredData:
+    headings: []
+    contents:
+      - content: >-
+          Transmite os dados binários do PDF do currículo otimizado associado a
+          uma candidatura de vaga específica.
+---
+
+{/* Este arquivo foi gerado por Fumadocs. Não edite este arquivo diretamente. */}
+
+export default function Layout(props) {
+  const { APIPage, OpenAPIPage } = props.components ?? {};
+  // "APIPage" é o nome antigo da v10, isso permite ambos para compatibilidade retroativa
+  const Comp = OpenAPIPage ?? APIPage;
+  return (
+    <>
+      {props.children}
+      <Comp document="/Users/macbookpro/Documents/linkedin-job-explorer/apps/docs/public/openapi-backend-pt-BR.json" operations={[{"path":"/api/applications/{id}/resume.pdf","method":"get"}]} showDescription />
+    </>
+  );
+}

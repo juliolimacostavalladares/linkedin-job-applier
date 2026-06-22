@@ -1,0 +1,38 @@
+---
+title: Arquitetura do Gateway
+description: Visão comparativa das interfaces REST e GraphQL no LinkedIn Gateway
+---
+
+# Arquitetura do Gateway
+
+O gateway é construído com uma arquitetura de interface dupla: expõe uma **API REST** tradicional (documentada via OpenAPI/Swagger) e uma **API GraphQL** flexível no mesmo servidor, permitindo que clientes escolham a interface que melhor se adequa aos seus padrões de integração.
+
+---
+
+## Tabela Comparativa de Recursos
+
+| Recurso | API REST | API GraphQL | Detalhe |
+| :--- | :---: | :---: | :--- |
+| **Listar Vagas** | Sim | Sim | Filtrar vagas por palavra-chave, status remoto e data. |
+| **Recuperar Detalhes da Vaga** | Sim | Sim | Recuperar descrição completa e requisitos. |
+| **Recuperar Formulário de Candidatura** | Sim | Sim | Analisar campos de formulário multi-etapa e regras de validação. |
+| **Enviar Candidatura** | Sim | Sim | Enviar respostas aos formulários e fazer upload de arquivos. |
+| **Criar Post no LinkedIn** | Sim | Sim | Publicar posts de texto, imagens e documentos. |
+| **Deletar Post** | Sim | Sim | Deletar posts pelo ID de compartilhamento. |
+| **Recuperar Info do Perfil** | Sim | Sim | Analisar dados do perfil (bio, experiências, educação). |
+| **Baixar PDF do Currículo** | Sim | Sim | Baixar resumo do perfil em formato PDF binário. |
+| **Redação de Logs** | Sim | Sim | Sanitiza cookies do console do servidor automaticamente. |
+
+---
+
+## Escolha GraphQL vs REST
+
+### Quando escolher REST
+- **Simplicidade**: Melhor ao integrar com cURL padrão, handlers de webhook ou ferramentas de automação de fluxo de trabalho de terceiros (ex: Make, Zapier, n8n).
+- **Playground Interativo**: Ótimo para testar operações específicas dentro da nossa página sandbox Swagger UI integrada.
+- **Saída Previsível**: Endpoints padrão retornam schemas fixos, ideal para mapeamentos estáticos de cliente.
+
+### Quando escolher GraphQL
+- **Seleção de Dados**: Consultar apenas os campos que você precisa (ex: buscar apenas títulos de vagas para minimizar tamanho de resposta).
+- **Execução em Endpoint Único**: Consolidar múltiplas buscas de recursos (ex: buscar info do perfil e listar vagas correspondentes em uma única requisição).
+- **Geração Dinâmica de Cliente**: Gerar interfaces de cliente TypeScript automaticamente usando ferramentas como GraphQL Codegen.

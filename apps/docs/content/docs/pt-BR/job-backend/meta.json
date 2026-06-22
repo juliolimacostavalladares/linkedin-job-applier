@@ -1,0 +1,11 @@
+{
+  "title": "Backend Jobs",
+  "root": true,
+  "pages": [
+    "overview",
+    "credentials",
+    "resume",
+    "ai",
+    "applications"
+  ]
+}

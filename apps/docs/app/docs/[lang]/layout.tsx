@@ -31,13 +31,34 @@ const serviceTabs = [
   },
 ];
 
-export default function Layout({ children }: LayoutProps<'/docs'>) {
+export default async function Layout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+
+  const tabs = serviceTabs.map((tab) => ({
+    ...tab,
+    url: `/docs/${lang}${tab.url.replace('/docs', '')}`,
+  }));
+
+  const rawTree = source.getPageTree(lang);
+  const langFolder = rawTree.children.find(
+    (child) => child.type === 'folder' && (child as any).$id === lang
+  );
+  const tree = langFolder && langFolder.type === 'folder'
+    ? { ...rawTree, children: langFolder.children }
+    : rawTree;
+
   return (
     <ServiceThemeProvider>
       <DocsLayout
-        tree={source.getPageTree()}
+        tree={tree}
         {...baseOptions()}
-        tabs={serviceTabs}
+        tabs={tabs}
         tabMode="auto"
       >
         {children}

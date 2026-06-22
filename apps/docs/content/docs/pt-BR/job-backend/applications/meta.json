@@ -1,0 +1,8 @@
+{
+  "title": "Rastreamento de Candidaturas",
+  "pages": [
+    "listJobApplications",
+    "syncApplicationsWithLinkedin",
+    "downloadApplicationResumePdf"
+  ]
+}

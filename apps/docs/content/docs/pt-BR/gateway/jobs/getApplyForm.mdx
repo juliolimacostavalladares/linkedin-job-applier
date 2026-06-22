@@ -1,0 +1,45 @@
+---
+title: Recuperar formulário de candidatura de vaga
+full: true
+_openapi:
+  preload:
+    - >-
+      /Users/macbookpro/Documents/linkedin-job-explorer/apps/docs/public/openapi-pt-BR.json
+  method: GET
+  webhook: false
+  toc: []
+  structuredData:
+    headings: []
+    contents:
+      - content: >
+          Busca as perguntas estruturadas de formulário multi-etapa para uma
+          postagem de vaga Easy Apply do LinkedIn.
+
+
+          ### Parâmetros de Caminho
+
+          - `id` (string, obrigatório): O ID único de postagem de vaga do
+          LinkedIn.
+
+
+          > [!IMPORTANT]
+
+          > Este endpoint analisa os campos brutos do formulário (caixas de
+          texto, dropdowns, botões de rádio) e retorna seus identificadores URN.
+          Esses URNs são necessários ao enviar respostas via endpoint **Enviar
+          formulário de candidatura**.
+---
+
+{/* Este arquivo foi gerado por Fumadocs. Não edite este arquivo diretamente. */}
+
+export default function Layout(props) {
+  const { APIPage, OpenAPIPage } = props.components ?? {};
+  // "APIPage" é o nome antigo da v10, isso permite ambos para compatibilidade retroativa
+  const Comp = OpenAPIPage ?? APIPage;
+  return (
+    <>
+      {props.children}
+      <Comp document="/Users/macbookpro/Documents/linkedin-job-explorer/apps/docs/public/openapi-pt-BR.json" operations={[{"path":"/api/jobs/{id}/apply-form","method":"get"}]} showDescription />
+    </>
+  );
+}

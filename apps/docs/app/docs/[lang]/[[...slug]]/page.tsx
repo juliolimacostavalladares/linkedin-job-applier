@@ -15,9 +15,22 @@ import { gitConfig } from '@/lib/shared';
 import { openapi } from '@/lib/openapi';
 import { APIPage } from '@/components/api-page-client';
 
-export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
+export default async function Page(props: PageProps<'/docs/[lang]/[[...slug]]'>) {
   const params = await props.params;
-  const page = source.getPage(params.slug);
+  const normalizedSlug = params.slug ?? [];
+  console.log('[DEBUG] Route params:', { slug: params.slug, normalized: normalizedSlug, lang: params.lang });
+
+  // Debug: Check what pages exist for this language
+  const allPages = source.getPages(params.lang);
+  console.log('[DEBUG] Total pages for', params.lang, ':', allPages.length);
+  const allPagesNoLang = source.getPages();
+  console.log('[DEBUG] Total pages WITHOUT lang param:', allPagesNoLang.length);
+  if (allPages.length > 0) {
+    console.log('[DEBUG] Sample pages:', allPages.slice(0, 3).map(p => ({ url: p.url, slugs: p.slugs })));
+  }
+
+  const page = source.getPage([params.lang, ...normalizedSlug], params.lang);
+  console.log('[DEBUG] Page found:', !!page, page ? page.url : 'null');
   if (!page) notFound();
 
   const MDX = page.data.body;
@@ -32,7 +45,7 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
         <MarkdownCopyButton markdownUrl={markdownUrl} />
         <ViewOptionsPopover
           markdownUrl={markdownUrl}
-          githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/content/docs/${page.path}`}
+          githubUrl={`https://github.com/${gitConfig.user}/${gitConfig.repo}/blob/${gitConfig.branch}/content/docs/${params.lang}/${page.path}`}
         />
       </div>
       <DocsBody>
@@ -50,12 +63,18 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
 }
 
 export async function generateStaticParams() {
-  return source.generateParams();
+  return source.generateParams().map((params) => {
+    const slug = params.slug && params.slug[0] === params.lang ? params.slug.slice(1) : params.slug;
+    return {
+      lang: params.lang ?? 'pt-BR',
+      slug,
+    };
+  });
 }
 
-export async function generateMetadata(props: PageProps<'/docs/[[...slug]]'>): Promise<Metadata> {
+export async function generateMetadata(props: PageProps<'/docs/[lang]/[[...slug]]'>): Promise<Metadata> {
   const params = await props.params;
-  const page = source.getPage(params.slug);
+  const page = source.getPage([params.lang, ...(params.slug ?? [])], params.lang);
   if (!page) notFound();
 
   return {

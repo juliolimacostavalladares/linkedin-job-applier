@@ -1,0 +1,10 @@
+{
+  "title": "Currículo & Perfil",
+  "pages": [
+    "importProfilePdfFromLinkedin",
+    "syncProfileDataFromChromeExtension",
+    "saveRawResumeText",
+    "retrieveLatestResume",
+    "retrieveStructuredProfile"
+  ]
+}

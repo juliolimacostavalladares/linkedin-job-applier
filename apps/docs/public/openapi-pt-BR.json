@@ -1,0 +1,995 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LinkedIn Gateway Service API",
+    "version": "1.0.0",
+    "description": "Serviço de gateway REST e GraphQL para interface com APIs do LinkedIn Voyager de forma segura."
+  },
+  "components": {
+    "securitySchemes": {
+      "LinkedInCookie": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-linkedin-cookie",
+        "description": "Cookie de sessão do LinkedIn (contém li_at, JSESSIONID, etc.)"
+      },
+      "LinkedInCsrf": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-linkedin-csrf",
+        "description": "Token CSRF do LinkedIn (deve corresponder ao JSESSIONID do cookie)"
+      }
+    },
+    "schemas": {
+      "Job": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "companyInfo"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador único da vaga de emprego no LinkedIn.",
+            "example": "3827649182"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título da vaga.",
+            "example": "Senior React Developer"
+          },
+          "companyInfo": {
+            "type": "string",
+            "description": "Nome da empresa ou metadados breves.",
+            "example": "Google"
+          },
+          "companyLogo": {
+            "type": "string",
+            "description": "URL da imagem do logotipo da empresa (se disponível).",
+            "example": "https://media.licdn.com/dms/image/..."
+          },
+          "applied": {
+            "type": "boolean",
+            "description": "Se o usuário já se candidatou a esta vaga.",
+            "example": false
+          },
+          "appliedThroughSystem": {
+            "type": "boolean",
+            "description": "Se o usuário se candidatou usando este serviço de gateway.",
+            "example": false
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "pt"
+            ],
+            "description": "Código de idioma da vaga de emprego.",
+            "example": "en"
+          }
+        }
+      },
+      "JobDetail": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "location",
+          "url",
+          "employmentStatus",
+          "companyName"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID único da vaga de emprego do LinkedIn.",
+            "example": "3827649182"
+          },
+          "title": {
+            "type": "string",
+            "description": "O título do cargo.",
+            "example": "Senior React Developer"
+          },
+          "description": {
+            "type": "string",
+            "description": "Texto completo da descrição da vaga em formato HTML.",
+            "example": "We are looking for a Senior React Developer..."
+          },
+          "location": {
+            "type": "string",
+            "description": "Localização formatada da vaga.",
+            "example": "San Francisco, CA (Hybrid)"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL direto para visualizar a vaga de emprego no LinkedIn.",
+            "example": "https://www.linkedin.com/jobs/view/3827649182"
+          },
+          "employmentStatus": {
+            "type": "string",
+            "description": "Classificação do tipo de emprego.",
+            "example": "FULL_TIME"
+          },
+          "companyName": {
+            "type": "string",
+            "description": "Nome da empresa contratante.",
+            "example": "Google"
+          },
+          "companyLogo": {
+            "type": "string",
+            "description": "URL do logotipo da empresa contratante.",
+            "example": "https://media.licdn.com/dms/image/..."
+          },
+          "applyForm": {
+            "$ref": "#/components/schemas/ApplyForm"
+          },
+          "applied": {
+            "type": "boolean",
+            "description": "Se o usuário já se candidatou.",
+            "example": false
+          },
+          "appliedThroughSystem": {
+            "type": "boolean",
+            "description": "Se candidatou usando este serviço de gateway.",
+            "example": false
+          },
+          "appliedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp ISO da candidatura (se candidatou através do sistema).",
+            "example": "2026-06-21T18:00:00.000Z"
+          },
+          "appliedOnLinkedIn": {
+            "type": "boolean",
+            "description": "Se os registros do LinkedIn mostram uma candidatura.",
+            "example": false
+          },
+          "viewedByJobPosterAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Timestamp ISO de quando o recrutador visualizou a candidatura.",
+            "example": null
+          },
+          "closed": {
+            "type": "boolean",
+            "description": "Se a vaga de emprego está fechada para candidaturas.",
+            "example": false
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "pt"
+            ],
+            "description": "Código de idioma da descrição da vaga.",
+            "example": "en"
+          }
+        }
+      },
+      "ApplyForm": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indica se a recuperação do formulário foi bem-sucedida.",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensagem de erro ou status.",
+            "example": "Form loaded successfully"
+          },
+          "steps": {
+            "type": "array",
+            "description": "Se for um formulário de múltiplas etapas, etapas e perguntas estruturadas.",
+            "items": {
+              "type": "object",
+              "required": [
+                "title",
+                "questions"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "Título da etapa.",
+                  "example": "Contact Info"
+                },
+                "questions": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FormQuestion"
+                  }
+                }
+              }
+            }
+          },
+          "questions": {
+            "type": "array",
+            "description": "Se for um formulário simples, lista todas as perguntas.",
+            "items": {
+              "$ref": "#/components/schemas/FormQuestion"
+            }
+          },
+          "referenceId": {
+            "type": "string",
+            "description": "Token base64 exclusivo gerado pelo cliente representando esta sessão de formulário, necessário para envio.",
+            "example": "YWJjZGVmZ2hpamtsbW5vcA=="
+          },
+          "resumeUploadFormElementUrn": {
+            "type": "string",
+            "description": "URN do campo de upload de currículo, se presente.",
+            "example": "urn:li:fs_easyApplyFormElement:(3827649182,7,fileUpload)"
+          },
+          "resumeUrns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "URNs de documentos de currículo disponíveis no LinkedIn, ordenados por recência de uso.",
+            "example": [
+              "urn:li:fsd_resume:123456789"
+            ]
+          },
+          "optimizedResume": {
+            "type": "string",
+            "description": "Versão de texto otimizada do currículo.",
+            "example": "John Doe - Software Engineer..."
+          },
+          "optimizedResumePdfBase64": {
+            "type": "string",
+            "description": "Payload base64 do PDF de currículo otimizado.",
+            "example": "JVBER..."
+          }
+        }
+      },
+      "FormQuestion": {
+        "type": "object",
+        "required": [
+          "urn",
+          "required",
+          "title",
+          "type"
+        ],
+        "properties": {
+          "urn": {
+            "type": "string",
+            "description": "O identificador URN exclusivo do LinkedIn do elemento/pergunta do formulário.",
+            "example": "urn:li:fs_easyApplyFormElement:(3827649182,12,text)"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Se uma resposta é obrigatória.",
+            "example": true
+          },
+          "title": {
+            "type": "string",
+            "description": "A pergunta em texto ou rótulo apresentado ao usuário.",
+            "example": "How many years of experience do you have with React?"
+          },
+          "type": {
+            "type": "string",
+            "description": "O tipo de pergunta.",
+            "example": "text"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Para opções de múltipla escolha/dropdown, strings de exibição.",
+            "example": [
+              "Yes",
+              "No"
+            ]
+          },
+          "optionUrns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array paralelo de URNs correspondentes às opções.",
+            "example": [
+              "urn:li:fs_easyApplyFormElementOption:1",
+              "urn:li:fs_easyApplyFormElementOption:2"
+            ]
+          },
+          "optionEnumStrings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Array paralelo de strings enum brutas para opções.",
+            "example": [
+              "YES",
+              "NO"
+            ]
+          },
+          "suggestedAnswer": {
+            "type": "string",
+            "description": "Resposta sugerida ou gerada por IA.",
+            "example": "Yes"
+          },
+          "prefilledValue": {
+            "type": "string",
+            "description": "Valor de resposta pré-preenchido se analisado do LinkedIn.",
+            "example": "John Doe"
+          }
+        }
+      },
+      "ApplySubmissionResult": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indica se a candidatura foi enviada com sucesso.",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Detalhe de mensagem de status ou erro.",
+            "example": "Application submitted successfully"
+          }
+        }
+      },
+      "CreatePostResult": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Se a postagem foi criada com sucesso.",
+            "example": true
+          },
+          "postId": {
+            "type": "string",
+            "description": "O URN/ID de compartilhamento da postagem criada.",
+            "example": "7209384729"
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalhes do erro se a criação falhou.",
+            "example": "Invalid cookies"
+          }
+        }
+      },
+      "DeletePostResult": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Se a exclusão foi bem-sucedida.",
+            "example": true
+          },
+          "error": {
+            "type": "string",
+            "description": "Detalhes do erro caso a exclusão tenha falhado.",
+            "example": "Post not found"
+          }
+        }
+      },
+      "ProfileInfo": {
+        "type": "object",
+        "required": [
+          "success",
+          "profileId",
+          "name",
+          "headline",
+          "photoUrl",
+          "about",
+          "experiences",
+          "education"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indica se a obtenção da identidade foi bem-sucedida.",
+            "example": true
+          },
+          "profileId": {
+            "type": "string",
+            "description": "O ID URN do membro alvo.",
+            "example": "ACoAAB..."
+          },
+          "name": {
+            "type": "string",
+            "description": "O nome completo do usuário.",
+            "example": "John Doe"
+          },
+          "headline": {
+            "type": "string",
+            "description": "O título do usuário.",
+            "example": "Senior Software Engineer"
+          },
+          "photoUrl": {
+            "type": "string",
+            "description": "A URL da foto de perfil do usuário.",
+            "example": "https://media.licdn.com/dms/image/..."
+          },
+          "about": {
+            "type": "string",
+            "description": "A descrição 'Sobre' do usuário extraída do PDF do perfil.",
+            "example": "Passionate engineer with experience in React and Node..."
+          },
+          "experiences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkExperience"
+            }
+          },
+          "education": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Education"
+            }
+          }
+        }
+      },
+      "WorkExperience": {
+        "type": "object",
+        "required": [
+          "company",
+          "role",
+          "duration",
+          "description"
+        ],
+        "properties": {
+          "company": {
+            "type": "string",
+            "description": "O nome da empresa.",
+            "example": "Google"
+          },
+          "role": {
+            "type": "string",
+            "description": "O cargo/função exercida.",
+            "example": "Senior Software Engineer"
+          },
+          "duration": {
+            "type": "string",
+            "description": "A duração do emprego.",
+            "example": "Jan 2020 - Present"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição de responsabilidades e conquistas.",
+            "example": "Led development of core front-end applications..."
+          }
+        }
+      },
+      "Education": {
+        "type": "object",
+        "required": [
+          "institution",
+          "degree",
+          "duration"
+        ],
+        "properties": {
+          "institution": {
+            "type": "string",
+            "description": "O nome da escola/universidade.",
+            "example": "Stanford University"
+          },
+          "degree": {
+            "type": "string",
+            "description": "O grau obtido.",
+            "example": "B.S. Computer Science"
+          },
+          "duration": {
+            "type": "string",
+            "description": "A duração dos estudos.",
+            "example": "2016 - 2020"
+          }
+        }
+      },
+      "ResumePdfResult": {
+        "type": "object",
+        "required": [
+          "success",
+          "text",
+          "pdfBase64"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Se a recuperação e análise do PDF foi bem-sucedida.",
+            "example": true
+          },
+          "text": {
+            "type": "string",
+            "description": "O texto completo extraído do arquivo PDF.",
+            "example": "John Doe Resume..."
+          },
+          "pdfBase64": {
+            "type": "string",
+            "description": "A representação codificada em base64 do arquivo PDF.",
+            "example": "JVBER..."
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Jobs",
+      "description": "Operações relacionadas a vagas de emprego com candidatura fácil do LinkedIn"
+    },
+    {
+      "name": "Posts",
+      "description": "Operações relacionadas à publicação e gerenciamento de postagens"
+    },
+    {
+      "name": "Profile",
+      "description": "Operações relacionadas à análise e recuperação de informações de perfil do usuário"
+    }
+  ],
+  "security": [
+    {
+      "LinkedInCookie": [],
+      "LinkedInCsrf": []
+    }
+  ],
+  "paths": {
+    "/api/profile/info": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "operationId": "getProfileInfo",
+        "summary": "Recuperar informações do perfil",
+        "description": "Baixa o resumo do perfil do membro em formato PDF diretamente do LinkedIn, analisa o fluxo de texto e extrai informações estruturadas incluindo experiências profissionais, descrições biográficas e detalhes de formação educacional em uma hierarquia JSON organizada.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Informações do perfil obtidas com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileInfo"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/api/profile/resume-pdf": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "operationId": "getResumePdf",
+        "summary": "Recuperar PDF do currículo",
+        "description": "Gera e baixa o PDF do currículo do usuário do LinkedIn. Retorna o payload de texto bruto junto com uma representação codificada em base64 do arquivo PDF.\n\n### Parâmetros de Query\n- `profileId` (string, obrigatório): O ID URN do membro alvo no LinkedIn (ex.: `ACoAAB...`).\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "profileId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID URN do perfil/membro do LinkedIn"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF baixado e analisado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumePdfResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/api/posts": {
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "createPost",
+        "summary": "Criar uma publicação no LinkedIn",
+        "description": "Publica uma postagem de texto no seu feed do LinkedIn. Suporta anexos opcionais como imagens, artigos ou documentos PDF.\n\n> [!IMPORTANT]\n> Para publicações contendo imagens ou arquivos de documento, você deve primeiro fazer o upload da mídia no LinkedIn e obter seu URN usando os endpoints padrão de upload de mídia do LinkedIn, depois passar o URN em `mediaUrn`.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "Conteúdo de texto principal da publicação"
+                  },
+                  "mediaUrn": {
+                    "type": "string",
+                    "description": "URN da imagem ou mídia de artigo (opcional)"
+                  },
+                  "mediaCategory": {
+                    "type": "string",
+                    "enum": [
+                      "IMAGE",
+                      "DOCUMENT",
+                      "ARTICLE"
+                    ],
+                    "description": "Tipo de categoria da mídia (opcional)"
+                  },
+                  "documentSharingTitle": {
+                    "type": "string",
+                    "description": "Título do documento compartilhado (opcional)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Publicação publicada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePostResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/api/posts/{id}": {
+      "delete": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "deletePost",
+        "summary": "Excluir uma publicação",
+        "description": "Exclui uma publicação específica pelo seu ID de compartilhamento do LinkedIn.\n\n### Parâmetros de Path\n- `id` (string, obrigatório): O identificador URN de compartilhamento único da publicação.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID de compartilhamento da publicação do LinkedIn"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Publicação excluída com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletePostResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/api/jobs": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "listJobs",
+        "summary": "Listar vagas com candidatura fácil",
+        "description": "Recupera uma lista de vagas com candidatura fácil do LinkedIn que correspondem às palavras-chave e filtros.\n\n### Parâmetros de Query\n- `keywords` (string, opcional): Palavras-chave de cargo ou habilidade (ex.: `React`, `Node.js`).\n- `remote` (boolean, opcional): Se `true`, filtra por posições remotas.\n- `past24h` (boolean, opcional): Se `true`, restringe os resultados da busca a vagas publicadas nas últimas 24 horas.\n\n> [!TIP]\n> Para melhor desempenho e precisão na busca, sempre especifique `keywords`.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "keywords",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filtro de palavra-chave (ex.: \"React\")"
+          },
+          {
+            "in": "query",
+            "name": "remote",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filtrar por posições remotas"
+          },
+          {
+            "in": "query",
+            "name": "past24h",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filtrar por vagas publicadas nas últimas 24h"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de vagas recuperada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Job"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado / credenciais inválidas"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/api/jobs/{id}": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getJobDetail",
+        "summary": "Recuperar detalhes da vaga",
+        "description": "Obtém informações detalhadas de uma vaga específica do LinkedIn pelo seu ID único de vaga.\n\n### Parâmetros de Path\n- `id` (string, obrigatório): O ID único da vaga do LinkedIn.\n\n### Conteúdo da Resposta\nRetorna o título da vaga, nome da empresa, localização e o texto completo da descrição da vaga, que é analisado para extrair os requisitos principais.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID da vaga do LinkedIn"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Detalhes da vaga obtidos com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/api/jobs/{id}/apply-form": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getApplyForm",
+        "summary": "Obter formulário de candidatura",
+        "description": "Obtém as perguntas estruturadas em múltiplas etapas do formulário para uma vaga LinkedIn Easy Apply.\n\n### Parâmetros de Path\n- `id` (string, obrigatório): O ID único da vaga do LinkedIn.\n\n> [!IMPORTANT]\n> Este endpoint analisa os campos brutos do formulário (caixas de texto, menus suspensos, botões de opção) e retorna seus identificadores URN. Esses URNs são necessários ao enviar respostas através do endpoint **Enviar formulário de candidatura**.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID da vaga do LinkedIn"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Formulário obtido com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplyForm"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    },
+    "/api/jobs/{id}/apply": {
+      "post": {
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "submitApplication",
+        "summary": "Enviar formulário de candidatura",
+        "description": "Envia respostas do formulário Easy Apply e uploads de arquivos para uma vaga.\n\n### Propriedades do Corpo da Requisição\n- `formValues` (object, obrigatório): Um mapa simples de identificadores URN em string para valores de resposta (ex.: `{\"urn:li:fs_easyApplyFormElement:123456\": \"Sim\"}`).\n- `referenceId` (string, opcional): O ID de referência do formulário retornado pelo endpoint de obtenção do formulário de candidatura.\n- `resumeUrn` (string, opcional): O URN do LinkedIn do documento de currículo carregado para anexar a esta candidatura.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "ID da vaga do LinkedIn"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "formValues"
+                ],
+                "properties": {
+                  "formValues": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Mapa simples de URN para valor de resposta em string"
+                  },
+                  "formResponses": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "Respostas estruturadas explícitas (opcional)"
+                  },
+                  "referenceId": {
+                    "type": "string",
+                    "description": "ID de referência do formulário do endpoint GET form"
+                  },
+                  "fileUploadResponses": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "Entradas explícitas de upload de arquivo (opcional)"
+                  },
+                  "resumeUrn": {
+                    "type": "string",
+                    "description": "URN do currículo carregado (atalho opcional)"
+                  },
+                  "resumeUploadFormElementUrn": {
+                    "type": "string",
+                    "description": "URN do elemento de formulário do currículo (atalho opcional)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Candidatura enviada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplySubmissionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requisição inválida"
+          },
+          "401": {
+            "description": "Não autorizado"
+          },
+          "500": {
+            "description": "Erro interno do servidor"
+          }
+        }
+      }
+    }
+  }
+}
