@@ -145,7 +145,75 @@ export const translations = {
         },
       },
     },
-  },
+    dashboard: {
+        nav: {
+          searchPlaceholder: "Pesquisar vagas, credenciais, logs...",
+          devMode: "Modo Dev: ATIVO",
+          jobs: "Vagas",
+          logs: "Logs de Fila",
+          publisher: "Publicador"
+        },
+        syncCenter: {
+          title: "Central de Sincronização",
+          subtitle: "Status de Autenticação",
+          cookieStatus: "Cookie li_at: Sincronizado",
+          apiStatus: "API Voyager: Conectado",
+          dbStatus: "SQLite DB: Pronto",
+          metricsTitle: "Métricas da Sessão",
+          appliedCount: "Candidaturas Executadas",
+          successRate: "Taxa de Sucesso",
+          tokensSaved: "Tokens de IA Economizados",
+          searchParams: "Parâmetros de Busca",
+          keywords: "Palavras-chave",
+          location: "Localização",
+          applyMode: "Modo IA"
+        },
+        feed: {
+          title: "Feed de Automação de Vagas",
+          runBtn: "Testar Loop de Candidatura",
+          solving: "IA Respondendo Questionário...",
+          tailoring: "Personalizando Currículo com IA...",
+          submitted: "Candidatura Enviada!",
+          match: "Match por IA",
+          searchBoxText: "Digite uma vaga para buscar...",
+          mockJobs: {
+            job1: {
+              title: "Engenheiro de Software Senior (Next.js)",
+              company: "Vercel Inc.",
+              q1: "Quantos anos de experiência você tem com React/Next.js?",
+              a1: "5 anos de experiência comprovada liderando projetos.",
+              q2: "Descreva sua experiência com React Server Components.",
+              a2: "Migrei com sucesso sistemas legados para RSCs, reduzindo TTFB em 40%."
+            },
+            job2: {
+              title: "Desenvolvedor Core TypeScript",
+              company: "OpenAI",
+              q1: "Você tem experiência trabalhando com APIs de LLM?",
+              a1: "Sim, implementei integrações com modelos GPT-4 e Gemini."
+            },
+            job3: {
+              title: "Engenheiro Full Stack React & Node",
+              company: "Stripe",
+              q1: "Qual sua experiência com processamento de filas e BullMQ?",
+              a1: "Trabalhei extensivamente com Redis e BullMQ para jobs assíncronos."
+            }
+          }
+        },
+        publisher: {
+          title: "Engine de Publicações",
+          activeQueue: "Fila Ativa: BullMQ",
+          btnText: "Gerar Carrossel PDF",
+          generating: "Compilando PDF...",
+          ready: "Pronto para Agendamento",
+          published: "Publicado na Fila",
+          carousels: {
+            c1: "Guia de Sobrevivência RSC.pdf",
+            c2: "Dicas de Tailwind v4.pdf"
+          },
+          microservices: "Rede de Microsserviços"
+        }
+      }
+    },
   en: {
     hero: {
       badge: 'the full-stack automation toolchain you love.',
@@ -291,8 +359,76 @@ export const translations = {
         },
       },
     },
-  },
-} as const;
+    dashboard: {
+        nav: {
+          searchPlaceholder: "Search jobs, credentials, logs...",
+          devMode: "Dev Mode: ACTIVE",
+          jobs: "Jobs",
+          logs: "Queue Logs",
+          publisher: "Publisher"
+        },
+        syncCenter: {
+          title: "Sync Center",
+          subtitle: "Authentication Status",
+          cookieStatus: "li_at Cookie: Synced",
+          apiStatus: "Voyager API: Connected",
+          dbStatus: "SQLite DB: Ready",
+          metricsTitle: "Session Metrics",
+          appliedCount: "Easy Apply Submissions",
+          successRate: "Success Rate",
+          tokensSaved: "AI Tokens Saved",
+          searchParams: "Search Parameters",
+          keywords: "Keywords",
+          location: "Location",
+          applyMode: "AI Mode"
+        },
+        feed: {
+          title: "Job Automation Feed",
+          runBtn: "Test Auto-Apply Loop",
+          solving: "AI Answering Questionnaire...",
+          tailoring: "Tailoring Resume with AI...",
+          submitted: "Application Submitted!",
+          match: "AI Match Score",
+          searchBoxText: "Search for a job to simulate...",
+          mockJobs: {
+            job1: {
+              title: "Senior Software Engineer (Next.js)",
+              company: "Vercel Inc.",
+              q1: "How many years of experience do you have with React/Next.js?",
+              a1: "5 years of proven experience leading frontend projects.",
+              q2: "Describe your experience with React Server Components.",
+              a2: "Successfully migrated legacy systems to RSCs, improving page load by 40%."
+            },
+            job2: {
+              title: "TypeScript Core Developer",
+              company: "OpenAI",
+              q1: "Do you have experience working with LLM APIs?",
+              a1: "Yes, integrated GPT-4 and Gemini models into production queues."
+            },
+            job3: {
+              title: "Full Stack Engineer (React & Node)",
+              company: "Stripe",
+              q1: "What is your experience with background workers & BullMQ?",
+              a1: "Extensively worked with Redis and BullMQ queues to process async jobs."
+            }
+          }
+        },
+        publisher: {
+          title: "Publisher Engine",
+          activeQueue: "Active Queue: BullMQ",
+          btnText: "Generate PDF Carousel",
+          generating: "Compiling PDF...",
+          ready: "Ready for Queue",
+          published: "Published to Queue",
+          carousels: {
+            c1: "RSC Survival Guide.pdf",
+            c2: "Tailwind v4 Tips.pdf"
+          },
+          microservices: "Microservices Network"
+        }
+      }
+    }
+  } as const;
 
 export type Locale = keyof typeof translations;
 export const defaultLocale: Locale = 'pt-BR';
