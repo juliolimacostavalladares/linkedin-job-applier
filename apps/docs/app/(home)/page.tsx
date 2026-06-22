@@ -331,12 +331,7 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <section className="relative w-full px-6 pt-24 pb-20 overflow-hidden">
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          {/* Radial blobs matching the Fumadocs references */}
-          <div className="absolute top-[-10%] right-[-5%] w-[550px] h-[550px] bg-emerald-500/10 rounded-full blur-[100px]" />
-          <div className="absolute top-[20%] right-[10%] w-[450px] h-[450px] bg-orange-500/12 rounded-full blur-[110px]" />
-          <div className="absolute top-[5%] left-[5%] w-[350px] h-[350px] bg-brand-lime/5 rounded-full blur-[90px]" />
-        </div>
+        <div className="absolute inset-0 z-0 pointer-events-none" />
 
         <div className="relative z-10 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
           {/* Left Hero Column */}
