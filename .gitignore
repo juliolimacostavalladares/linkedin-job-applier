@@ -48,3 +48,6 @@ apps/linkedin-job-backend/uploads/
 # Generated Prisma Clients
 **/src/generated/
 
+# Reference Docs
+fumadoc/
+

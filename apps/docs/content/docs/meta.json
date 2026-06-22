@@ -1,0 +1,19 @@
+{
+  "title": "LinkedIn Toolchain",
+  "pages": [
+    "index",
+    "---Getting Started---",
+    "quickstart",
+    "architecture",
+    "extension",
+    "security",
+    "---LinkedIn Gateway---",
+    "gateway",
+    "---Job Backend---",
+    "job-backend",
+    "---Publisher Backend---",
+    "publisher-backend",
+    "---Shared Package---",
+    "shared"
+  ]
+}

@@ -1,7 +1,7 @@
 import { logger } from '../../utils/logger';
 import { writeFileSync } from 'fs';
 import { getHeaders, handleResponseError } from '../http/linkedinHttpClient';
-import { parseJobs, parseJobsFromExtension } from '../parsers/jobsParser';
+import { parseJobs, parseJobsFromExtension } from './jobsParser';
 import type { LinkedInResponse, Job, JobDetail } from '@linkedin-job-applier/shared';
 import type { LinkedInJobDetailRaw, LinkedInIncludedItem } from '../../types/linkedin';
 

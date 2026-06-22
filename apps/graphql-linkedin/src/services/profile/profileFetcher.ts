@@ -2,7 +2,7 @@ import pdfParse from 'pdf-parse';
 import { logger } from '../../utils/logger';
 import { getHeaders, handleResponseError } from '../http/linkedinHttpClient';
 import { fetchResumePdf } from './pdfFetcher';
-import { parsePdfText } from '../parsers/pdfTextParser';
+import { parsePdfText } from './pdfTextParser';
 import type { WorkExperience, Education } from '@linkedin-job-applier/shared';
 import type { LinkedInGraphQLResponse } from '../../types/linkedin';
 

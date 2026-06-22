@@ -1,0 +1,1356 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LinkedIn Publisher Backend API",
+    "version": "1.0.0",
+    "description": "Content creation and publishing platform for LinkedIn posts, carousels, and AI-generated content."
+  },
+  "components": {
+    "securitySchemes": {
+      "LinkedInCookie": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-linkedin-cookie",
+        "description": "LinkedIn session cookie (contains li_at, JSESSIONID, etc.)"
+      },
+      "LinkedInCsrf": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-linkedin-csrf",
+        "description": "LinkedIn CSRF token (must match JSESSIONID from cookie)"
+      }
+    },
+    "schemas": {
+      "Job": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "companyInfo"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier of the job posting on LinkedIn.",
+            "example": "3827649182"
+          },
+          "title": {
+            "type": "string",
+            "description": "Job title.",
+            "example": "Senior React Developer"
+          },
+          "companyInfo": {
+            "type": "string",
+            "description": "Company name or brief metadata.",
+            "example": "Google"
+          },
+          "companyLogo": {
+            "type": "string",
+            "description": "URL of the company logo image (if available).",
+            "example": "https://media.licdn.com/dms/image/..."
+          },
+          "applied": {
+            "type": "boolean",
+            "description": "Whether the user has already applied to this job.",
+            "example": false
+          },
+          "appliedThroughSystem": {
+            "type": "boolean",
+            "description": "Whether the user applied using this gateway service.",
+            "example": false
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "pt"
+            ],
+            "description": "Language code of the job posting.",
+            "example": "en"
+          }
+        }
+      },
+      "JobDetail": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "location",
+          "url",
+          "employmentStatus",
+          "companyName"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique LinkedIn job posting ID.",
+            "example": "3827649182"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the position.",
+            "example": "Senior React Developer"
+          },
+          "description": {
+            "type": "string",
+            "description": "Full description text of the job in HTML format.",
+            "example": "We are looking for a Senior React Developer..."
+          },
+          "location": {
+            "type": "string",
+            "description": "Formatted job location.",
+            "example": "San Francisco, CA (Hybrid)"
+          },
+          "url": {
+            "type": "string",
+            "description": "Direct URL to view the job posting on LinkedIn.",
+            "example": "https://www.linkedin.com/jobs/view/3827649182"
+          },
+          "employmentStatus": {
+            "type": "string",
+            "description": "Employment type classification.",
+            "example": "FULL_TIME"
+          },
+          "companyName": {
+            "type": "string",
+            "description": "Name of the hiring company.",
+            "example": "Google"
+          },
+          "companyLogo": {
+            "type": "string",
+            "description": "URL of the hiring company logo.",
+            "example": "https://media.licdn.com/dms/image/..."
+          },
+          "applyForm": {
+            "$ref": "#/components/schemas/ApplyForm"
+          },
+          "applied": {
+            "type": "boolean",
+            "description": "Whether the user has already applied.",
+            "example": false
+          },
+          "appliedThroughSystem": {
+            "type": "boolean",
+            "description": "Whether applied using this gateway service.",
+            "example": false
+          },
+          "appliedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp of application (if applied through system).",
+            "example": "2026-06-21T18:00:00.000Z"
+          },
+          "appliedOnLinkedIn": {
+            "type": "boolean",
+            "description": "Whether LinkedIn records show an application.",
+            "example": false
+          },
+          "viewedByJobPosterAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "ISO timestamp when the job poster viewed the application.",
+            "example": null
+          },
+          "closed": {
+            "type": "boolean",
+            "description": "Whether the job posting is closed for applications.",
+            "example": false
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "pt"
+            ],
+            "description": "Language code of the job description.",
+            "example": "en"
+          }
+        }
+      },
+      "ApplyForm": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates whether the form retrieval was successful.",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Error or status message.",
+            "example": "Form loaded successfully"
+          },
+          "steps": {
+            "type": "array",
+            "description": "If a multi-step form, structured steps and questions.",
+            "items": {
+              "type": "object",
+              "required": [
+                "title",
+                "questions"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "Title of the step.",
+                  "example": "Contact Info"
+                },
+                "questions": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FormQuestion"
+                  }
+                }
+              }
+            }
+          },
+          "questions": {
+            "type": "array",
+            "description": "If a flat form, lists all questions.",
+            "items": {
+              "$ref": "#/components/schemas/FormQuestion"
+            }
+          },
+          "referenceId": {
+            "type": "string",
+            "description": "Unique Client-generated base64 token representing this form session, needed for submission.",
+            "example": "YWJjZGVmZ2hpamtsbW5vcA=="
+          },
+          "resumeUploadFormElementUrn": {
+            "type": "string",
+            "description": "URN of the resume file upload field, if present.",
+            "example": "urn:li:fs_easyApplyFormElement:(3827649182,7,fileUpload)"
+          },
+          "resumeUrns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Available resume document URNs on LinkedIn, sorted by usage recency.",
+            "example": [
+              "urn:li:fsd_resume:123456789"
+            ]
+          },
+          "optimizedResume": {
+            "type": "string",
+            "description": "Optimized text version of resume.",
+            "example": "John Doe - Software Engineer..."
+          },
+          "optimizedResumePdfBase64": {
+            "type": "string",
+            "description": "Base64 payload of optimized resume PDF.",
+            "example": "JVBER..."
+          }
+        }
+      },
+      "FormQuestion": {
+        "type": "object",
+        "required": [
+          "urn",
+          "required",
+          "title",
+          "type"
+        ],
+        "properties": {
+          "urn": {
+            "type": "string",
+            "description": "The unique LinkedIn URN identifier of the form element/question.",
+            "example": "urn:li:fs_easyApplyFormElement:(3827649182,12,text)"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether an answer is mandatory.",
+            "example": true
+          },
+          "title": {
+            "type": "string",
+            "description": "The text question or label presented to the user.",
+            "example": "How many years of experience do you have with React?"
+          },
+          "type": {
+            "type": "string",
+            "description": "The question type.",
+            "example": "text"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "For multiple-choice/dropdown options, display strings.",
+            "example": [
+              "Yes",
+              "No"
+            ]
+          },
+          "optionUrns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Parallel array of URNs matching the options.",
+            "example": [
+              "urn:li:fs_easyApplyFormElementOption:1",
+              "urn:li:fs_easyApplyFormElementOption:2"
+            ]
+          },
+          "optionEnumStrings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Parallel array of raw enum strings for options.",
+            "example": [
+              "YES",
+              "NO"
+            ]
+          },
+          "suggestedAnswer": {
+            "type": "string",
+            "description": "Suggested or AI-generated answer.",
+            "example": "Yes"
+          },
+          "prefilledValue": {
+            "type": "string",
+            "description": "Prefilled answer value if parsed from LinkedIn.",
+            "example": "John Doe"
+          }
+        }
+      },
+      "ApplySubmissionResult": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates if the application was submitted successfully.",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Status or error message detail.",
+            "example": "Application submitted successfully"
+          }
+        }
+      },
+      "CreatePostResult": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the post was successfully created.",
+            "example": true
+          },
+          "postId": {
+            "type": "string",
+            "description": "The sharing URN/ID of the created post.",
+            "example": "7209384729"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error details if creation failed.",
+            "example": "Invalid cookies"
+          }
+        }
+      },
+      "DeletePostResult": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether deletion was successful.",
+            "example": true
+          },
+          "error": {
+            "type": "string",
+            "description": "Error details if deletion failed.",
+            "example": "Post not found"
+          }
+        }
+      },
+      "ProfileInfo": {
+        "type": "object",
+        "required": [
+          "success",
+          "profileId",
+          "name",
+          "headline",
+          "photoUrl",
+          "about",
+          "experiences",
+          "education"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates if identity fetching was successful.",
+            "example": true
+          },
+          "profileId": {
+            "type": "string",
+            "description": "The target member URN ID.",
+            "example": "ACoAAB..."
+          },
+          "name": {
+            "type": "string",
+            "description": "The user's full name.",
+            "example": "John Doe"
+          },
+          "headline": {
+            "type": "string",
+            "description": "The user's headline.",
+            "example": "Senior Software Engineer"
+          },
+          "photoUrl": {
+            "type": "string",
+            "description": "The user's profile photo URL.",
+            "example": "https://media.licdn.com/dms/image/..."
+          },
+          "about": {
+            "type": "string",
+            "description": "The user's 'About' description parsed from the profile PDF.",
+            "example": "Passionate engineer with experience in React and Node..."
+          },
+          "experiences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkExperience"
+            }
+          },
+          "education": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Education"
+            }
+          }
+        }
+      },
+      "WorkExperience": {
+        "type": "object",
+        "required": [
+          "company",
+          "role",
+          "duration",
+          "description"
+        ],
+        "properties": {
+          "company": {
+            "type": "string",
+            "description": "The company name.",
+            "example": "Google"
+          },
+          "role": {
+            "type": "string",
+            "description": "The role/title held.",
+            "example": "Senior Software Engineer"
+          },
+          "duration": {
+            "type": "string",
+            "description": "The duration of employment.",
+            "example": "Jan 2020 - Present"
+          },
+          "description": {
+            "type": "string",
+            "description": "Responsibilities and achievements description.",
+            "example": "Led development of core front-end applications..."
+          }
+        }
+      },
+      "Education": {
+        "type": "object",
+        "required": [
+          "institution",
+          "degree",
+          "duration"
+        ],
+        "properties": {
+          "institution": {
+            "type": "string",
+            "description": "The school/university name.",
+            "example": "Stanford University"
+          },
+          "degree": {
+            "type": "string",
+            "description": "The degree obtained.",
+            "example": "B.S. Computer Science"
+          },
+          "duration": {
+            "type": "string",
+            "description": "The duration of studies.",
+            "example": "2016 - 2020"
+          }
+        }
+      },
+      "ResumePdfResult": {
+        "type": "object",
+        "required": [
+          "success",
+          "text",
+          "pdfBase64"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the PDF retrieval and parsing was successful.",
+            "example": true
+          },
+          "text": {
+            "type": "string",
+            "description": "The full text extracted from the PDF file.",
+            "example": "John Doe Resume..."
+          },
+          "pdfBase64": {
+            "type": "string",
+            "description": "The base64 encoded representation of the PDF file.",
+            "example": "JVBER..."
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Posts",
+      "description": "Post CRUD, publishing, and media upload operations"
+    },
+    {
+      "name": "AI",
+      "description": "AI-powered content generation for posts and carousels"
+    },
+    {
+      "name": "Carousel",
+      "description": "Carousel PDF generation with theme support"
+    },
+    {
+      "name": "Credentials",
+      "description": "LinkedIn session credentials synchronization"
+    },
+    {
+      "name": "Profile",
+      "description": "Profile data retrieval"
+    }
+  ],
+  "paths": {
+    "/api/profile": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "operationId": "getPublisherProfile",
+        "summary": "Get profile data",
+        "description": "Returns the latest synchronized profile from the database including identity, experiences, and education.",
+        "responses": {
+          "200": {
+            "description": "Profile retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "profileId": {
+                      "type": "string",
+                      "example": "ACoAAB..."
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "John Doe"
+                    },
+                    "headline": {
+                      "type": "string",
+                      "example": "Senior Software Engineer"
+                    },
+                    "photoUrl": {
+                      "type": "string"
+                    },
+                    "about": {
+                      "type": "string"
+                    },
+                    "experiences": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "company": {
+                            "type": "string"
+                          },
+                          "role": {
+                            "type": "string"
+                          },
+                          "duration": {
+                            "type": "string"
+                          },
+                          "description": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "education": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "institution": {
+                            "type": "string"
+                          },
+                          "degree": {
+                            "type": "string"
+                          },
+                          "duration": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No profile synced"
+          }
+        }
+      }
+    },
+    "/api/posts/upload-images": {
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "uploadImagesToLinkedIn",
+        "summary": "Upload images to LinkedIn",
+        "description": "Uploads image files to LinkedIn's Ambry CDN and returns media URNs for post attachment.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "images"
+                ],
+                "properties": {
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Image files (max 9, 10MB each)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Images uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "mediaUrn": {
+                      "type": "string",
+                      "description": "Comma-separated media URNs",
+                      "example": "urn:li:share:7209384729,urn:li:share:7209384730"
+                    },
+                    "imageCount": {
+                      "type": "integer",
+                      "example": 2
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "No images provided"
+          },
+          "401": {
+            "description": "LinkedIn credentials not connected"
+          }
+        }
+      }
+    },
+    "/api/posts": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "listPosts",
+        "summary": "List all posts",
+        "description": "Returns all posts stored in the database, ordered by creation date.",
+        "responses": {
+          "200": {
+            "description": "Posts retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "example": "clx1234..."
+                      },
+                      "text": {
+                        "type": "string",
+                        "example": "Excited to share my latest project!"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "draft",
+                          "published",
+                          "scheduled"
+                        ],
+                        "example": "published"
+                      },
+                      "linkedinId": {
+                        "type": "string",
+                        "nullable": true,
+                        "example": "7209384729"
+                      },
+                      "scheduledAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "createPost",
+        "summary": "Create a post",
+        "description": "Creates a new post. If status is 'published', immediately publishes to LinkedIn via the Gateway.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "Post content text",
+                    "example": "Excited to share my latest project!"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "published",
+                      "scheduled"
+                    ],
+                    "description": "Post status, default is draft"
+                  },
+                  "scheduledAt": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "ISO timestamp for scheduled publishing"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "text",
+                      "image",
+                      "document"
+                    ],
+                    "description": "Post type (auto-detected from media)"
+                  },
+                  "images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "Image or PDF files (max 9)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Post created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string"
+                    },
+                    "linkedinId": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "createdAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Text is required"
+          },
+          "401": {
+            "description": "LinkedIn credentials not connected"
+          }
+        }
+      }
+    },
+    "/api/posts/{id}": {
+      "get": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "getPost",
+        "summary": "Get a single post",
+        "description": "Returns a single post by its database ID.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Post database ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Post retrieved successfully"
+          },
+          "404": {
+            "description": "Post not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "updatePost",
+        "summary": "Update a post",
+        "description": "Updates a post's content or status. If transitioning to 'published', sends to LinkedIn.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Post database ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "draft",
+                      "published",
+                      "scheduled"
+                    ]
+                  },
+                  "scheduledAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Post updated successfully"
+          },
+          "404": {
+            "description": "Post not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "deletePost",
+        "summary": "Delete a post",
+        "description": "Deletes a post from the database and from LinkedIn if it was published.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Post database ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Post deleted successfully"
+          },
+          "404": {
+            "description": "Post not found"
+          }
+        }
+      }
+    },
+    "/api/posts/{id}/publish": {
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "publishPost",
+        "summary": "Publish a draft post immediately",
+        "description": "Publishes a draft post to LinkedIn immediately, regardless of its current status.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Post database ID"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mediaUrn": {
+                    "type": "string",
+                    "description": "Pre-uploaded media URN to attach"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Post published successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "example": "published"
+                    },
+                    "linkedinId": {
+                      "type": "string"
+                    },
+                    "publishedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Failed to publish"
+          },
+          "404": {
+            "description": "Post not found"
+          }
+        }
+      }
+    },
+    "/api/credentials/status": {
+      "get": {
+        "tags": [
+          "Credentials"
+        ],
+        "operationId": "getPublisherCredentialsStatus",
+        "summary": "Check credential status",
+        "description": "Returns whether the publisher backend currently stores session credentials and when they were updated.",
+        "responses": {
+          "200": {
+            "description": "Credentials status checked successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "hasCredentials": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "nullable": true,
+                      "example": "2026-06-21T18:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/credentials": {
+      "post": {
+        "tags": [
+          "Credentials"
+        ],
+        "operationId": "savePublisherCredentials",
+        "summary": "Save session credentials",
+        "description": "Receives the LinkedIn session cookies, CSRF tokens, and client environment headers synced from the Chrome extension.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "cookie",
+                  "csrf"
+                ],
+                "properties": {
+                  "cookie": {
+                    "type": "string",
+                    "description": "Full LinkedIn session cookie string",
+                    "example": "li_at=AQED...; JSESSIONID=\"ajax:123456\";"
+                  },
+                  "csrf": {
+                    "type": "string",
+                    "description": "Plain CSRF token extracted from JSESSIONID",
+                    "example": "ajax:123456"
+                  },
+                  "headers": {
+                    "type": "object",
+                    "description": "Client environment headers"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Credentials saved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "example": true
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "updatedAt": {
+                      "type": "string",
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields"
+          }
+        }
+      }
+    },
+    "/api/carousel/generate-pdf": {
+      "post": {
+        "tags": [
+          "Carousel"
+        ],
+        "operationId": "generateCarouselPdf",
+        "summary": "Generate carousel PDF",
+        "description": "Generates a LinkedIn-optimized carousel PDF (1080x1350px) from a slide configuration. Uses Puppeteer to render HTML slides with syntax highlighting.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "slides"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "description": "Carousel title",
+                    "example": "TypeScript Tips"
+                  },
+                  "authorName": {
+                    "type": "string",
+                    "description": "Author name displayed on slides",
+                    "example": "John Doe"
+                  },
+                  "theme": {
+                    "type": "string",
+                    "enum": [
+                      "dark-premium",
+                      "gradient-purple",
+                      "startup-clean",
+                      "bold-yellow",
+                      "warm-creative"
+                    ],
+                    "description": "Visual theme, default is dark-premium"
+                  },
+                  "slides": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "title",
+                        "content"
+                      ],
+                      "properties": {
+                        "title": {
+                          "type": "string"
+                        },
+                        "content": {
+                          "type": "string"
+                        },
+                        "code": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "description": "Array of slide objects"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PDF generated successfully",
+            "content": {
+              "application/pdf": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Slides are required"
+          }
+        }
+      }
+    },
+    "/api/ai/generate-post": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "operationId": "generatePost",
+        "summary": "Generate LinkedIn post content",
+        "description": "Uses Gemini to generate LinkedIn post content based on a prompt and tone.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "prompt"
+                ],
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "Topic or idea for the post",
+                    "example": "React Server Components best practices"
+                  },
+                  "tone": {
+                    "type": "string",
+                    "enum": [
+                      "professional",
+                      "casual",
+                      "technical",
+                      "inspirational"
+                    ],
+                    "description": "Content tone, default is professional"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Post content generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "text": {
+                      "type": "string",
+                      "description": "Generated post text"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Prompt is required"
+          }
+        }
+      }
+    },
+    "/api/ai/generate-carousel": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "operationId": "generateCarousel",
+        "summary": "Generate carousel slide structure",
+        "description": "Uses Gemini to generate a carousel JSON structure from a prompt. The output can be passed to the Generate PDF endpoint.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "prompt"
+                ],
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "Topic for the carousel",
+                    "example": "10 TypeScript tips every developer should know"
+                  },
+                  "tone": {
+                    "type": "string",
+                    "enum": [
+                      "professional",
+                      "casual",
+                      "technical",
+                      "inspirational"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Carousel structure generated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "authorName": {
+                      "type": "string"
+                    },
+                    "slides": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string"
+                          },
+                          "content": {
+                            "type": "string"
+                          },
+                          "code": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Prompt is required"
+          }
+        }
+      }
+    }
+  }
+}

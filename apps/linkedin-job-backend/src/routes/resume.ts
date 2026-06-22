@@ -8,6 +8,38 @@ import { logger } from '../utils/logger';
 const router = Router();
 
 // POST /api/resume/from-linkedin
+/**
+ * @openapi
+ * /api/resume/from-linkedin:
+ *   post:
+ *     tags:
+ *       - Resume
+ *     operationId: importProfilePdfFromLinkedin
+ *     summary: Import profile PDF from LinkedIn
+ *     description: Downloads the member's profile summary in PDF format, parses the text stream, and caches the resume in the SQLite database.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - profileId
+ *             properties:
+ *               profileId:
+ *                 type: string
+ *                 description: The unique member identifier on LinkedIn.
+ *                 example: "ACoAAB..."
+ *     responses:
+ *       200:
+ *         description: LinkedIn profile imported and parsed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ResumePdfResult'
+ *       401:
+ *         description: LinkedIn session credentials missing
+ */
 router.post('/from-linkedin', async (req, res, next) => {
   try {
     const { profileId } = req.body;
@@ -67,6 +99,56 @@ interface EducationInput {
 }
 
 // POST /api/resume/sync-profile-data - Save synced profile data directly from Extension
+/**
+ * @openapi
+ * /api/resume/sync-profile-data:
+ *   post:
+ *     tags:
+ *       - Resume
+ *     operationId: syncProfileDataFromChromeExtension
+ *     summary: Sync profile data from Chrome extension
+ *     description: Directly receives and persists structured user identity, experiences, and education sync'd by the Chrome extension.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - profileId
+ *               - name
+ *             properties:
+ *               profileId:
+ *                 type: string
+ *                 example: "ACoAAB..."
+ *               name:
+ *                 type: string
+ *                 example: "John Doe"
+ *               headline:
+ *                 type: string
+ *                 example: "Senior Software Engineer"
+ *               photoUrl:
+ *                 type: string
+ *                 example: "https://media.licdn.com/..."
+ *               about:
+ *                 type: string
+ *                 example: "Passionate developer..."
+ *               experiences:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/WorkExperience'
+ *               education:
+ *                 type: array
+ *                 items:
+ *                   $ref: '#/components/schemas/Education'
+ *     responses:
+ *       200:
+ *         description: Profile data saved and structured successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProfileInfo'
+ */
 router.post('/sync-profile-data', async (req, res, next) => {
   try {
     const { profileId, name, headline, photoUrl, about, experiences, education } = req.body;
@@ -124,6 +206,48 @@ router.post('/sync-profile-data', async (req, res, next) => {
 });
 
 // POST /api/resume - Save resume text directly
+/**
+ * @openapi
+ * /api/resume:
+ *   post:
+ *     tags:
+ *       - Resume
+ *     operationId: saveRawResumeText
+ *     summary: Save raw resume text
+ *     description: Directly upserts raw resume text details.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - text
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 description: Plain text content of the resume.
+ *                 example: "John Doe Resume content..."
+ *               filename:
+ *                 type: string
+ *                 example: "Curriculo_LinkedIn.pdf"
+ *               profileId:
+ *                 type: string
+ *                 example: "ACoAAB..."
+ *     responses:
+ *       200:
+ *         description: Resume text saved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Missing resume text
+ */
 router.post('/', async (req, res, next) => {
   try {
     const { text, filename, profileId } = req.body;
@@ -138,6 +262,34 @@ router.post('/', async (req, res, next) => {
 });
 
 // GET /api/resume/latest - Get latest resume
+/**
+ * @openapi
+ * /api/resume/latest:
+ *   get:
+ *     tags:
+ *       - Resume
+ *     operationId: retrieveLatestResume
+ *     summary: Retrieve latest resume
+ *     description: Returns the latest cached resume model from the SQLite database.
+ *     responses:
+ *       200:
+ *         description: Latest resume retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 resume:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     text:
+ *                       type: string
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ */
 router.get('/latest', async (req, res, next) => {
   try {
     const resume = await resumeService.getLatest();
@@ -148,6 +300,31 @@ router.get('/latest', async (req, res, next) => {
 });
 
 // GET /api/resume/profile - Get structured user profile and experiences
+/**
+ * @openapi
+ * /api/resume/profile:
+ *   get:
+ *     tags:
+ *       - Resume
+ *     operationId: retrieveStructuredProfile
+ *     summary: Retrieve structured profile
+ *     description: Returns the candidates full identity, biography, experience log, and study log. Can optionally sync from LinkedIn in real-time.
+ *     parameters:
+ *       - in: query
+ *         name: sync
+ *         schema:
+ *           type: boolean
+ *         description: If true, triggers a fresh real-time sync with LinkedIn.
+ *     responses:
+ *       200:
+ *         description: Profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ProfileInfo'
+ *       401:
+ *         description: Credentials missing
+ */
 router.get('/profile', async (req, res, next) => {
   try {
     const { sync } = req.query;

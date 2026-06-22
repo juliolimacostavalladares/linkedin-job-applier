@@ -3,7 +3,63 @@ import { prisma } from '../lib/prisma';
 
 const router = Router();
 
-// GET /api/profile
+/**
+ * @openapi
+ * /api/profile:
+ *   get:
+ *     tags:
+ *       - Profile
+ *     operationId: getPublisherProfile
+ *     summary: Get profile data
+ *     description: Returns the latest synchronized profile from the database including identity, experiences, and education.
+ *     responses:
+ *       200:
+ *         description: Profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 profileId:
+ *                   type: string
+ *                   example: "ACoAAB..."
+ *                 name:
+ *                   type: string
+ *                   example: "John Doe"
+ *                 headline:
+ *                   type: string
+ *                   example: "Senior Software Engineer"
+ *                 photoUrl:
+ *                   type: string
+ *                 about:
+ *                   type: string
+ *                 experiences:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       company:
+ *                         type: string
+ *                       role:
+ *                         type: string
+ *                       duration:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                 education:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       institution:
+ *                         type: string
+ *                       degree:
+ *                         type: string
+ *                       duration:
+ *                         type: string
+ *       404:
+ *         description: No profile synced
+ */
 router.get('/', async (req, res) => {
   try {
     const profile = await prisma.resume.findFirst({

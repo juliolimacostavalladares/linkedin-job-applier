@@ -1,0 +1,995 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "LinkedIn Gateway Service API",
+    "version": "1.0.0",
+    "description": "REST and GraphQL gateway service to interface with LinkedIn Voyager APIs securely."
+  },
+  "components": {
+    "securitySchemes": {
+      "LinkedInCookie": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-linkedin-cookie",
+        "description": "LinkedIn session cookie (contains li_at, JSESSIONID, etc.)"
+      },
+      "LinkedInCsrf": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-linkedin-csrf",
+        "description": "LinkedIn CSRF token (must match JSESSIONID from cookie)"
+      }
+    },
+    "schemas": {
+      "Job": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "companyInfo"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique identifier of the job posting on LinkedIn.",
+            "example": "3827649182"
+          },
+          "title": {
+            "type": "string",
+            "description": "Job title.",
+            "example": "Senior React Developer"
+          },
+          "companyInfo": {
+            "type": "string",
+            "description": "Company name or brief metadata.",
+            "example": "Google"
+          },
+          "companyLogo": {
+            "type": "string",
+            "description": "URL of the company logo image (if available).",
+            "example": "https://media.licdn.com/dms/image/..."
+          },
+          "applied": {
+            "type": "boolean",
+            "description": "Whether the user has already applied to this job.",
+            "example": false
+          },
+          "appliedThroughSystem": {
+            "type": "boolean",
+            "description": "Whether the user applied using this gateway service.",
+            "example": false
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "pt"
+            ],
+            "description": "Language code of the job posting.",
+            "example": "en"
+          }
+        }
+      },
+      "JobDetail": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "location",
+          "url",
+          "employmentStatus",
+          "companyName"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique LinkedIn job posting ID.",
+            "example": "3827649182"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the position.",
+            "example": "Senior React Developer"
+          },
+          "description": {
+            "type": "string",
+            "description": "Full description text of the job in HTML format.",
+            "example": "We are looking for a Senior React Developer..."
+          },
+          "location": {
+            "type": "string",
+            "description": "Formatted job location.",
+            "example": "San Francisco, CA (Hybrid)"
+          },
+          "url": {
+            "type": "string",
+            "description": "Direct URL to view the job posting on LinkedIn.",
+            "example": "https://www.linkedin.com/jobs/view/3827649182"
+          },
+          "employmentStatus": {
+            "type": "string",
+            "description": "Employment type classification.",
+            "example": "FULL_TIME"
+          },
+          "companyName": {
+            "type": "string",
+            "description": "Name of the hiring company.",
+            "example": "Google"
+          },
+          "companyLogo": {
+            "type": "string",
+            "description": "URL of the hiring company logo.",
+            "example": "https://media.licdn.com/dms/image/..."
+          },
+          "applyForm": {
+            "$ref": "#/components/schemas/ApplyForm"
+          },
+          "applied": {
+            "type": "boolean",
+            "description": "Whether the user has already applied.",
+            "example": false
+          },
+          "appliedThroughSystem": {
+            "type": "boolean",
+            "description": "Whether applied using this gateway service.",
+            "example": false
+          },
+          "appliedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "ISO timestamp of application (if applied through system).",
+            "example": "2026-06-21T18:00:00.000Z"
+          },
+          "appliedOnLinkedIn": {
+            "type": "boolean",
+            "description": "Whether LinkedIn records show an application.",
+            "example": false
+          },
+          "viewedByJobPosterAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "ISO timestamp when the job poster viewed the application.",
+            "example": null
+          },
+          "closed": {
+            "type": "boolean",
+            "description": "Whether the job posting is closed for applications.",
+            "example": false
+          },
+          "language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "pt"
+            ],
+            "description": "Language code of the job description.",
+            "example": "en"
+          }
+        }
+      },
+      "ApplyForm": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates whether the form retrieval was successful.",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Error or status message.",
+            "example": "Form loaded successfully"
+          },
+          "steps": {
+            "type": "array",
+            "description": "If a multi-step form, structured steps and questions.",
+            "items": {
+              "type": "object",
+              "required": [
+                "title",
+                "questions"
+              ],
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "Title of the step.",
+                  "example": "Contact Info"
+                },
+                "questions": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FormQuestion"
+                  }
+                }
+              }
+            }
+          },
+          "questions": {
+            "type": "array",
+            "description": "If a flat form, lists all questions.",
+            "items": {
+              "$ref": "#/components/schemas/FormQuestion"
+            }
+          },
+          "referenceId": {
+            "type": "string",
+            "description": "Unique Client-generated base64 token representing this form session, needed for submission.",
+            "example": "YWJjZGVmZ2hpamtsbW5vcA=="
+          },
+          "resumeUploadFormElementUrn": {
+            "type": "string",
+            "description": "URN of the resume file upload field, if present.",
+            "example": "urn:li:fs_easyApplyFormElement:(3827649182,7,fileUpload)"
+          },
+          "resumeUrns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Available resume document URNs on LinkedIn, sorted by usage recency.",
+            "example": [
+              "urn:li:fsd_resume:123456789"
+            ]
+          },
+          "optimizedResume": {
+            "type": "string",
+            "description": "Optimized text version of resume.",
+            "example": "John Doe - Software Engineer..."
+          },
+          "optimizedResumePdfBase64": {
+            "type": "string",
+            "description": "Base64 payload of optimized resume PDF.",
+            "example": "JVBER..."
+          }
+        }
+      },
+      "FormQuestion": {
+        "type": "object",
+        "required": [
+          "urn",
+          "required",
+          "title",
+          "type"
+        ],
+        "properties": {
+          "urn": {
+            "type": "string",
+            "description": "The unique LinkedIn URN identifier of the form element/question.",
+            "example": "urn:li:fs_easyApplyFormElement:(3827649182,12,text)"
+          },
+          "required": {
+            "type": "boolean",
+            "description": "Whether an answer is mandatory.",
+            "example": true
+          },
+          "title": {
+            "type": "string",
+            "description": "The text question or label presented to the user.",
+            "example": "How many years of experience do you have with React?"
+          },
+          "type": {
+            "type": "string",
+            "description": "The question type.",
+            "example": "text"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "For multiple-choice/dropdown options, display strings.",
+            "example": [
+              "Yes",
+              "No"
+            ]
+          },
+          "optionUrns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Parallel array of URNs matching the options.",
+            "example": [
+              "urn:li:fs_easyApplyFormElementOption:1",
+              "urn:li:fs_easyApplyFormElementOption:2"
+            ]
+          },
+          "optionEnumStrings": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Parallel array of raw enum strings for options.",
+            "example": [
+              "YES",
+              "NO"
+            ]
+          },
+          "suggestedAnswer": {
+            "type": "string",
+            "description": "Suggested or AI-generated answer.",
+            "example": "Yes"
+          },
+          "prefilledValue": {
+            "type": "string",
+            "description": "Prefilled answer value if parsed from LinkedIn.",
+            "example": "John Doe"
+          }
+        }
+      },
+      "ApplySubmissionResult": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates if the application was submitted successfully.",
+            "example": true
+          },
+          "message": {
+            "type": "string",
+            "description": "Status or error message detail.",
+            "example": "Application submitted successfully"
+          }
+        }
+      },
+      "CreatePostResult": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the post was successfully created.",
+            "example": true
+          },
+          "postId": {
+            "type": "string",
+            "description": "The sharing URN/ID of the created post.",
+            "example": "7209384729"
+          },
+          "error": {
+            "type": "string",
+            "description": "Error details if creation failed.",
+            "example": "Invalid cookies"
+          }
+        }
+      },
+      "DeletePostResult": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether deletion was successful.",
+            "example": true
+          },
+          "error": {
+            "type": "string",
+            "description": "Error details if deletion failed.",
+            "example": "Post not found"
+          }
+        }
+      },
+      "ProfileInfo": {
+        "type": "object",
+        "required": [
+          "success",
+          "profileId",
+          "name",
+          "headline",
+          "photoUrl",
+          "about",
+          "experiences",
+          "education"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Indicates if identity fetching was successful.",
+            "example": true
+          },
+          "profileId": {
+            "type": "string",
+            "description": "The target member URN ID.",
+            "example": "ACoAAB..."
+          },
+          "name": {
+            "type": "string",
+            "description": "The user's full name.",
+            "example": "John Doe"
+          },
+          "headline": {
+            "type": "string",
+            "description": "The user's headline.",
+            "example": "Senior Software Engineer"
+          },
+          "photoUrl": {
+            "type": "string",
+            "description": "The user's profile photo URL.",
+            "example": "https://media.licdn.com/dms/image/..."
+          },
+          "about": {
+            "type": "string",
+            "description": "The user's 'About' description parsed from the profile PDF.",
+            "example": "Passionate engineer with experience in React and Node..."
+          },
+          "experiences": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/WorkExperience"
+            }
+          },
+          "education": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Education"
+            }
+          }
+        }
+      },
+      "WorkExperience": {
+        "type": "object",
+        "required": [
+          "company",
+          "role",
+          "duration",
+          "description"
+        ],
+        "properties": {
+          "company": {
+            "type": "string",
+            "description": "The company name.",
+            "example": "Google"
+          },
+          "role": {
+            "type": "string",
+            "description": "The role/title held.",
+            "example": "Senior Software Engineer"
+          },
+          "duration": {
+            "type": "string",
+            "description": "The duration of employment.",
+            "example": "Jan 2020 - Present"
+          },
+          "description": {
+            "type": "string",
+            "description": "Responsibilities and achievements description.",
+            "example": "Led development of core front-end applications..."
+          }
+        }
+      },
+      "Education": {
+        "type": "object",
+        "required": [
+          "institution",
+          "degree",
+          "duration"
+        ],
+        "properties": {
+          "institution": {
+            "type": "string",
+            "description": "The school/university name.",
+            "example": "Stanford University"
+          },
+          "degree": {
+            "type": "string",
+            "description": "The degree obtained.",
+            "example": "B.S. Computer Science"
+          },
+          "duration": {
+            "type": "string",
+            "description": "The duration of studies.",
+            "example": "2016 - 2020"
+          }
+        }
+      },
+      "ResumePdfResult": {
+        "type": "object",
+        "required": [
+          "success",
+          "text",
+          "pdfBase64"
+        ],
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "description": "Whether the PDF retrieval and parsing was successful.",
+            "example": true
+          },
+          "text": {
+            "type": "string",
+            "description": "The full text extracted from the PDF file.",
+            "example": "John Doe Resume..."
+          },
+          "pdfBase64": {
+            "type": "string",
+            "description": "The base64 encoded representation of the PDF file.",
+            "example": "JVBER..."
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Jobs",
+      "description": "Operations related to LinkedIn easy-apply jobs"
+    },
+    {
+      "name": "Posts",
+      "description": "Operations related to publishing and managing posts"
+    },
+    {
+      "name": "Profile",
+      "description": "Operations related to parsing and retrieving user profile information"
+    }
+  ],
+  "security": [
+    {
+      "LinkedInCookie": [],
+      "LinkedInCsrf": []
+    }
+  ],
+  "paths": {
+    "/api/profile/info": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "operationId": "getProfileInfo",
+        "summary": "Retrieve profile info",
+        "description": "Downloads the member's profile summary in PDF format directly from LinkedIn, parses the text stream, and extracts structured info including work experiences, bio descriptions, and education details in a clean JSON hierarchy.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully fetched profile info",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileInfo"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/profile/resume-pdf": {
+      "get": {
+        "tags": [
+          "Profile"
+        ],
+        "operationId": "getResumePdf",
+        "summary": "Retrieve resume PDF",
+        "description": "Generates and downloads the user's resume PDF from LinkedIn. Returns the raw text payload along with a base64-encoded representation of the PDF file.\n\n### Query Parameters\n- `profileId` (string, required): The target member URN ID on LinkedIn (e.g. `ACoAAB...`).\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "profileId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "LinkedIn profile/member URN ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "PDF downloaded and parsed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResumePdfResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/posts": {
+      "post": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "createPost",
+        "summary": "Create a post on LinkedIn",
+        "description": "Publishes a text post to your LinkedIn feed. Supports optional attachments such as images, articles, or PDF documents.\n\n> [!IMPORTANT]\n> For posts containing images or document files, you must first upload the media to LinkedIn and obtain its URN using the standard LinkedIn media upload endpoints, then pass the URN in `mediaUrn`.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "text"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "description": "Main text content of the post"
+                  },
+                  "mediaUrn": {
+                    "type": "string",
+                    "description": "URN of image or article media (optional)"
+                  },
+                  "mediaCategory": {
+                    "type": "string",
+                    "enum": [
+                      "IMAGE",
+                      "DOCUMENT",
+                      "ARTICLE"
+                    ],
+                    "description": "Category type of the media (optional)"
+                  },
+                  "documentSharingTitle": {
+                    "type": "string",
+                    "description": "Title of shared document (optional)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Post published successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePostResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/posts/{id}": {
+      "delete": {
+        "tags": [
+          "Posts"
+        ],
+        "operationId": "deletePost",
+        "summary": "Delete a post",
+        "description": "Deletes a specific post by its LinkedIn sharing ID.\n\n### Path Parameters\n- `id` (string, required): The unique sharing URN identifier of the post.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "LinkedIn post sharing ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Post deleted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeletePostResult"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/jobs": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "listJobs",
+        "summary": "List easy-apply jobs",
+        "description": "Retrieves a list of easy-apply jobs from LinkedIn matching the keywords and filters.\n\n### Query Parameters\n- `keywords` (string, optional): Job title or skill keywords (e.g. `React`, `Node.js`).\n- `remote` (boolean, optional): If `true`, filters for remote positions.\n- `past24h` (boolean, optional): If `true`, restricts search results to jobs posted in the past 24 hours.\n\n> [!TIP]\n> For better performance and search precision, always specify `keywords`.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "keywords",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Keyword filter (e.g. \"React\")"
+          },
+          {
+            "in": "query",
+            "name": "remote",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filter for remote positions"
+          },
+          {
+            "in": "query",
+            "name": "past24h",
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "Filter for jobs posted in the past 24h"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully fetched jobs list",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Job"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized / invalid credentials"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/jobs/{id}": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getJobDetail",
+        "summary": "Retrieve job details",
+        "description": "Gets detailed information for a specific LinkedIn job posting by its unique job ID.\n\n### Path Parameters\n- `id` (string, required): The unique LinkedIn job posting ID.\n\n### Response Content\nReturns the job title, company name, location, and the full description text of the job, which is parsed to extract key requirements.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "LinkedIn job posting ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully fetched job details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobDetail"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/jobs/{id}/apply-form": {
+      "get": {
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "getApplyForm",
+        "summary": "Retrieve job application form",
+        "description": "Fetches the structured multi-step form questions for a LinkedIn Easy Apply job posting.\n\n### Path Parameters\n- `id` (string, required): The unique LinkedIn job posting ID.\n\n> [!IMPORTANT]\n> This endpoint parses the raw form fields (text boxes, dropdowns, radio buttons) and outputs their URN identifiers. These URNs are required when submitting answers via the **Submit application form** endpoint.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "LinkedIn job posting ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Form successfully retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplyForm"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/jobs/{id}/apply": {
+      "post": {
+        "tags": [
+          "Jobs"
+        ],
+        "operationId": "submitApplication",
+        "summary": "Submit application form",
+        "description": "Submits Easy Apply form answers and file uploads for a job posting.\n\n### Request Body Properties\n- `formValues` (object, required): A flat map of URN string identifiers to answer values (e.g., `{\"urn:li:fs_easyApplyFormElement:123456\": \"Yes\"}`).\n- `referenceId` (string, optional): The form reference ID returned by the application form retrieval endpoint.\n- `resumeUrn` (string, optional): The LinkedIn URN of the uploaded resume document to attach to this application.\n",
+        "security": [
+          {
+            "LinkedInCookie": [],
+            "LinkedInCsrf": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "LinkedIn job posting ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "formValues"
+                ],
+                "properties": {
+                  "formValues": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "description": "Flat map of URN to string answer value"
+                  },
+                  "formResponses": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "Explicit structured responses (optional)"
+                  },
+                  "referenceId": {
+                    "type": "string",
+                    "description": "Form reference ID from the GET form endpoint"
+                  },
+                  "fileUploadResponses": {
+                    "type": "array",
+                    "items": {
+                      "type": "object"
+                    },
+                    "description": "Explicit file upload entries (optional)"
+                  },
+                  "resumeUrn": {
+                    "type": "string",
+                    "description": "URN of the uploaded resume (optional shortcut)"
+                  },
+                  "resumeUploadFormElementUrn": {
+                    "type": "string",
+                    "description": "URN of the resume form element (optional shortcut)"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Application submitted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApplySubmissionResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    }
+  }
+}

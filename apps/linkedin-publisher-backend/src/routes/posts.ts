@@ -7,15 +7,13 @@ import multer from 'multer';
 
 const router = Router();
 
-// Configure multer for handling image uploads in memory
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB max per file
-    files: 9, // LinkedIn supports up to 9 images per post
+    fileSize: 10 * 1024 * 1024,
+    files: 9,
   },
   fileFilter: (_req, file, cb) => {
-    // Accept image and PDF files
     if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
       cb(null, true);
     } else {
@@ -74,7 +72,53 @@ async function publishToLinkedIn(
   }
 }
 
-// POST upload images
+/**
+ * @openapi
+ * /api/posts/upload-images:
+ *   post:
+ *     tags:
+ *       - Posts
+ *     operationId: uploadImagesToLinkedIn
+ *     summary: Upload images to LinkedIn
+ *     description: Uploads image files to LinkedIn's Ambry CDN and returns media URNs for post attachment.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - images
+ *             properties:
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Image files (max 9, 10MB each)
+ *     responses:
+ *       200:
+ *         description: Images uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 mediaUrn:
+ *                   type: string
+ *                   description: Comma-separated media URNs
+ *                   example: "urn:li:share:7209384729,urn:li:share:7209384730"
+ *                 imageCount:
+ *                   type: integer
+ *                   example: 2
+ *       400:
+ *         description: No images provided
+ *       401:
+ *         description: LinkedIn credentials not connected
+ */
 router.post('/upload-images', upload.array('images', 9), async (req, res) => {
   try {
     const files = req.files as Express.Multer.File[];
@@ -84,7 +128,6 @@ router.post('/upload-images', upload.array('images', 9), async (req, res) => {
       return;
     }
 
-    // Get credentials
     const creds = await credentialsService.getLatest();
     if (!creds) {
       res.status(401).json({
@@ -93,7 +136,6 @@ router.post('/upload-images', upload.array('images', 9), async (req, res) => {
       return;
     }
 
-    // Parse dynamic headers
     let dynamicHeaders: Record<string, string> = {};
     if (creds.headersJson) {
       try {
@@ -103,10 +145,7 @@ router.post('/upload-images', upload.array('images', 9), async (req, res) => {
       }
     }
 
-    // Convert files to buffers
     const imageBuffers = files.map((file) => file.buffer);
-
-    // Upload images to LinkedIn
     const uploadResult = await uploadImages(creds.cookie, creds.csrf, dynamicHeaders, imageBuffers);
 
     if (!uploadResult.success) {
@@ -125,7 +164,47 @@ router.post('/upload-images', upload.array('images', 9), async (req, res) => {
   }
 });
 
-// GET all posts
+/**
+ * @openapi
+ * /api/posts:
+ *   get:
+ *     tags:
+ *       - Posts
+ *     operationId: listPosts
+ *     summary: List all posts
+ *     description: Returns all posts stored in the database, ordered by creation date.
+ *     responses:
+ *       200:
+ *         description: Posts retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     example: "clx1234..."
+ *                   text:
+ *                     type: string
+ *                     example: "Excited to share my latest project!"
+ *                   status:
+ *                     type: string
+ *                     enum: [draft, published, scheduled]
+ *                     example: "published"
+ *                   linkedinId:
+ *                     type: string
+ *                     nullable: true
+ *                     example: "7209384729"
+ *                   scheduledAt:
+ *                     type: string
+ *                     format: date-time
+ *                     nullable: true
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ */
 router.get('/', async (req, res) => {
   try {
     const posts = await prisma.post.findMany({
@@ -138,7 +217,28 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET single post
+/**
+ * @openapi
+ * /api/posts/{id}:
+ *   get:
+ *     tags:
+ *       - Posts
+ *     operationId: getPost
+ *     summary: Get a single post
+ *     description: Returns a single post by its database ID.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Post database ID
+ *     responses:
+ *       200:
+ *         description: Post retrieved successfully
+ *       404:
+ *         description: Post not found
+ */
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -156,7 +256,71 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST create post (with automatic image upload orchestration)
+/**
+ * @openapi
+ * /api/posts:
+ *   post:
+ *     tags:
+ *       - Posts
+ *     operationId: createPost
+ *     summary: Create a post
+ *     description: Creates a new post. If status is 'published', immediately publishes to LinkedIn via the Gateway.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - text
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 description: Post content text
+ *                 example: "Excited to share my latest project!"
+ *               status:
+ *                 type: string
+ *                 enum: [draft, published, scheduled]
+ *                 description: "Post status, default is draft"
+ *               scheduledAt:
+ *                 type: string
+ *                 format: date-time
+ *                 description: ISO timestamp for scheduled publishing
+ *               type:
+ *                 type: string
+ *                 enum: [text, image, document]
+ *                 description: Post type (auto-detected from media)
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *                 description: Image or PDF files (max 9)
+ *     responses:
+ *       201:
+ *         description: Post created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 text:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *                 linkedinId:
+ *                   type: string
+ *                   nullable: true
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Text is required
+ *       401:
+ *         description: LinkedIn credentials not connected
+ */
 router.post('/', upload.array('images', 9), async (req, res) => {
   const { text, type, mediaUrl, mediaName, mediaUrn: bodyMediaUrn, linkedinId: bodyLinkedinId, status, scheduledAt } = req.body;
   const files = req.files as Express.Multer.File[] | undefined;
@@ -171,7 +335,6 @@ router.post('/', upload.array('images', 9), async (req, res) => {
     let mediaUrn: string | undefined = bodyMediaUrn || undefined;
     let publishedPostId: string | undefined = undefined;
 
-    // Se houver imagens ou PDF, fazer upload automaticamente
     if (files && files.length > 0) {
       const creds = await credentialsService.getLatest();
       if (!creds) {
@@ -214,7 +377,6 @@ router.post('/', upload.array('images', 9), async (req, res) => {
       mediaUrn = uploadResult.mediaUrn;
     }
 
-    // Publicar no LinkedIn se status for 'published'
     if (isPublished) {
       const isPdf = files && files.length > 0 && files[0].mimetype === 'application/pdf';
       const result = await publishToLinkedIn(
@@ -230,7 +392,6 @@ router.post('/', upload.array('images', 9), async (req, res) => {
       publishedPostId = result.postId;
     }
 
-    // Salvar no banco de dados
     const isPdf = files && files.length > 0 && files[0].mimetype === 'application/pdf';
     const post = await prisma.post.create({
       data: {
@@ -256,7 +417,43 @@ router.post('/', upload.array('images', 9), async (req, res) => {
   }
 });
 
-// PUT update post
+/**
+ * @openapi
+ * /api/posts/{id}:
+ *   put:
+ *     tags:
+ *       - Posts
+ *     operationId: updatePost
+ *     summary: Update a post
+ *     description: Updates a post's content or status. If transitioning to 'published', sends to LinkedIn.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Post database ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [draft, published, scheduled]
+ *               scheduledAt:
+ *                 type: string
+ *                 format: date-time
+ *     responses:
+ *       200:
+ *         description: Post updated successfully
+ *       404:
+ *         description: Post not found
+ */
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { text, type, mediaUrl, mediaName, mediaUrn, linkedinId, status, scheduledAt } = req.body;
@@ -312,7 +509,28 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// DELETE post
+/**
+ * @openapi
+ * /api/posts/{id}:
+ *   delete:
+ *     tags:
+ *       - Posts
+ *     operationId: deletePost
+ *     summary: Delete a post
+ *     description: Deletes a post from the database and from LinkedIn if it was published.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Post database ID
+ *     responses:
+ *       200:
+ *         description: Post deleted successfully
+ *       404:
+ *         description: Post not found
+ */
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
@@ -322,7 +540,6 @@ router.delete('/:id', async (req, res) => {
       return;
     }
 
-    // Se o post foi publicado e temos o linkedinId, tentar deletar do LinkedIn
     if (existing.status === 'published' && existing.linkedinId) {
       const creds = await credentialsService.getLatest();
       if (creds) {
@@ -365,7 +582,54 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// POST publish post now
+/**
+ * @openapi
+ * /api/posts/{id}/publish:
+ *   post:
+ *     tags:
+ *       - Posts
+ *     operationId: publishPost
+ *     summary: Publish a draft post immediately
+ *     description: Publishes a draft post to LinkedIn immediately, regardless of its current status.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Post database ID
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               mediaUrn:
+ *                 type: string
+ *                 description: Pre-uploaded media URN to attach
+ *     responses:
+ *       200:
+ *         description: Post published successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *                   example: "published"
+ *                 linkedinId:
+ *                   type: string
+ *                 publishedAt:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Failed to publish
+ *       404:
+ *         description: Post not found
+ */
 router.post('/:id/publish', async (req, res) => {
   const { id } = req.params;
   const { mediaUrn } = req.body;

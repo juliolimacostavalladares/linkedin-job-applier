@@ -1,0 +1,31 @@
+@import 'tailwindcss';
+@import 'fumadocs-ui/css/neutral.css';
+@import 'fumadocs-ui/css/preset.css';
+@import 'fumadocs-openapi/css/preset.css';
+
+html {
+  scrollbar-gutter: stable;
+}
+
+html > body[data-scroll-locked] {
+  margin-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+/* Gateway theme — blue */
+.service-gateway {
+  --fd-primary: oklch(0.65 0.19 264);
+  --fd-primary-foreground: oklch(0.98 0.01 264);
+}
+
+/* Job Backend theme — emerald */
+.service-job {
+  --fd-primary: oklch(0.65 0.17 162);
+  --fd-primary-foreground: oklch(0.98 0.01 162);
+}
+
+/* Publisher Backend theme — violet */
+.service-publisher {
+  --fd-primary: oklch(0.62 0.19 290);
+  --fd-primary-foreground: oklch(0.98 0.01 290);
+}

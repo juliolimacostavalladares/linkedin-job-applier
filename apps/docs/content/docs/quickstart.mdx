@@ -1,0 +1,64 @@
+---
+title: Quick Start
+description: Authenticate and perform your first request to the LinkedIn Gateway Service
+---
+
+# Quick Start
+
+The LinkedIn Gateway Service does not use fixed credentials or a database of users. Instead, it operates dynamically: you provide your own LinkedIn browser session cookies and CSRF tokens in the headers of each request. This allows the microservice to function securely with any LinkedIn account.
+
+---
+
+## Obtaining your LinkedIn Session Cookies
+
+Follow these steps to extract the required headers from your active LinkedIn browser session:
+
+<Steps>
+  <Step>
+    ### Log in to LinkedIn
+    Open your web browser, navigate to [linkedin.com](https://www.linkedin.com), and log in to your account.
+  </Step>
+  <Step>
+    ### Open Browser Developer Tools
+    Press `F12` or right-click anywhere on the page and select **Inspect** to open the developer console. Go to the **Application** tab (on Chrome/Edge) or **Storage** tab (on Firefox).
+  </Step>
+  <Step>
+    ### Extract Session Cookie (`x-linkedin-cookie`)
+    Under the **Cookies** section in the sidebar, select `https://www.linkedin.com`. Locate the following cookies and join them into a single string:
+    - `li_at`: The main session token.
+    - `JSESSIONID`: The CSRF verification cookie (must be wrapped in double quotes in the cookie header, e.g. `"ajax:123456789"`).
+
+    **Example Header Value:**
+    `li_at=AQED...; JSESSIONID="ajax:827364817293";`
+  </Step>
+  <Step>
+    ### Extract CSRF Token (`x-linkedin-csrf`)
+    Copy the exact value of the `JSESSIONID` cookie *without* the surrounding quotes (e.g. `ajax:827364817293`). This token must match the `JSESSIONID` cookie value exactly.
+  </Step>
+</Steps>
+
+---
+
+## Performing your First Request
+
+Now you can authenticate your requests by passing these two values in the headers:
+- `x-linkedin-cookie`: The full session cookie string.
+- `x-linkedin-csrf`: The plain CSRF token value.
+
+### Example REST Request (cURL)
+
+```bash
+curl -X GET "http://localhost:3000/api/profile/info" \
+  -H "x-linkedin-cookie: li_at=AQED...; JSESSIONID=\"ajax:827364817293\";" \
+  -H "x-linkedin-csrf: ajax:827364817293"
+```
+
+> [!WARNING]
+> If `x-linkedin-csrf` does not match the `JSESSIONID` inside `x-linkedin-cookie`, the gateway will respond with `401 Unauthorized` due to a CSRF mismatch.
+
+---
+
+## Troubleshooting Authentication
+
+- **401 Unauthorized**: Make sure that the `JSESSIONID` cookie value is surrounded by double quotes in the `x-linkedin-cookie` header, but is plain (no quotes) in the `x-linkedin-csrf` header.
+- **Session Expiry**: LinkedIn session cookies expire periodically. If you get `401 Unauthorized` suddenly, log out and log back in to LinkedIn, then extract the new cookies.

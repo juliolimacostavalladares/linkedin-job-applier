@@ -9,6 +9,39 @@ import path from 'path';
 const router = Router();
 
 // GET /api/applications – List all job applications
+/**
+ * @openapi
+ * /api/applications:
+ *   get:
+ *     tags:
+ *       - Applications
+ *     operationId: listJobApplications
+ *     summary: List job applications
+ *     description: Returns a list of all job application records stored in SQLite, detailing status, job URN, company details, and timestamps.
+ *     responses:
+ *       200:
+ *         description: Applications list retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   jobId:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *                     example: "applied"
+ *                   jobTitle:
+ *                     type: string
+ *                   companyName:
+ *                     type: string
+ *                   appliedThroughSystem:
+ *                     type: boolean
+ */
 router.get('/', async (req, res, next) => {
   try {
     const applications = await applicationService.listAll();
@@ -24,6 +57,32 @@ router.get('/', async (req, res, next) => {
 });
 
 // POST /api/applications/sync – Sync applications with LinkedIn API
+/**
+ * @openapi
+ * /api/applications/sync:
+ *   post:
+ *     tags:
+ *       - Applications
+ *     operationId: syncApplicationsWithLinkedin
+ *     summary: Sync applications with LinkedIn
+ *     description: Iterates through stored local applications, queries LinkedIn's API for their active status, updates them to closed or viewed, and cleans up old applications.
+ *     responses:
+ *       200:
+ *         description: Applications successfully synchronized with LinkedIn
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Sincronização concluída..."
+ *       401:
+ *         description: Missing credentials
+ */
 router.post('/sync', async (req, res, next) => {
   try {
     const creds = await credentialsService.getCookieAndCsrf();
@@ -117,6 +176,33 @@ router.post('/sync', async (req, res, next) => {
 });
 
 // GET /api/applications/:id/resume.pdf – Stream the optimized resume PDF
+/**
+ * @openapi
+ * /api/applications/{id}/resume.pdf:
+ *   get:
+ *     tags:
+ *       - Applications
+ *     operationId: downloadApplicationResumePdf
+ *     summary: Download application resume PDF
+ *     description: Streams the binary PDF data of the optimized resume associated with a specific job application.
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Unique job application ID.
+ *     responses:
+ *       200:
+ *         description: Resume PDF binary streamed successfully
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Application or PDF file not found
+ */
 router.get('/:id/resume.pdf', async (req, res, next) => {
   try {
     const { id } = req.params;

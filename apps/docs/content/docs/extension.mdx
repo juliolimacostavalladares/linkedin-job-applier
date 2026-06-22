@@ -1,0 +1,146 @@
+---
+title: JobFinder Sync Extension
+description: Safely extract active LinkedIn session cookies and synchronize profile data
+---
+
+# JobFinder Sync Extension
+
+The **JobFinder Sync** browser extension is a lightweight tool that automates the collection of LinkedIn credentials (`li_at` and `JSESSIONID` session cookies) and synchronizes your profile data directly to your **LinkedIn Gateway Server**.
+
+By running locally in your browser context, the extension avoids sharing credentials with third-party servers and mirrors your exact browser configurations—such as the user-agent, display density, and timezone—minimizing anti-bot detection risks on LinkedIn.
+
+---
+
+## Key Features
+
+- **Local Session Extraction**: Reads active `li_at` and `JSESSIONID` cookies securely from the `linkedin.com` domain.
+- **Environment Matching**: Collects your real user-agent and tracking metrics (`x-li-track`) to ensure gateway calls behave identically to human browsing.
+- **Profile Aggregation**: Fetches basic identity info, headlines, about summaries, work experiences, and education using LinkedIn’s native Voyager GraphQL endpoints.
+- **Secure Sync**: Sends the collected payload directly to the gateway server (`POST /api/credentials` and `POST /api/resume/sync-profile-data`).
+
+---
+
+## Installation
+
+Follow these steps to load the extension into your Chromium-based browser:
+
+<Steps>
+  <Step>
+    ### Open Chrome Extensions
+    Type `chrome://extensions` in your browser address bar and press **Enter**.
+  </Step>
+  <Step>
+    ### Enable Developer Mode
+    Locate the **Developer Mode** toggle in the top-right corner of the Extensions page and turn it **ON**.
+  </Step>
+  <Step>
+    ### Load Unpacked Extension
+    Click the **Load unpacked** button in the top-left corner.
+  </Step>
+  <Step>
+    ### Select the Directory
+    Navigate to your local repository clone and select the folder:
+    `apps/extension`
+  </Step>
+</Steps>
+
+---
+
+## Usage Guide
+
+Once installed, synchronize your credentials and profile settings in a few clicks:
+
+<Steps>
+  <Step>
+    ### Log in to LinkedIn
+    Open your browser, go to [linkedin.com](https://www.linkedin.com), and log in if you haven't already.
+  </Step>
+  <Step>
+    ### Open the Popup
+    Click the **JobFinder Sync** icon in your browser's toolbar (or extensions menu).
+  </Step>
+  <Step>
+    ### Configure Server URL
+    Type the URL of your running gateway microservice (defaults to `http://localhost:3000`).
+  </Step>
+  <Step>
+    ### Click Synchronize
+    Click **Sincronizar Credenciais**. The extension will run through a 4-step synchronization cycle:
+    1. Collect `li_at` and `JSESSIONID` cookies.
+    2. Sync session cookies to the server.
+    3. Retrieve identity, bio, experiences, and education from LinkedIn.
+    4. Sync the structured profile payload to the server.
+  </Step>
+</Steps>
+
+<Callout type="success" title="Success Confirmation">
+  Once completed, the popup status displays a green checkmark indicating that credentials and profile details have successfully synchronized with your server database.
+</Callout>
+
+---
+
+## Synchronization Under the Hood
+
+The extension performs the following background tasks upon synchronization:
+
+### 1. Cookies Extraction
+It queries the active tab cookies for `li_at` and `JSESSIONID`, constructs a standard cookie string, and formats a header-friendly CSRF token.
+
+### 2. Client Parameter Generation
+It computes client environment headers (`x-li-track`) detailing the exact browser parameters:
+```json
+{
+  "clientVersion": "1.13.44770",
+  "osName": "web",
+  "timezone": "America/Sao_Paulo",
+  "deviceFormFactor": "DESKTOP",
+  "mpName": "voyager-web",
+  "displayDensity": 2,
+  "displayWidth": 1440,
+  "displayHeight": 900
+}
+```
+
+### 3. Profile Harvesting
+Using the session cookie, the extension queries the native LinkedIn Voyager endpoints directly from your browser origin:
+- **Identity info**: `GET https://www.linkedin.com/voyager/api/me` (miniProfile).
+- **Headline & Bio**: `GET https://www.linkedin.com/voyager/api/graphql` (FullProfileWithEntities).
+- **Positions (Work Experiences)**: `GET https://www.linkedin.com/voyager/api/graphql` (voyagerIdentityDashPositions).
+- **Education**: `GET https://www.linkedin.com/voyager/api/graphql` (voyagerIdentityDashEducation).
+
+### 4. Backend Gateway Sync
+Finally, the extension posts the cookies and environment parameters to your gateway server, followed by the structured profile metadata:
+```json
+{
+  "profileId": "ACoAAB...",
+  "name": "John Doe",
+  "headline": "Senior Software Engineer",
+  "photoUrl": "https://media.licdn.com/dms/image/...",
+  "about": "Passionate developer...",
+  "experiences": [
+    {
+      "company": "Google",
+      "role": "Senior Engineer",
+      "duration": "Jan 2020 - Present",
+      "description": "Led frontend projects..."
+    }
+  ],
+  "education": [
+    {
+      "institution": "Stanford University",
+      "degree": "B.S. Computer Science",
+      "duration": "2016 - 2020"
+    }
+  ]
+}
+```
+
+---
+
+## Security Disclosures
+
+<Callout type="warn" title="Local Scope Storage">
+  Cookies are never transmitted to any destination other than the **Server URL** that you specify in the popup panel. Ensure that your gateway server is running on a secure network connection.
+</Callout>
+
+For detail on how your credentials are safe, check out the [Security & Compliance](/docs/security) section.
