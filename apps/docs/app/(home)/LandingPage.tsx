@@ -6,8 +6,10 @@ import {
   Layers, Briefcase, Rocket, ArrowRight,
   Zap, Bot, FileText, Terminal, Globe, RefreshCw,
   ImageIcon, ChevronRight, Database, Cpu, Check, Users,
-  Sparkles, AlertCircle, Send, Network, UserSearch, Code2, CheckCircle2,
-  ThumbsUp, MessageSquare, Share2, MoreHorizontal, Rss, Code
+  Search, Play, AlertCircle, ShieldAlert, Award,
+  ThumbsUp, MessageSquare, Share2, Send, Bookmark, MoreHorizontal, Sparkles,
+  PenTool, BookOpen, FileCheck2, Rss, Network, UserSearch, Code2, CheckCircle2,
+  Code
 } from 'lucide-react';
 import { translations, type Locale } from './translations';
 
@@ -93,6 +95,7 @@ function MountainDither() {
   );
 }
 
+// A beautiful, interactive bento grid showing the 4 features
 function BentoGridFeatures({ lang }: { lang: Locale }) {
   // 1. Resume Match View State
   const [resumeView, setResumeView] = useState<'original' | 'optimized'>('optimized');
@@ -519,9 +522,9 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
   );
 }
 
+// State-driven Interactive Playground component showing API integration
 function InteractiveIntegration({ lang }: { lang: Locale }) {
   const [tab, setTab] = useState<'graphql' | 'rest' | 'cli'>('graphql');
-  const t = translations[lang].sections.integration;
 
   const contentMap = {
     graphql: {
@@ -534,9 +537,21 @@ function InteractiveIntegration({ lang }: { lang: Locale }) {
     easyApply
   }
 }`,
-      title: t.graphql.title,
-      desc: t.graphql.desc,
-      bullets: t.graphql.bullets
+      title: lang === 'pt-BR' 
+        ? "Consultar listas de vagas via Gateway GraphQL" 
+        : "Query job lists via GraphQL Gateway",
+      desc: lang === 'pt-BR'
+        ? "Use consultas GraphQL limpas para buscar dados estruturados em todos os serviços LinkedIn. O gateway agrega perfis, candidaturas e postagens em um único schema."
+        : "Use clean GraphQL queries to fetch structured data across all LinkedIn services. The gateway aggregates profiles, applications, and postings into a single schema.",
+      bullets: lang === 'pt-BR' ? [
+        "Schema GraphQL consolidado para todas as APIs backend",
+        "Tipagem forte e arquivos de schema TypeScript auto-gerados",
+        "Busque relações aninhadas (Vaga -> Empresa -> URL de Candidatura) em uma única requisição"
+      ] : [
+        "Consolidated GraphQL schema for all backend APIs",
+        "Strong typing and auto-generated TypeScript schema files",
+        "Fetch nested relations (Job -> Company -> Apply URL) in one roundtrip"
+      ]
     },
     rest: {
       code: `POST /api/jobs/apply
@@ -546,9 +561,21 @@ Content-Type: application/json
   "resumeId": "current-profile",
   "autoAnswer": true
 }`,
-      title: t.rest.title,
-      desc: t.rest.desc,
-      bullets: t.rest.bullets
+      title: lang === 'pt-BR'
+        ? "Endpoint REST para envio automático de candidaturas"
+        : "REST endpoint for auto application submissions",
+      desc: lang === 'pt-BR'
+        ? "Acione jobs de preenchimento automático de formulários programaticamente. Envie um ID de vaga, especifique seus parâmetros de perfil, e deixe as filas em background lidarem com navegação e respostas de formulários."
+        : "Trigger AI form-filling jobs programmatically. Send a job ID, specify your profile parameters, and let the background queues handle form navigation and answers.",
+      bullets: lang === 'pt-BR' ? [
+        "Processamento de candidaturas em fila com persistência SQLite",
+        "Engine de parsing de questões contextuais com Gemini/Claude",
+        "Respostas REST abrangentes para depuração de integração"
+      ] : [
+        "Queued application processing with SQLite persistence",
+        "Gemini/Claude contextual question parsing engine",
+        "Comprehensive REST responses for integration debugging"
+      ]
     },
     cli: {
       code: `# Sync cookie session credentials from extension
@@ -556,9 +583,21 @@ pnpm --filter job-backend sync-profile --id user-123
 
 # Launch the publisher generator
 pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
-      title: t.cli.title,
-      desc: t.cli.desc,
-      bullets: t.cli.bullets
+      title: lang === 'pt-BR'
+        ? "Comandos CLI de Automação"
+        : "CLI Automation commands",
+      desc: lang === 'pt-BR'
+        ? "Execute tarefas administrativas rápidas, atualize credenciais de perfil, teste prompts e acione gerações de conteúdo manuais com facilidade."
+        : "Perform quick administrative tasks, update profile credentials, test prompts, and trigger manual content generations with ease.",
+      bullets: lang === 'pt-BR' ? [
+        "Sintaxe CLI unificada via scripts pnpm",
+        "Ferramentas fáceis para desenvolvedores para migrações de banco de dados e sincronização openapi",
+        "Execute módulos de microsserviços individuais sozinhos ou em combinação"
+      ] : [
+        "Unified CLI syntax via pnpm scripts",
+        "Easy developer tooling for database migrations and openapi sync",
+        "Run individual microservice modules standalone or in combination"
+      ]
     }
   };
 
@@ -625,7 +664,7 @@ pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
           <p className="text-sm text-fd-muted-foreground mb-6 leading-relaxed">{active.desc}</p>
           <ul className="space-y-2">
             {active.bullets.map((bullet, idx) => (
-              <li key={idx} className="flex items-start gap-2.5 text-xs text-fd-muted-foreground animate-[fadeIn_0.5s_ease-out]">
+              <li key={idx} className="flex items-start gap-2.5 text-xs text-fd-muted-foreground">
                 <span className="h-5 w-5 rounded-full bg-brand-lime/10 text-brand-lime flex items-center justify-center shrink-0 mt-0.5 border border-brand-lime/20">
                   <Check className="size-3" />
                 </span>
@@ -640,250 +679,487 @@ pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
 }
 
 export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
-  const t = translations[lang];
+  const text = translations[lang];
+
+  const workflowSteps = [
+    {
+      icon: <Network className="h-5 w-5 text-brand-lime" />,
+      title: text.workflow.steps.sync.title,
+      description: text.workflow.steps.sync.desc
+    },
+    {
+      icon: <Search className="h-5 w-5 text-brand-lime" />,
+      title: text.workflow.steps.search.title,
+      description: text.workflow.steps.search.desc
+    },
+    {
+      icon: <PenTool className="h-5 w-5 text-brand-lime" />,
+      title: text.workflow.steps.match.title,
+      description: text.workflow.steps.match.desc
+    },
+    {
+      icon: <Send className="h-5 w-5 text-brand-lime" />,
+      title: text.workflow.steps.submit.title,
+      description: text.workflow.steps.submit.desc
+    },
+    {
+      icon: <Layers className="h-5 w-5 text-brand-lime" />,
+      title: text.workflow.steps.track.title,
+      description: text.workflow.steps.track.desc
+    }
+  ];
+
+  const packages = [
+    {
+      title: text.audiences.jobSeekers.title,
+      icon: <UserSearch className="h-6 w-6 text-brand-lime" />,
+      color: "brand-lime",
+      features: [
+        text.audiences.jobSeekers.f1,
+        text.audiences.jobSeekers.f2,
+        text.audiences.jobSeekers.f3
+      ]
+    },
+    {
+      title: text.audiences.creators.title,
+      icon: <PenTool className="h-6 w-6 text-purple-400" />,
+      color: "purple",
+      popular: true,
+      features: [
+        text.audiences.creators.f1,
+        text.audiences.creators.f2,
+        text.audiences.creators.f3
+      ]
+    },
+    {
+      title: text.audiences.developers.title,
+      icon: <Code2 className="h-6 w-6 text-emerald-400" />,
+      color: "emerald",
+      features: [
+        text.audiences.developers.f1,
+        text.audiences.developers.f2,
+        text.audiences.developers.f3
+      ]
+    }
+  ];
 
   return (
-    <main className="relative flex flex-col items-center overflow-hidden bg-fd-background grain-bg min-h-screen">
+    <main className="relative flex flex-col items-center overflow-hidden bg-fd-background grain-bg min-h-screen w-full pt-16">
+      {/* Grid mask overlay */}
       <div className="absolute inset-0 z-0 pointer-events-none bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_30%,#000_70%,transparent_100%)]" />
 
-      <section className="relative w-full px-6 pt-24 pb-20 overflow-hidden">
-        <div className="absolute inset-0 z-0 pointer-events-none">
-          <div className="absolute top-[-10%] right-[-5%] w-[550px] h-[550px] bg-emerald-500/10 rounded-full blur-[100px]" />
-          <div className="absolute top-[20%] right-[10%] w-[450px] h-[450px] bg-orange-500/12 rounded-full blur-[110px]" />
-          <div className="absolute top-[5%] left-[5%] w-[350px] h-[350px] bg-brand-lime/5 rounded-full blur-[90px]" />
-        </div>
+      {/* Background glowing blobs */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-5%] right-[-5%] w-[550px] h-[550px] bg-emerald-500/10 rounded-full blur-[100px]" />
+        <div className="absolute top-[15%] right-[10%] w-[450px] h-[450px] bg-orange-500/12 rounded-full blur-[110px]" />
+        <div className="absolute top-[5%] left-[5%] w-[350px] h-[350px] bg-brand-lime/5 rounded-full blur-[90px]" />
+      </div>
 
-        <div className="relative z-10 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-7 text-left">
-            <div className="inline-flex items-center gap-2 px-3 py-1 text-xs font-semibold rounded-full border border-brand-lime/20 bg-brand-lime/5 text-brand-lime mb-8 hover:bg-brand-lime/10 transition-colors cursor-pointer">
-              <span className="flex h-1.5 w-1.5 rounded-full bg-brand-lime animate-pulse" />
-              {t.hero.badge}
-            </div>
-
-            <h1 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-fd-foreground mb-6 leading-[1.08]">
-              {t.hero.title1}
-              <br />
-              <span className="text-[#0077b5] dark:text-[#0077b5]">LinkedIn</span> {t.hero.title2}, <span className="text-brand-lime">{t.hero.title3}</span>.
-            </h1>
-
-            <p className="text-base sm:text-lg text-fd-muted-foreground mb-8 max-w-lg leading-relaxed">
-              {t.hero.description}
-            </p>
-
-            <div className="flex flex-wrap gap-4">
-              <Link
-                href={`/docs/${lang}/quickstart`}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-bold text-black bg-brand-lime rounded-full shadow-lg shadow-brand-lime/10 hover:bg-[#d5f002] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 cursor-pointer"
-              >
-                {t.hero.getStarted}
-              </Link>
-              <Link
-                href="https://github.com/juliolimacostavalladares/linkedin-job-applier"
-                target="_blank"
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-semibold text-fd-foreground bg-fd-card/50 hover:bg-fd-muted border border-fd-border/30 rounded-full transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-              >
-                {t.hero.openGithub}
-              </Link>
-            </div>
+      {/* Hero Section */}
+      <section className="relative w-full px-6 pt-20 pb-16 overflow-hidden z-10">
+        <div className="max-w-6xl mx-auto flex flex-col items-center text-center">
+          {/* Announcement Badge */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand-lime/20 bg-brand-lime/5 px-3.5 py-1.5 text-xs text-brand-lime mb-8 hover:bg-brand-lime/10 transition-colors cursor-pointer">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-brand-lime animate-pulse"></span>
+            <span className="font-semibold text-brand-lime">{text.hero.badge}</span>
           </div>
 
-          <div className="lg:col-span-5 relative flex justify-center items-center h-[320px] sm:h-[400px]">
-            <div className="w-[280px] sm:w-[360px] h-[280px] sm:h-[360px] relative">
-              <div className="absolute inset-0 bg-radial from-blue-500/10 via-transparent to-transparent rounded-full scale-[1.3] blur-xl" />
-              <img
-                src="/logo.svg"
-                alt="LinkedIn Job Explorer Logo"
-                className="w-full h-full object-contain animate-[pulse_6s_ease-in-out_infinite] select-none"
-              />
-            </div>
+          {/* Title */}
+          <h1 className="mx-auto max-w-4xl font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-fd-foreground leading-[1.05] mb-8">
+            {text.hero.titleNormal}{' '}
+            <span className="text-brand-lime">
+              {text.hero.titleHighlight}
+            </span>
+          </h1>
+
+          {/* Subtitle */}
+          <p className="mx-auto max-w-2xl text-sm sm:text-base md:text-lg text-fd-muted-foreground leading-relaxed mb-10">
+            {text.hero.subtitle}
+          </p>
+
+          {/* CTA Actions */}
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full sm:w-auto">
+            <Link
+              href={`/docs/${lang}/quickstart`}
+              className="w-full sm:w-auto group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-brand-lime px-8 py-3.5 font-bold text-black shadow-lg shadow-brand-lime/15 transition-transform active:scale-95 hover:bg-[#d5f002] hover:scale-[1.02]"
+            >
+              <span className="flex items-center gap-2">
+                {text.hero.ctaPrimary}
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </Link>
+            <Link
+              href={`/docs/${lang}/quickstart`}
+              className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-fd-border bg-fd-card/50 px-8 py-3.5 font-semibold text-fd-foreground transition-colors hover:bg-fd-muted hover:scale-[1.02] active:scale-95"
+            >
+              {text.hero.ctaSecondary}
+            </Link>
           </div>
         </div>
 
-        {/* Feature Bento Grid replacing DocsMockup */}
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-0">
+        {/* Feature Bento Grid replacing original mockup dashboard */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-0">
           <BentoGridFeatures lang={lang} />
         </div>
       </section>
 
-      {/* Code Playground Section */}
-      <section className="w-full px-6 py-20 border-t border-fd-border/10 bg-fd-muted/5 relative">
-        <div className="max-w-6xl mx-auto relative z-10 text-left animate-[fadeIn_0.8s_ease-out]">
-          <div className="max-w-4xl">
-            <p className="text-xl sm:text-3xl text-fd-foreground leading-snug font-medium mb-8">
-              {t.sections.tryItOut.description.split('Developers').map((part, i) => 
-                i === 0 ? <span key={i}>{part}<span className="text-brand-lime font-bold">Developers</span></span> : 
-                part.split('LinkedIn Voyager APIs').map((p, j) => 
-                  j === 0 ? <span key={`${i}-${j}`}>{p}<span className="text-[#0077b5] font-semibold">LinkedIn Voyager APIs</span></span> : p
-                )
-              )}
+      {/* EcosystemFeatures Section */}
+      <section id="features" className="w-full px-6 py-24 border-t border-fd-border/10 bg-fd-muted/5 z-10 relative">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-16 text-left">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-fd-foreground sm:text-4xl mb-4">
+              {text.features.title}
+            </h2>
+            <p className="max-w-2xl text-sm sm:text-base text-fd-muted-foreground leading-relaxed">
+              {text.features.subtitle}
             </p>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Card 1: Job Applier */}
+            <div className="group flex flex-col rounded-3xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-8 hover:bg-fd-card/60 transition-all duration-300 relative overflow-hidden col-span-1 md:col-span-2 shadow-sm hover:border-brand-lime/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-lime/0 via-transparent to-emerald-500/0 group-hover:from-brand-lime/5 group-hover:to-emerald-500/5 transition-all duration-500" />
+              <div className="relative z-10 text-left">
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-lime/10 border border-brand-lime/20">
+                  <Bot className="h-6 w-6 text-brand-lime" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-fd-foreground mb-3">
+                  {text.features.jobApplier.title}
+                </h3>
+                <p className="text-fd-muted-foreground mb-6 flex-1 text-sm leading-relaxed">
+                  {text.features.jobApplier.desc}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {text.features.jobApplier.tags.map((tag, tIdx) => (
+                    <span key={tIdx} className="inline-flex rounded-md bg-fd-muted px-2 py-1 text-xs text-fd-foreground border border-fd-border/10 font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Visual for Job Applier */}
+              <div className="mt-6 flex flex-col gap-3 h-full justify-end border-t border-fd-border/15 pt-6 text-left">
+                <div className="flex items-center justify-between rounded-lg bg-fd-background/80 border border-fd-border/10 p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded bg-brand-lime/10 flex items-center justify-center shrink-0 border border-brand-lime/25">
+                      <FileCheck2 className="h-4 w-4 text-brand-lime" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-fd-foreground truncate">
+                        {text.features.jobApplier.visual.jobTitle}
+                      </div>
+                      <div className="text-xs text-fd-muted-foreground truncate">
+                        {text.features.jobApplier.visual.company}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-500/20 shrink-0">
+                    {text.features.jobApplier.visual.applied}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg bg-fd-background/80 border border-fd-border/10 p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded bg-purple-500/10 flex items-center justify-center shrink-0 border border-purple-500/25">
+                      <Sparkles className="h-4 w-4 text-purple-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-fd-foreground truncate">
+                        {text.features.jobApplier.visual.adjusting}
+                      </div>
+                      <div className="text-xs text-fd-muted-foreground truncate">
+                        {text.features.jobApplier.visual.prompting}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-semibold text-blue-400 border border-blue-500/20 animate-pulse shrink-0">
+                    {text.features.jobApplier.visual.processing}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Publisher */}
+            <div className="group flex flex-col rounded-3xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-8 hover:bg-fd-card/60 transition-all duration-300 relative overflow-hidden col-span-1 shadow-sm hover:border-brand-lime/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-lime/0 via-transparent to-purple-500/0 group-hover:from-brand-lime/5 group-hover:to-purple-500/5 transition-all duration-500" />
+              <div className="relative z-10 text-left">
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 border border-purple-500/20">
+                  <PenTool className="h-6 w-6 text-purple-400" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-fd-foreground mb-3">
+                  {text.features.publisher.title}
+                </h3>
+                <p className="text-fd-muted-foreground mb-6 flex-1 text-sm leading-relaxed">
+                  {text.features.publisher.desc}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {text.features.publisher.tags.map((tag, tIdx) => (
+                    <span key={tIdx} className="inline-flex rounded-md bg-fd-muted px-2 py-1 text-xs text-fd-foreground border border-fd-border/10 font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Visual for Publisher */}
+              <div className="mt-6 h-full flex flex-col gap-2 rounded-lg border border-fd-border/15 bg-fd-background/80 overflow-hidden text-sm text-left">
+                <div className="flex items-center gap-2 border-b border-fd-border/15 bg-fd-muted/30 px-3 py-2">
+                  <Rss className="h-3.5 w-3.5 text-fd-muted-foreground shrink-0" />
+                  <span className="text-xs text-fd-muted-foreground truncate">
+                    {text.features.publisher.visual.scheduled}
+                  </span>
+                </div>
+                <div className="p-3">
+                  <div className="h-2 w-3/4 rounded-full bg-fd-muted-foreground/20 mb-2" />
+                  <div className="h-2 w-full rounded-full bg-fd-muted-foreground/10 mb-2" />
+                  <div className="h-2 w-5/6 rounded-full bg-fd-muted-foreground/10 mb-4" />
+                  <div className="rounded bg-fd-background p-2 font-mono text-[10px] text-fd-muted-foreground border border-fd-border/10">
+                    <span className="text-purple-400">const</span> optimize = () {'=>'} {'{'} ... {'}'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Documentation Hub */}
+            <div className="group flex flex-col rounded-3xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-8 hover:bg-fd-card/60 transition-all duration-300 relative overflow-hidden col-span-1 md:col-span-3 shadow-sm hover:border-brand-lime/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-lime/0 via-transparent to-indigo-500/0 group-hover:from-brand-lime/5 group-hover:to-indigo-500/5 transition-all duration-500" />
+              <div className="relative z-10 text-left">
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                  <BookOpen className="h-6 w-6 text-emerald-400" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-fd-foreground mb-3">
+                  {text.features.docsHub.title}
+                </h3>
+                <p className="text-fd-muted-foreground mb-6 flex-1 text-sm leading-relaxed">
+                  {text.features.docsHub.desc}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {text.features.docsHub.tags.map((tag, tIdx) => (
+                    <span key={tIdx} className="inline-flex rounded-md bg-fd-muted px-2 py-1 text-xs text-fd-foreground border border-fd-border/10 font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Visual for Documentation Hub */}
+              <div className="mt-6 flex flex-col sm:flex-row gap-4 flex-1 w-full border-t border-fd-border/15 pt-6 text-left">
+                <div className="w-full sm:w-64 flex flex-col gap-2">
+                  <div className="text-xs font-semibold text-fd-muted-foreground uppercase tracking-wider mb-1">
+                    {text.features.docsHub.visual.ref}
+                  </div>
+                  <div className="flex items-center gap-2 rounded bg-fd-muted/20 px-2 py-1.5 text-xs font-semibold text-fd-foreground border border-fd-border/10 hover:bg-fd-muted transition-colors">
+                    <span className="text-[10px] font-bold text-blue-400 shrink-0">POST</span> /apply
+                  </div>
+                  <div className="flex items-center gap-2 rounded bg-fd-muted/20 px-2 py-1.5 text-xs font-semibold text-fd-foreground border border-fd-border/10 hover:bg-fd-muted transition-colors">
+                    <span className="text-[10px] font-bold text-green-400 shrink-0">GET</span> /jobs
+                  </div>
+                  <div className="flex items-center gap-2 rounded bg-fd-muted/20 px-2 py-1.5 text-xs font-semibold text-fd-foreground border border-fd-border/10 hover:bg-fd-muted transition-colors">
+                    <span className="text-[10px] font-bold text-blue-400 shrink-0">POST</span> /publish
+                  </div>
+                </div>
+                <div className="flex-1 rounded-lg border border-fd-border/15 bg-fd-background/80 p-4 font-mono text-xs shadow-inner overflow-hidden">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Terminal className="h-4 w-4 text-brand-lime" />
+                      <span className="text-fd-foreground text-xs font-bold">
+                        {text.features.docsHub.visual.reqExample}
+                      </span>
+                    </div>
+                    <button className="text-[10px] font-semibold text-fd-muted-foreground hover:text-fd-foreground hover:bg-fd-muted px-2.5 py-0.5 rounded border border-fd-border/10 transition-colors cursor-pointer">
+                      {text.features.docsHub.visual.copy}
+                    </button>
+                  </div>
+                  <div className="text-fd-muted-foreground leading-relaxed overflow-x-auto whitespace-pre">
+                    <span className="text-purple-400 font-semibold">mutation</span> {'{'} <br />
+                    &nbsp;&nbsp;applyToJob( <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;jobUrl: <span className="text-orange-300">"https://linkedin.com/..."</span><br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;useAI: <span className="text-blue-300">true</span><br />
+                    &nbsp;&nbsp;) {'{'} <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;status <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;applicationId <br />
+                    &nbsp;&nbsp;{'}'} <br />
+                    {'}'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Code Playground Section (InteractiveIntegration) */}
+      <section className="w-full px-6 py-20 border-t border-fd-border/10 bg-fd-muted/5 relative">
+        <div className="max-w-6xl mx-auto relative z-10 text-left">
           <InteractiveIntegration lang={lang} />
         </div>
       </section>
 
-      {/* Pipeline steps Section */}
-      <section className="w-full px-6 py-12 border-t border-fd-border/10 bg-fd-background relative">
-        <div className="max-w-6xl mx-auto relative z-10 text-left">
-          <div className="text-left mb-10">
-            <span className="text-xs text-brand-lime font-bold uppercase tracking-wider">{t.sections.flow.badge}</span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-fd-foreground mt-2">
-              {t.sections.flow.title}
+      {/* DeepBrief Workflow Section */}
+      <section id="workflow" className="w-full py-24 border-t border-fd-border/10 bg-fd-background relative overflow-hidden z-10">
+        <div className="mx-auto max-w-6xl px-6 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="text-left">
+              <h2 className="font-display text-3xl font-bold tracking-tight text-fd-foreground sm:text-4xl mb-6">
+                {text.workflow.title}
+              </h2>
+              <p className="text-sm sm:text-base text-fd-muted-foreground mb-10 leading-relaxed">
+                {text.workflow.subtitle}
+              </p>
+
+              <div className="space-y-8">
+                {workflowSteps.map((step, idx) => (
+                  <div key={idx} className="flex gap-4 relative transition-all duration-300 hover:translate-x-0.5">
+                    {/* Connection Line */}
+                    {idx !== workflowSteps.length - 1 && (
+                      <div className="absolute left-6 top-10 bottom-[-2rem] w-px bg-fd-border/20" />
+                    )}
+
+                    <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-lime/25 bg-brand-lime/5 text-brand-lime shadow-sm">
+                      {step.icon}
+                    </div>
+                    <div className="pt-1 text-left">
+                      <h4 className="text-base font-semibold text-fd-foreground mb-1">{step.title}</h4>
+                      <p className="text-xs sm:text-sm text-fd-muted-foreground leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Simulated Live Logs terminal panel */}
+            <div className="flex flex-col rounded-2xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md overflow-hidden shadow-2xl h-[420px] text-left">
+              <div className="flex items-center justify-between border-b border-fd-border/20 bg-fd-muted/30 px-4 py-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/50" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
+                </div>
+                <span className="text-[10px] text-fd-muted-foreground font-mono">
+                  {text.workflow.log.title}
+                </span>
+              </div>
+              <div className="flex-1 p-5 font-mono text-[11px] text-fd-foreground bg-fd-muted/5 space-y-2 overflow-y-auto leading-relaxed shadow-inner">
+                <div className="text-fd-muted-foreground">{text.workflow.log.l1}</div>
+                <div className="text-emerald-400 font-medium">{text.workflow.log.l2}</div>
+                <div className="text-fd-muted-foreground pl-3">{text.workflow.log.l2_sub}</div>
+                <div className="text-brand-lime animate-pulse">{text.workflow.log.l3}</div>
+                <div className="text-fd-muted-foreground pl-3">{text.workflow.log.l3_sub1}</div>
+                <div className="text-fd-muted-foreground pl-3">{text.workflow.log.l3_sub2}</div>
+                <div className="text-emerald-400 font-semibold">{text.workflow.log.l4}</div>
+                <div className="text-emerald-400/80 font-bold bg-emerald-500/5 py-0.5 px-2 rounded-md max-w-fit">{text.workflow.log.l4_sub}</div>
+                <div className="text-brand-lime animate-pulse">{text.workflow.log.l5}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Audiences Section */}
+      <section id="audiences" className="w-full px-6 py-24 relative border-t border-fd-border/10 bg-fd-muted/5 z-10">
+        <div className="mx-auto max-w-6xl relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-fd-foreground sm:text-4xl mb-4">
+              {text.audiences.title}
             </h2>
-            <p className="text-sm text-fd-muted-foreground mt-2 max-w-xl">
-              {t.sections.flow.description}
+            <p className="mx-auto max-w-2xl text-sm sm:text-base text-fd-muted-foreground leading-relaxed">
+              {text.audiences.subtitle}
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
-            {t.sections.flow.steps.map((item, index) => (
-              <div key={index} className="p-5 rounded-xl border border-fd-border/20 bg-fd-card/45 backdrop-blur-sm relative hover:border-brand-lime/30 transition-all duration-300">
-                <div className="text-[10px] font-mono text-brand-lime font-bold mb-2 flex justify-between items-center">
-                  <span>STEP {String(index + 1).padStart(2, '0')}</span>
-                  <span className="px-1.5 py-0.5 rounded bg-fd-muted text-fd-foreground text-[8px] font-semibold">{item.tech}</span>
-                </div>
-                <h4 className="text-sm font-bold text-fd-foreground mb-2">{item.title}</h4>
-                <p className="text-xs text-fd-muted-foreground leading-relaxed">{item.desc}</p>
-                {index < 4 && (
-                  <div className="hidden md:block absolute top-1/2 -right-3 -translate-y-1/2 z-20 text-brand-lime text-lg font-bold">
-                    →
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+            {packages.map((pkg, idx) => (
+              <div
+                key={idx}
+                className={`relative rounded-3xl border transition-all duration-300 hover:scale-[1.01] ${
+                  pkg.popular
+                    ? 'border-brand-lime bg-brand-lime/[0.03] shadow-brand-lime/5 shadow-lg'
+                    : 'border-fd-border/20 bg-fd-card/45 backdrop-blur-sm'
+                } p-8 flex flex-col justify-between`}
+              >
+                {pkg.popular && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-lime px-3.5 py-1 text-[10px] font-bold text-black uppercase tracking-wider shadow-md">
+                    {text.audiences.popularBadge}
                   </div>
                 )}
+
+                <div>
+                  <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-fd-muted border border-fd-border/10 shadow-sm">
+                    {pkg.icon}
+                  </div>
+
+                  <h3 className="font-display text-lg font-bold text-fd-foreground mb-6">
+                    {pkg.title}
+                  </h3>
+
+                  <ul className="space-y-4 mb-8">
+                    {pkg.features.map((feature, fIdx) => (
+                      <li key={fIdx} className="flex gap-3 items-start text-xs sm:text-sm text-fd-muted-foreground">
+                        <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-brand-lime" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <Link
+                  href={`/docs/${lang}/quickstart`}
+                  className={`w-full rounded-full py-2.5 text-center text-xs font-bold tracking-wide transition-all border ${
+                    pkg.popular
+                      ? 'bg-brand-lime text-black border-brand-lime hover:bg-[#d5f002]'
+                      : 'bg-fd-muted/30 border-fd-border text-fd-foreground hover:bg-fd-muted'
+                  }`}
+                >
+                  {text.audiences.exploreBtn}
+                </Link>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Architecture Blueprints Section */}
-      <section className="w-full px-6 py-20 relative border-t border-fd-border/10">
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="text-left mb-14">
-            <h2 className="text-3xl sm:text-4xl font-bold text-fd-foreground mb-4">
-              {t.sections.architecture.title}
-            </h2>
-            <p className="text-sm sm:text-base text-fd-muted-foreground max-w-xl leading-relaxed">
-              {t.sections.architecture.description}
+      {/* Footer Section */}
+      <footer className="w-full px-6 py-16 border-t border-fd-border/10 relative z-10 bg-fd-background text-left">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2.5 text-xs text-fd-muted-foreground">
+              <Layers className="h-5 w-5 text-brand-lime" />
+              <span className="font-bold text-fd-foreground text-sm">LinkedIn Job Explorer</span>
+            </div>
+            <p className="text-xs text-fd-muted-foreground max-w-sm leading-relaxed">
+              {text.footer.desc}
             </p>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
-            {/* Gateway Card */}
-            <div className="md:col-span-7 group relative overflow-hidden rounded-2xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-8 flex flex-col justify-between hover:border-blue-500/30 transition-all duration-300 min-h-[380px]">
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div>
-                <div className="h-11 w-11 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-6 border border-blue-500/20">
-                  <Globe className="h-5 w-5" />
-                </div>
-                <h3 className="text-2xl font-bold text-fd-foreground mb-3">{t.sections.architecture.gateway.title}</h3>
-                <p className="text-sm text-fd-muted-foreground leading-relaxed max-w-md">
-                  {t.sections.architecture.gateway.description}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-3 mt-8">
-                <div className="p-3 rounded-lg bg-fd-muted/20 border border-fd-border/10 text-xs">
-                  <span className="font-semibold text-fd-foreground block">{t.sections.architecture.gateway.features.graphql.title}</span>
-                  <span className="text-fd-muted-foreground">{t.sections.architecture.gateway.features.graphql.desc}</span>
-                </div>
-                <div className="p-3 rounded-lg bg-fd-muted/20 border border-fd-border/10 text-xs">
-                  <span className="font-semibold text-fd-foreground block">{t.sections.architecture.gateway.features.rest.title}</span>
-                  <span className="text-fd-muted-foreground">{t.sections.architecture.gateway.features.rest.desc}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Job Backend Card */}
-            <Link
-              href={`/docs/${lang}/job-backend/overview`}
-              className="md:col-span-5 group relative overflow-hidden rounded-2xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-8 flex flex-col justify-between hover:border-emerald-500/30 transition-all duration-300 min-h-[380px] cursor-pointer"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div>
-                <div className="h-11 w-11 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-6 border border-emerald-500/20 group-hover:scale-105 transition-transform">
-                  <Bot className="h-5 w-5" />
-                </div>
-                <h3 className="text-xl font-bold text-fd-foreground mb-3">{t.sections.architecture.jobBackend.title}</h3>
-                <p className="text-sm text-fd-muted-foreground leading-relaxed">
-                  {t.sections.architecture.jobBackend.description}
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold mt-6">
-                {t.sections.architecture.jobBackend.cta}
-                <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
+          <div className="flex flex-wrap gap-x-8 gap-y-4 justify-center md:justify-end text-xs text-fd-muted-foreground font-medium">
+            <Link href={`/docs/${lang}/quickstart`} className="hover:text-brand-lime transition-colors">
+              {text.footer.links.docs}
             </Link>
-
-            {/* Publisher Card */}
-            <Link
-              href={`/docs/${lang}/publisher-backend/overview`}
-              className="md:col-span-5 group relative overflow-hidden rounded-2xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-8 flex flex-col justify-between hover:border-violet-500/30 transition-all duration-300 min-h-[340px] cursor-pointer"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div>
-                <div className="h-11 w-11 rounded-xl bg-violet-500/10 text-violet-400 flex items-center justify-center mb-6 border border-violet-500/20 group-hover:scale-105 transition-transform">
-                  <ImageIcon className="h-5 w-5" />
-                </div>
-                <h3 className="text-xl font-bold text-fd-foreground mb-3">{t.sections.architecture.publisher.title}</h3>
-                <p className="text-sm text-fd-muted-foreground leading-relaxed">
-                  {t.sections.architecture.publisher.description}
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-violet-400 font-semibold mt-6">
-                {t.sections.architecture.publisher.cta}
-                <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
+            <Link href={`/docs/${lang}/job-backend/overview`} className="hover:text-brand-lime transition-colors">
+              {text.footer.links.gateway}
             </Link>
-
-            {/* Extension Card */}
-            <Link
-              href={`/docs/${lang}/extension`}
-              className="md:col-span-7 group relative overflow-hidden rounded-2xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-8 flex flex-col justify-between hover:border-brand-lime/30 transition-all duration-300 min-h-[340px] cursor-pointer"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-lime/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <div>
-                <div className="h-11 w-11 rounded-xl bg-brand-lime/10 text-brand-lime flex items-center justify-center mb-6 border border-brand-lime/20 group-hover:scale-105 transition-transform">
-                  <Zap className="h-5 w-5" />
-                </div>
-                <h3 className="text-xl font-bold text-fd-foreground mb-3">{t.sections.architecture.extension.title}</h3>
-                <p className="text-sm text-fd-muted-foreground leading-relaxed">
-                  {t.sections.architecture.extension.description}
-                </p>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-brand-lime font-semibold mt-6">
-                {t.sections.architecture.extension.cta}
-                <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
-              </div>
+            <Link href={`/docs/${lang}/job-backend/overview`} className="hover:text-brand-lime transition-colors">
+              {text.footer.links.jobBackend}
+            </Link>
+            <Link href={`/docs/${lang}/publisher-backend/overview`} className="hover:text-brand-lime transition-colors">
+              {text.footer.links.publisher}
             </Link>
           </div>
         </div>
-      </section>
 
-      {/* Footer Section */}
-      <footer className="w-full px-6 py-12 border-t border-fd-border/10 bg-fd-background relative z-10 text-left">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5 text-xs text-fd-muted-foreground">
-            <Layers className="h-4 w-4 text-brand-lime" />
-            <span className="font-bold text-fd-foreground">LinkedIn Job Explorer</span>
-            <span className="text-fd-border/30">·</span>
-            <span>{t.sections.footer.built}</span>
-          </div>
-          <div className="flex items-center gap-6">
-            <Link href={`/docs/${lang}/quickstart`} className="text-xs text-fd-muted-foreground hover:text-brand-lime transition-colors">
-              {t.sections.footer.links.docs}
-            </Link>
-            <Link href={`/docs/${lang}/job-backend/overview`} className="text-xs text-fd-muted-foreground hover:text-brand-lime transition-colors">
-              {t.sections.footer.links.gateway}
-            </Link>
-            <Link href={`/docs/${lang}/job-backend/overview`} className="text-xs text-fd-muted-foreground hover:text-brand-lime transition-colors">
-              {t.sections.footer.links.jobBackend}
-            </Link>
-            <Link href={`/docs/${lang}/publisher-backend/overview`} className="text-xs text-fd-muted-foreground hover:text-brand-lime transition-colors">
-              {t.sections.footer.links.publisher}
-            </Link>
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between pt-8 mt-8 border-t border-fd-border/10 text-[11px] text-fd-muted-foreground gap-4">
+          <p>{text.footer.rights}</p>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-fd-foreground transition-colors">
+              {text.footer.privacy}
+            </a>
+            <a href="#" className="hover:text-fd-foreground transition-colors">
+              {text.footer.terms}
+            </a>
           </div>
         </div>
       </footer>
-
     </main>
   );
 }
