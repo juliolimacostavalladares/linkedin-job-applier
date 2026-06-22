@@ -276,7 +276,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
         </div>
 
         {/* Dashboard UI Simulation viewport */}
-        <div className="border border-white/10 rounded-xl bg-black/40 overflow-hidden flex flex-row min-h-[300px] shadow-inner text-slate-300 font-sans relative z-10 w-full">
+        <div className="border border-white/10 rounded-xl bg-black/40 overflow-hidden flex flex-row min-h-[300px] shadow-inner text-slate-300 font-sans relative z-10 w-full flex-1">
           
           {/* Narrow left sidebar representing JobsPage.tsx Sidebar */}
           <div className="w-12 bg-zinc-950/60 border-r border-white/5 flex flex-col items-center py-4 gap-5 shrink-0 select-none">
@@ -470,7 +470,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
         </div>
 
         {/* Tailor UI card */}
-        <div className="border border-white/10 rounded-xl bg-black/40 p-4.5 flex flex-col gap-3.5 min-h-[300px] justify-between shadow-inner font-sans relative z-10 w-full">
+        <div className="border border-white/10 rounded-xl bg-black/40 p-4.5 flex flex-col gap-3.5 min-h-[300px] justify-between shadow-inner font-sans relative z-10 w-full flex-1">
           <div className="flex justify-between items-center pb-3 border-b border-white/5">
             <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
               {lang === 'pt-BR' ? 'Análise de ATS' : 'ATS Analysis'}
@@ -594,7 +594,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
         </div>
 
         {/* Post Creation Modal UI Mockup */}
-        <div className="border border-white/10 rounded-xl bg-black/40 p-4.5 flex flex-col gap-4 min-h-[300px] justify-between shadow-inner font-sans text-slate-300 relative text-left z-10 w-full">
+        <div className="border border-white/10 rounded-xl bg-black/40 p-4.5 flex flex-col gap-4 min-h-[300px] justify-between shadow-inner font-sans text-slate-300 relative text-left z-10 w-full flex-1">
           <div className="flex justify-between items-center pb-2.5 border-b border-white/5">
             <span className="text-xs font-semibold text-slate-200 tracking-tight">
               {lang === 'pt-BR' ? 'Criar uma publicação' : 'Create a post'}
