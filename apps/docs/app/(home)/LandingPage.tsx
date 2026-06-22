@@ -711,7 +711,10 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
   return (
     <main className="relative flex flex-col items-center overflow-hidden bg-[#090e11] text-[#e9ecef] min-h-screen w-full pt-16">
       {/* Background radial glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none z-0 bg-radial from-[#0a66c2]/10 via-[#0a66c2]/2 to-transparent blur-3xl opacity-80" />
+      <div 
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none z-0 blur-3xl opacity-90" 
+        style={{ background: 'radial-gradient(circle at 50% 30%, rgba(10, 102, 194, 0.38) 0%, rgba(10, 102, 194, 0.08) 50%, transparent 80%)' }}
+      />
 
       {/* Hero Section */}
       <section className="relative w-full px-6 pt-20 pb-16 overflow-hidden z-10">
