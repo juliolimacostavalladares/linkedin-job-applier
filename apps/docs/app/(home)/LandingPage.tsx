@@ -7,7 +7,7 @@ import {
   Zap, Bot, FileText, Terminal, Globe, RefreshCw,
   ImageIcon, ChevronRight, Database, Cpu, Check, Users,
   Search, Play, AlertCircle, ShieldAlert, Award,
-  ThumbsUp, MessageSquare, Share2, Send, Bookmark, MoreHorizontal
+  ThumbsUp, MessageSquare, Share2, Send, Bookmark, MoreHorizontal, Sparkles
 } from 'lucide-react';
 import { translations } from './translations';
 
@@ -859,6 +859,247 @@ pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
   );
 }
 
+function LinkedInCarouselPreview({ lang }: { lang: 'pt-BR' | 'en' }) {
+  const t = translations[lang].landingPlayground.carousel;
+  const [theme, setTheme] = useState<'premium' | 'purple' | 'yellow' | 'clean'>('premium');
+  const [slideIndex, setSlideIndex] = useState(0);
+
+  const themeClasses = {
+    premium: "bg-[#161b22] border border-[#2f3539] text-[#e9ecef]",
+    purple: "bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white",
+    yellow: "bg-yellow-400 text-black",
+    clean: "bg-white border border-[#e1e9ee] text-[#12161a]"
+  };
+
+  const activeSlide = t.slides[slideIndex] as unknown as { title: string; subtitle?: string; content?: string };
+
+  return (
+    <div className="rounded-xl border border-[#2f3539] bg-[#1d2226] p-6 flex flex-col justify-between shadow-md text-left min-h-[460px]">
+      <div>
+        <h4 className="text-sm font-bold text-[#e9ecef] tracking-wider uppercase mb-2 flex items-center gap-2">
+          <ImageIcon className="size-4 text-[#70b5f9]" />
+          {t.title}
+        </h4>
+        <p className="text-xs text-[#8f969b] mb-6 leading-relaxed">
+          {t.subtitle}
+        </p>
+
+        {/* Carousel Theme Selectors */}
+        <div className="flex gap-2 mb-6">
+          {(Object.keys(themeClasses) as Array<keyof typeof themeClasses>).map((k) => (
+            <button
+              key={k}
+              onClick={() => setTheme(k)}
+              className={`px-2.5 py-1 rounded text-[10px] font-semibold transition-all border cursor-pointer ${
+                theme === k
+                  ? 'bg-[#0a66c2] text-white border-[#0a66c2]'
+                  : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
+              }`}
+            >
+              {t.themes[k]}
+            </button>
+          ))}
+        </div>
+
+        {/* Simulated Slide Canvas Card */}
+        <div className={`aspect-square w-full max-w-[340px] mx-auto rounded-lg p-6 flex flex-col justify-between shadow-inner relative overflow-hidden transition-all duration-300 ${themeClasses[theme]}`}>
+          {/* Slide author badge */}
+          <div className="flex items-center gap-2">
+            <div className={`size-7 rounded-full flex items-center justify-center font-bold text-[10px] ${theme === 'yellow' ? 'bg-black text-yellow-400' : 'bg-[#0a66c2] text-white'}`}>
+              in
+            </div>
+            <div>
+              <span className={`text-[10px] font-bold block leading-none ${theme === 'clean' ? 'text-[#12161a]' : 'text-current'}`}>
+                Julio Lima
+              </span>
+              <span className={`text-[8px] opacity-60 block mt-0.5 ${theme === 'clean' ? 'text-[#8f969b]' : 'text-current'}`}>
+                LinkedIn Automation Agent
+              </span>
+            </div>
+          </div>
+
+          {/* Slide Body */}
+          <div className="my-auto text-left space-y-3">
+            <h3 className={`text-base sm:text-lg font-extrabold leading-snug tracking-tight ${theme === 'clean' ? 'text-[#12161a]' : 'text-current'}`}>
+              {activeSlide.title}
+            </h3>
+            {activeSlide.content && (
+              <p className={`text-[11px] font-mono whitespace-pre-line leading-relaxed opacity-85 ${theme === 'clean' ? 'text-[#24292f]' : 'text-current'}`}>
+                {activeSlide.content}
+              </p>
+            )}
+            {activeSlide.subtitle && (
+              <span className={`text-[10px] block font-semibold opacity-75 ${theme === 'clean' ? 'text-[#8f969b]' : 'text-current'}`}>
+                {activeSlide.subtitle}
+              </span>
+            )}
+          </div>
+
+          {/* Slide navigation/pagination indicators inside slide */}
+          <div className="flex justify-between items-center text-[9px] opacity-60">
+            <span>in/job-explorer</span>
+            <span>{slideIndex + 1} / {t.slides.length}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Navigation Buttons */}
+      <div className="flex justify-between items-center mt-6 pt-4 border-t border-[#2f3539]/50">
+        <button
+          onClick={() => setSlideIndex(prev => Math.max(0, prev - 1))}
+          disabled={slideIndex === 0}
+          className={`px-3 py-1 rounded text-xs transition-colors cursor-pointer ${
+            slideIndex === 0 ? 'text-[#2f3539] cursor-not-allowed' : 'text-[#70b5f9] hover:bg-[#2f3539]/10'
+          }`}
+        >
+          ← Prev
+        </button>
+
+        {/* Dots */}
+        <div className="flex gap-1.5">
+          {t.slides.map((_: unknown, idx: number) => (
+            <span
+              key={idx}
+              className={`size-1.5 rounded-full transition-all ${
+                slideIndex === idx ? 'bg-[#70b5f9] scale-125' : 'bg-[#2f3539]'
+              }`}
+            />
+          ))}
+        </div>
+
+        <button
+          onClick={() => setSlideIndex(prev => Math.min(t.slides.length - 1, prev + 1))}
+          disabled={slideIndex === t.slides.length - 1}
+          className={`px-3 py-1 rounded text-xs transition-colors cursor-pointer ${
+            slideIndex === t.slides.length - 1 ? 'text-[#2f3539] cursor-not-allowed' : 'text-[#70b5f9] hover:bg-[#2f3539]/10'
+          }`}
+        >
+          Next →
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function AIResumeOptimizerPreview({ lang }: { lang: 'pt-BR' | 'en' }) {
+  const t = translations[lang].landingPlayground.resume;
+  const [viewState, setViewState] = useState<'original' | 'optimized'>('optimized');
+  const [score, setScore] = useState(94);
+
+  useEffect(() => {
+    setScore(viewState === 'original' ? 58 : 94);
+  }, [viewState]);
+
+  return (
+    <div className="rounded-xl border border-[#2f3539] bg-[#1d2226] p-6 flex flex-col justify-between shadow-md text-left min-h-[460px]">
+      <div>
+        <h4 className="text-sm font-bold text-[#e9ecef] tracking-wider uppercase mb-2 flex items-center gap-2">
+          <Bot className="size-4 text-[#70b5f9]" />
+          {t.title}
+        </h4>
+        <p className="text-xs text-[#8f969b] mb-6 leading-relaxed">
+          {t.subtitle}
+        </p>
+
+        {/* View state selectors */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setViewState('original')}
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
+              viewState === 'original'
+                ? 'bg-[#0a66c2] text-white border-[#0a66c2]'
+                : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
+            }`}
+          >
+            {t.original}
+          </button>
+          <button
+            onClick={() => setViewState('optimized')}
+            className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
+              viewState === 'optimized'
+                ? 'bg-[#0a66c2] text-white border-[#0a66c2]'
+                : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
+            }`}
+          >
+            {t.optimized}
+          </button>
+        </div>
+
+        {/* CV Match Card Preview */}
+        <div className="p-4 rounded-lg bg-[#090e11] border border-[#2f3539] space-y-4">
+          <div className="flex justify-between items-center">
+            <span className="text-[11px] font-bold text-[#e9ecef] tracking-wider uppercase">
+              {t.analysis}
+            </span>
+            <span className={`text-xs font-bold px-2 py-0.5 rounded font-mono border transition-all ${
+              viewState === 'original'
+                ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+            }`}>
+              {t.match}: {score}%
+            </span>
+          </div>
+
+          {/* Progress bar match */}
+          <div className="w-full bg-[#1d2226] rounded-full h-2 overflow-hidden border border-[#2f3539]">
+            <div
+              className={`h-full transition-all duration-500 ${
+                viewState === 'original' ? 'bg-orange-500' : 'bg-emerald-500'
+              }`}
+              style={{ width: `${score}%` }}
+            />
+          </div>
+
+          {/* Skill items tailoring analysis */}
+          <div className="space-y-2.5 pt-2 text-xs">
+            <div className="flex items-center justify-between p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/30">
+              <span className="text-[#8f969b]">{t.skills.s1}</span>
+              <span className="font-semibold text-emerald-400 flex items-center gap-1">
+                <Check className="size-3.5" /> Matched
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/30">
+              <span className="text-[#8f969b]">{t.skills.s2}</span>
+              {viewState === 'original' ? (
+                <span className="font-semibold text-orange-400 flex items-center gap-1">
+                  <AlertCircle className="size-3.5" /> Missing
+                </span>
+              ) : (
+                <span className="font-semibold text-emerald-400 flex items-center gap-1 font-mono text-[11px] animate-pulse">
+                  [+] AI Auto-Inserted
+                </span>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/30">
+              <span className="text-[#8f969b]">{t.skills.s3}</span>
+              {viewState === 'original' ? (
+                <span className="font-semibold text-orange-400 flex items-center gap-1">
+                  <AlertCircle className="size-3.5" /> Missing
+                </span>
+              ) : (
+                <span className="font-semibold text-emerald-400 flex items-center gap-1 font-mono text-[11px] animate-pulse">
+                  [+] AI Auto-Tailored
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="text-[10px] text-[#8f969b] leading-normal pt-4 border-t border-[#2f3539]/50 flex items-center gap-1.5">
+        <Sparkles className="size-3.5 text-[#70b5f9]" />
+        <span>
+          {viewState === 'original'
+            ? "Original CV lacks job contextual search phrases."
+            : "Optimization complete via Gemini LLM. Ready for Easy Apply submission."}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
   const text = translations[lang];
 
@@ -930,6 +1171,14 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
         <div className="max-w-6xl mx-auto relative z-10 text-left">
           {/* Rebranded Feed post */}
           <LinkedInFeedPost lang={lang} />
+
+          {/* Conversion Playgrounds Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-12 items-stretch">
+            <AIResumeOptimizerPreview lang={lang} />
+            <LinkedInCarouselPreview lang={lang} />
+          </div>
+
+          <div className="h-[1px] w-full bg-[#2f3539]/40 my-16" />
 
           {/* Integration selectors playground */}
           <InteractiveIntegration />

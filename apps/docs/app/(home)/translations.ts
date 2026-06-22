@@ -211,9 +211,48 @@ export const translations = {
             c2: "Dicas de Tailwind v4.pdf"
           },
           microservices: "Rede de Microsserviços"
-        }
-      }
+        },
+      },
+      landingPlayground: {
+          carousel: {
+            title: "Compilador de Carrossel para LinkedIn",
+            subtitle: "Gere apresentações PDF prontas para postar. Teste o componente do publicador abaixo:",
+            themes: {
+              premium: "Dark Premium",
+              purple: "Gradiente Roxo",
+              yellow: "Amarelo Bold",
+              clean: "Clean Startup"
+            },
+            slides: [
+              {
+                title: "Como Criar Carrosséis que Convertem no LinkedIn",
+                subtitle: "Arraste para o lado para aprender o passo a passo ➔"
+              },
+              {
+                title: "Por que o formato de Carrossel?",
+                content: "● Geram 3x mais engajamento que posts comuns\n● Aumentam o tempo de permanência no seu post\n● Facilitam a explicação de conceitos complexos"
+              },
+              {
+                title: "Curtiu o Conteúdo?",
+                subtitle: "Siga meu perfil para dicas diárias de tecnologia e liderança!"
+              }
+            ]
+          },
+          resume: {
+            title: "Otimizador Easy Apply & Currículos por IA",
+            subtitle: "Modifique seu currículo sob demanda e responda formulários complexos automaticamente.",
+            original: "Currículo Original",
+            optimized: "Currículo Otimizado",
+            analysis: "Análise de Habilidades",
+            skills: {
+              s1: "TypeScript (Requisito Chave)",
+              s2: "Redis & BullMQ (Fila de Tarefas)",
+              s3: "Next.js App Router (Arquitetura)"
+            },
+            match: "Taxa de Compatibilidade"
+          }
     },
+  },
   en: {
     hero: {
       badge: 'the full-stack automation toolchain you love.',
@@ -425,10 +464,49 @@ export const translations = {
             c2: "Tailwind v4 Tips.pdf"
           },
           microservices: "Microservices Network"
-        }
-      }
-    }
-  } as const;
+        },
+      },
+      landingPlayground: {
+          carousel: {
+            title: "LinkedIn Slide Carousel Compiler",
+            subtitle: "Generate print-ready PDF slideshows. Test the publisher component below:",
+            themes: {
+              premium: "Dark Premium",
+              purple: "Gradient Purple",
+              yellow: "Bold Yellow",
+              clean: "Clean Startup"
+            },
+            slides: [
+              {
+                title: "How to Create LinkedIn Carousels that Convert",
+                subtitle: "Swipe to learn the step-by-step process ➔"
+              },
+              {
+                title: "Why the Carousel Format?",
+                content: "● Generate 3x more engagement than standard posts\n● Increase dwell time on your updates\n● Easily explain complex engineering concepts"
+              },
+              {
+                title: "Enjoyed the Content?",
+                subtitle: "Follow my profile for daily tech and leadership tips!"
+              }
+            ]
+          },
+          resume: {
+            title: "AI Easy Apply & Resume Optimizer",
+            subtitle: "Optimize your resume on-demand and auto-answer complex questionnaires.",
+            original: "Original Resume",
+            optimized: "Optimized Resume",
+            analysis: "Skills Match Analysis",
+            skills: {
+              s1: "TypeScript (Key Requirement)",
+              s2: "Redis & BullMQ (Queue System)",
+              s3: "Next.js App Router (Architecture)"
+            },
+            match: "Compatibility Rate"
+          }
+    },
+  }
+} as const;
 
 export type Locale = keyof typeof translations;
 export const defaultLocale: Locale = 'pt-BR';
