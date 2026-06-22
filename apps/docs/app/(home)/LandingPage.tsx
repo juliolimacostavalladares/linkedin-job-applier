@@ -67,196 +67,370 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
   
   // 2. Job Auto-Apply Simulator State
   const [applyState, setApplyState] = useState<'idle' | 'scraping' | 'solving' | 'submitting' | 'success'>('idle');
-  const [applyLog, setApplyLog] = useState<string[]>([]);
+  const [selectedMockJob, setSelectedMockJob] = useState(0);
+  const [typedAnswers, setTypedAnswers] = useState<{ q1: string; q2: string }>({ q1: '', q2: '' });
 
-  // 3. Slide Carousel Compiler State
-  const [carouselTheme, setCarouselTheme] = useState<'premium' | 'yellow' | 'purple'>('premium');
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  // 4. Publisher Draft State
+  // 3. Post Creator State
+  const [showAiAssistant, setShowAiAssistant] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiGenerating, setAiGenerating] = useState(false);
   const [postDraft, setPostDraft] = useState(
     lang === 'pt-BR' 
       ? 'Construindo microsserviços resilientes com Next.js App Router, Redis e workers em BullMQ para processamento paralelo.'
       : 'Building resilient microservices using Next.js App Router, Redis, and BullMQ background workers for parallel scaling.'
   );
+  const [carouselPdfAdded, setCarouselPdfAdded] = useState(false);
+
+  // 4. Slide Feed Carousel Preview State
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const mockJobs = [
+    {
+      title: "Senior Next.js Developer",
+      company: "Vercel Inc.",
+      location: "Remote",
+      match: "95%",
+      q1: lang === 'pt-BR' ? "Anos de experiência com React/Next.js?" : "Years of Next.js experience?",
+      a1: lang === 'pt-BR' ? "5 anos liderando projetos e migrando arquiteturas SPA para Server Components." : "5 years leading projects and migrating legacy architectures to Server Components.",
+      q2: lang === 'pt-BR' ? "Descreva experiência com RSCs." : "Describe experience with RSCs.",
+      a2: lang === 'pt-BR' ? "Reduzi o TTFB em 40% aplicando Server Components e rotas dinâmicas." : "Reduced TTFB by 40% utilizing Server Components and dynamic route parameters."
+    },
+    {
+      title: "TypeScript Compiler Architect",
+      company: "OpenAI",
+      location: "San Francisco",
+      match: "89%",
+      q1: lang === 'pt-BR' ? "Experiência com compiladores ou AST?" : "AST or compiler experience?",
+      a1: lang === 'pt-BR' ? "Desenvolvi plugins de lint internos e analisadores estáticos baseados em TypeScript AST." : "Created internal lint plugins and static analyzers based on TypeScript AST structures.",
+      q2: lang === 'pt-BR' ? "Por que strict typing em pipelines?" : "Why strict typing in pipelines?",
+      a2: lang === 'pt-BR' ? "Para garantir validação de dados em runtime de payloads de modelos com zero drift." : "To guarantee runtime validation of model payload outputs with zero type drift."
+    },
+    {
+      title: "Full Stack Engineer (Node & Redis)",
+      company: "Stripe",
+      location: "Remote (USA)",
+      match: "92%",
+      q1: lang === 'pt-BR' ? "Experiência com BullMQ e Redis?" : "BullMQ and Redis experience?",
+      a1: lang === 'pt-BR' ? "Gerenciei filas distribuidas para concorrência de 10k RPS em transações financeiras." : "Managed distributed queues processing 10k RPS concurrency for transaction pipelines.",
+      q2: lang === 'pt-BR' ? "Descreva manipulação de webhooks." : "Describe webhooks handling.",
+      a2: lang === 'pt-BR' ? "Implementei regras de idempotência em Redis para evitar duplicidade de pagamentos." : "Implemented strict idempotency checks in Redis to prevent double charge submissions."
+    }
+  ];
 
   // Auto-Apply Simulator Function
   const runApplySimulation = () => {
     if (applyState !== 'idle') return;
     
     setApplyState('scraping');
-    setApplyLog(
-      lang === 'pt-BR'
-        ? ["[14:42:01] Buscando vagas para 'Senior Next.js Developer'...", "↳ Encontrada vaga Easy Apply em Vercel Inc."]
-        : ["[14:42:01] Fetching jobs for 'Senior Next.js Developer'...", "↳ Found active Easy Apply listing at Vercel Inc."]
-    );
+    setTypedAnswers({ q1: '', q2: '' });
 
     setTimeout(() => {
       setApplyState('solving');
-      setApplyLog(prev => [
-        ...prev,
-        ...(lang === 'pt-BR'
-          ? ["[14:42:03] Fazendo parse do questionário de candidatura...", "↳ Pergunta: 'Quantos anos de Next.js?' -> IA: '5 anos'", "↳ Pergunta: 'Resuma experiência com RSC?' -> IA: 'Migrei arquiteturas legadas...'"]
-          : ["[14:42:03] Parsing application form questionnaire...", "↳ Question: 'Years of Next.js exp?' -> AI: '5 years'", "↳ Question: 'Describe RSC exp?' -> AI: 'Migrated legacy architectures...'"])
-      ]);
+      
+      // Simulate typing answers
+      let index1 = 0;
+      const targetA1 = mockJobs[selectedMockJob].a1;
+      const typeQ1 = () => {
+        if (index1 <= targetA1.length) {
+          setTypedAnswers(prev => ({ ...prev, q1: targetA1.slice(0, index1) }));
+          index1++;
+          setTimeout(typeQ1, 15);
+        } else {
+          // Start typing Q2 after Q1 is done
+          setTimeout(() => {
+            let index2 = 0;
+            const targetA2 = mockJobs[selectedMockJob].a2;
+            const typeQ2 = () => {
+              if (index2 <= targetA2.length) {
+                setTypedAnswers(prev => ({ ...prev, q2: targetA2.slice(0, index2) }));
+                index2++;
+                setTimeout(typeQ2, 15);
+              } else {
+                // Done answering, proceed to submitting
+                setTimeout(() => {
+                  setApplyState('submitting');
+                  setTimeout(() => {
+                    setApplyState('success');
+                  }, 1200);
+                }, 800);
+              }
+            };
+            typeQ2();
+          }, 400);
+        }
+      };
+      typeQ1();
 
-      setTimeout(() => {
-        setApplyState('submitting');
-        setApplyLog(prev => [
-          ...prev,
-          ...(lang === 'pt-BR'
-            ? ["[14:42:05] Otimizando currículo com Gemini...", "↳ Inserindo palavras-chave: Next.js App Router, BullMQ, Redis", "[14:42:06] Enviando formulário via Voyager API..."]
-            : ["[14:42:05] Optimizing CV with Gemini...", "↳ Inserting key phrases: Next.js App Router, BullMQ, Redis", "[14:42:06] Submitting form via Voyager API..."])
-        ]);
-
-        setTimeout(() => {
-          setApplyState('success');
-          setApplyLog(prev => [
-            ...prev,
-            ...(lang === 'pt-BR'
-              ? ["✓ [14:42:07] Candidatura enviada com sucesso!"]
-              : ["✓ [14:42:07] Application submitted successfully!"])
-          ]);
-        }, 1200);
-      }, 1500);
-    }, 1500);
+    }, 1200);
   };
 
   const resetApplySimulation = () => {
     setApplyState('idle');
-    setApplyLog([]);
+    setTypedAnswers({ q1: '', q2: '' });
   };
 
-  // Carousel slide definitions
+  // AI Content Generator Simulator
+  const runAiGeneration = () => {
+    if (aiGenerating) return;
+    setAiGenerating(true);
+    setTimeout(() => {
+      setAiGenerating(false);
+      setPostDraft(
+        lang === 'pt-BR'
+          ? "Next.js App Router + Redis + BullMQ = 🚀\n\nConstruir sistemas resilientes exige processamento em segundo plano. Com workers BullMQ, processamos renders assíncronos de PDFs no backend sem congelar o cliente. \n\nConfira o guia completo que acabo de gerar no docs! 👇"
+          : "Next.js App Router + Redis + BullMQ = 🚀\n\nBuilding resilient systems requires background processing. With BullMQ workers, we process async PDF rendering on the backend without locking the client thread. \n\nCheck out the full guide I just generated in the docs! 👇"
+      );
+      setShowAiAssistant(false);
+      setCarouselPdfAdded(true); // Automatically attach the carousel
+    }, 1500);
+  };
+
+  // Carousel slide definitions for Card 4 (LinkedIn Feed Post Carousel Preview)
   const slides = lang === 'pt-BR' ? [
     {
-      title: "Como Criar Carrosséis que Convertem",
-      desc: "Use slides dinâmicos e limpos para atrair cliques na timeline do LinkedIn."
+      title: "Como Criar Carrosséis que Convertem no LinkedIn",
+      bullets: [
+        "● Chame atenção nos primeiros 3 segundos da timeline",
+        "● Divida conceitos de engenharia em passos simples",
+        "● Use gradientes limpos e fontes de fácil leitura"
+      ],
+      footer: "Arrastar para o lado para ver o fluxo ➔"
     },
     {
-      title: "BullMQ & Redis Workers",
-      desc: "Processe renders assíncronos de PDFs no backend sem congelar o cliente."
+      title: "Workers em Background com BullMQ & Redis",
+      bullets: [
+        "● PDF Compiler renderiza o carrossel no backend",
+        "● Filas garantem retries automáticos em falhas",
+        "--- Processamento distribuído não sobrecarrega a API"
+      ],
+      footer: "Próximo slide: Métricas e Resultados obtidos ➔"
     },
     {
-      title: "Resultados com IA",
-      desc: "Agregue relevância técnica automática baseada nos seus dados de código."
+      title: "Resultados com o LinkedIn Job Explorer",
+      bullets: [
+        "● Candidaturas Easy Apply com 100% de automação",
+        "● IA Gemini preenche questionários contextualmente",
+        "● Otimização ATS aumenta taxa de resposta de vagas"
+      ],
+      footer: "Siga o projeto no GitHub para novidades!"
     }
   ] : [
     {
-      title: "How to Build Carousels that Convert",
-      desc: "Use clean templates to increase dwell time on the LinkedIn feed."
+      title: "How to Build High-Converting LinkedIn Carousels",
+      bullets: [
+        "● Capture feed attention in the first 3 seconds",
+        "● Break complex engineering topics into quick slides",
+        "● Use polished gradients and clear typography"
+      ],
+      footer: "Swipe left to see the technical architecture ➔"
     },
     {
-      title: "BullMQ & Redis Workers",
-      desc: "Process async PDF renders on the backend without locking the client thread."
+      title: "Background Processing with BullMQ & Redis",
+      bullets: [
+        "● PDF Compiler renders carousels in worker threads",
+        "● Persistent queues handle API rate limits gracefully",
+        "● Distributed processing scales independently from web servers"
+      ],
+      footer: "Next slide: Metrics and Results achieved ➔"
     },
     {
-      title: "AI-Generated Relevance",
-      desc: "Aggregate direct technical details matching your repository updates."
+      title: "Achieved Metrics & Benefits",
+      bullets: [
+        "● 100% automated Easy Apply form completions",
+        "● Gemini AI models resolve questions contextually",
+        "● ATS Keyword matching increases response rates"
+      ],
+      footer: "Follow the GitHub repository for updates!"
     }
   ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch w-full mt-12 relative z-10 text-left">
       
-      {/* 1. Job Applier & Loop Simulator (Colspan 7) */}
+      {/* 1. Real Job Applier UI Mockup (Colspan 7) */}
       <div className="md:col-span-7 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
             <span className="h-2 w-2 rounded-full bg-[#70b5f9] animate-pulse" />
             <span className="text-[10px] font-mono font-bold text-[#70b5f9] uppercase tracking-wider">
-              {lang === 'pt-BR' ? 'Módulo Applier' : 'Applier Module'}
+              {lang === 'pt-BR' ? 'Módulo Job Finder / Applier' : 'Job Finder / Applier UI'}
             </span>
           </div>
           <h3 className="text-xl font-bold text-white">
-            {lang === 'pt-BR' ? 'Busca e Auto-Candidatura de Vagas' : 'Job Search & Auto-Apply'}
+            {lang === 'pt-BR' ? 'Mockup da UI de Candidaturas' : 'Real Job Application Dashboard'}
           </h3>
           <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
             {lang === 'pt-BR'
-              ? 'Consulte listagens ativas e preencha formulários Easy Apply sem sobrecarga de navegador, rodando workers assíncronos diretamente nas APIs do LinkedIn.'
-              : 'Query listings and submit Easy Apply packages without heavy browser processes, running async tasks directly against LinkedIn APIs.'}
+              ? 'Interface real de busca integrada. Analise scores de match e preencha formulários Easy Apply automaticamente através do assistente de IA.'
+              : 'Interactive view of our application dashboard. Evaluate match scores and trigger AI autofill scripts directly inside candidate streams.'}
           </p>
         </div>
 
-        {/* Live Simulator Viewport */}
-        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 font-mono text-xs flex flex-col gap-3 min-h-[250px] relative overflow-hidden shadow-inner">
-          <div className="flex justify-between items-center pb-2 border-b border-[#2f3539]/30">
-            <span className="text-[10px] font-semibold text-[#8f969b] flex items-center gap-1.5">
-              <Terminal className="size-3.5 text-[#70b5f9]" />
-              voyager-apply-worker.log
-            </span>
+        {/* Dashboard UI Simulation viewport */}
+        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/90 overflow-hidden flex flex-row min-h-[300px] shadow-inner text-slate-300 font-sans relative">
+          
+          {/* Narrow left sidebar representing JobsPage.tsx Sidebar */}
+          <div className="w-12 bg-[#12161a] border-r border-[#2f3539]/40 flex flex-col items-center py-4 gap-4 shrink-0">
+            <div className="size-6 bg-[#0a66c2] text-white flex items-center justify-center font-bold text-xs rounded select-none shadow">in</div>
+            <div className="flex flex-col gap-3.5 mt-2 flex-1">
+              <Briefcase className="size-4 text-[#70b5f9]" />
+              <FileCheck2 className="size-4 text-[#8f969b] hover:text-white cursor-pointer" />
+              <UserSearch className="size-4 text-[#8f969b] hover:text-white cursor-pointer" />
+            </div>
+            <Globe className="size-4 text-[#8f969b]" />
+          </div>
+
+          {/* Job List Panel (w-[180px]) */}
+          <div className="w-[180px] border-r border-[#2f3539]/40 flex flex-col bg-[#0f1316] shrink-0">
+            <div className="p-2 border-b border-[#2f3539]/30">
+              <input 
+                type="text" 
+                readOnly 
+                placeholder={lang === 'pt-BR' ? 'Pesquisar vagas...' : 'Search jobs...'} 
+                className="w-full bg-[#090e11] border border-[#2f3539]/40 rounded px-2 py-0.5 text-[9px] outline-none text-slate-300 placeholder-[#8f969b]"
+              />
+            </div>
+            <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
+              {mockJobs.map((job, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => {
+                    if (applyState === 'idle') {
+                      setSelectedMockJob(idx);
+                    }
+                  }}
+                  className={`p-2 rounded text-left transition-all text-[10px] ${
+                    applyState !== 'idle' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  } ${
+                    selectedMockJob === idx 
+                      ? 'bg-[#1d2226] border border-[#70b5f9]/20 text-white' 
+                      : 'hover:bg-[#12161a] border border-transparent'
+                  }`}
+                >
+                  <div className="font-semibold truncate">{job.title}</div>
+                  <div className="text-[8px] text-[#8f969b] truncate">{job.company}</div>
+                  <div className="flex items-center justify-between mt-1 text-[8px] font-mono">
+                    <span className="text-[#70b5f9]">{job.match} match</span>
+                    <span className="text-[#8f969b]">Idle</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Job Details & Easy Apply Simulator (flex-1) */}
+          <div className="flex-1 flex flex-col p-4 bg-[#090e11] relative overflow-hidden">
             {applyState === 'idle' ? (
-              <button
-                onClick={runApplySimulation}
-                className="px-2.5 py-1 rounded bg-[#0a66c2] text-white font-sans font-bold text-[10px] transition-transform active:scale-95 cursor-pointer shadow hover:bg-[#004182]"
-              >
-                {lang === 'pt-BR' ? 'Executar Teste' : 'Run Simulator'}
-              </button>
+              <div className="flex-grow flex flex-col justify-between text-left">
+                <div>
+                  <div className="flex justify-between items-start gap-1">
+                    <h4 className="text-xs font-bold text-white leading-tight">{mockJobs[selectedMockJob].title}</h4>
+                    <span className="text-[9px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-1.5 py-0.5 rounded font-mono font-semibold shrink-0">
+                      {mockJobs[selectedMockJob].match} Match
+                    </span>
+                  </div>
+                  <div className="text-[9px] text-[#8f969b] mt-0.5">{mockJobs[selectedMockJob].company} · {mockJobs[selectedMockJob].location}</div>
+                  
+                  <div className="mt-3 border-t border-[#2f3539]/30 pt-3 space-y-1.5">
+                    <div className="text-[9px] font-semibold text-slate-400 uppercase tracking-wider">{lang === 'pt-BR' ? 'Requisitos da Vaga' : 'Requirements'}</div>
+                    <p className="text-[9px] text-[#8f969b] leading-relaxed">
+                      {selectedMockJob === 0 
+                        ? (lang === 'pt-BR' ? 'Necessário domínio de React, Next.js App Router, TypeScript e Server Components para refatorar fluxos existentes.' : 'Requires solid React, Next.js App Router, TypeScript, and Server Components to refactor core layout modules.')
+                        : selectedMockJob === 1
+                        ? (lang === 'pt-BR' ? 'Profundo entendimento de compiladores, AST parsing e strict types para integração com pipelines de LLM.' : 'Deep understanding of AST compiling rules, TypeScript typings, and strict payload structural verification.')
+                        : (lang === 'pt-BR' ? 'Lidar com workers assíncronos no backend com BullMQ e Redis para processamento de filas financeiras.' : 'Experience building high concurrency workers with Redis and BullMQ to decouple heavy client requests.')}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-[#2f3539]/30">
+                  <button
+                    onClick={runApplySimulation}
+                    className="w-full py-1.5 rounded bg-[#0a66c2] text-white font-bold text-[10px] hover:bg-[#004182] transition-colors active:scale-95 cursor-pointer flex items-center justify-center gap-1 shadow"
+                  >
+                    <Sparkles className="size-3 fill-white/10" />
+                    {lang === 'pt-BR' ? 'Candidatura Rápida com IA' : 'Easy Apply with AI'}
+                  </button>
+                </div>
+              </div>
             ) : (
-              <button
-                onClick={resetApplySimulation}
-                className="px-2.5 py-1 rounded border border-[#2f3539] bg-[#1d2226] text-[#e9ecef] font-sans font-semibold text-[10px] transition-transform active:scale-95 cursor-pointer hover:bg-[#2f3539]"
-              >
-                {lang === 'pt-BR' ? 'Resetar' : 'Reset'}
-              </button>
+              /* Simulated ApplyModal overlay UI */
+              <div className="flex-grow flex flex-col justify-between text-left animate-fadeIn">
+                <div className="border-b border-[#2f3539]/30 pb-2 flex justify-between items-center">
+                  <span className="text-[9px] font-bold text-white font-mono flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    {lang === 'pt-BR' ? 'Candidatura Fácil LinkedIn' : 'LinkedIn Easy Apply Dialog'}
+                  </span>
+                  <button 
+                    onClick={resetApplySimulation}
+                    className="text-[#8f969b] hover:text-white text-xs cursor-pointer font-bold px-1"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <div className="flex-1 py-3 overflow-y-auto space-y-3 font-mono text-[9px]">
+                  {/* Field 1 */}
+                  <div className="space-y-1">
+                    <div className="text-[#8f969b]">{mockJobs[selectedMockJob].q1}</div>
+                    <div className="bg-[#12161a] border border-[#2f3539]/60 rounded p-1.5 text-white min-h-[22px] flex items-center">
+                      {applyState === 'scraping' ? (
+                        <span className="text-[#70b5f9] animate-pulse">● {lang === 'pt-BR' ? 'Mapeando campo...' : 'Parsing field...'}</span>
+                      ) : (
+                        <span>{typedAnswers.q1}</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Field 2 */}
+                  {(applyState === 'solving' || applyState === 'submitting' || applyState === 'success') && (
+                    <div className="space-y-1 animate-fadeIn">
+                      <div className="text-[#8f969b]">{mockJobs[selectedMockJob].q2}</div>
+                      <div className="bg-[#12161a] border border-[#2f3539]/60 rounded p-1.5 text-white min-h-[22px] flex items-center">
+                        {typedAnswers.q1.length < mockJobs[selectedMockJob].a1.length ? (
+                          <span className="text-[#8f969b] animate-pulse">...</span>
+                        ) : (
+                          <span>{typedAnswers.q2}</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Status Overlay messages */}
+                  {applyState === 'submitting' && (
+                    <div className="text-[#70b5f9] font-bold animate-pulse py-1 text-center border border-[#70b5f9]/20 bg-[#0a66c2]/5 rounded">
+                      {lang === 'pt-BR' ? '✓ Respostas geradas. Enviando via API...' : '✓ AI Form filled. Submitting payload...'}
+                    </div>
+                  )}
+
+                  {applyState === 'success' && (
+                    <div className="text-emerald-400 font-bold bg-emerald-500/5 border border-emerald-500/20 py-2 px-3 rounded text-center space-y-1 animate-fadeIn">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <Check className="size-3.5 text-emerald-400" />
+                        <span>{lang === 'pt-BR' ? 'Candidatura Enviada!' : 'Application Sent Successfully!'}</span>
+                      </div>
+                      <div className="text-[7px] text-[#8f969b] font-mono">voyager-apply-ok · ID #{99182 + selectedMockJob}</div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 border-t border-[#2f3539]/20">
+                  <button
+                    onClick={resetApplySimulation}
+                    className="w-full py-1 rounded border border-[#2f3539] bg-[#1d2226] hover:bg-[#2f3539] text-[#e9ecef] font-semibold text-[10px] active:scale-95 cursor-pointer"
+                  >
+                    {applyState === 'success' ? (lang === 'pt-BR' ? 'Voltar para Vagas' : 'Back to Listings') : (lang === 'pt-BR' ? 'Cancelar' : 'Cancel')}
+                  </button>
+                </div>
+              </div>
             )}
           </div>
 
-          {/* Jobs Feed List */}
-          {applyState === 'idle' && (
-            <div className="space-y-2 py-1 font-sans">
-              <div className="flex justify-between items-center p-2 rounded-lg bg-[#12161a]/40 border border-[#2f3539]/30">
-                <div>
-                  <div className="text-xs font-bold text-[#e9ecef]">Senior React Developer</div>
-                  <div className="text-[10px] text-[#8f969b]">Vercel Inc. · Remote</div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] bg-[#0a66c2]/10 text-[#70b5f9] border border-[#0a66c2]/20 px-1.5 py-0.5 rounded font-mono">95% match</span>
-                  <span className="text-[9px] font-bold uppercase text-[#8f969b] font-mono">Idle</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center p-2 rounded-lg bg-[#12161a]/40 border border-[#2f3539]/30">
-                <div>
-                  <div className="text-xs font-bold text-[#e9ecef]">TypeScript Compiler Architect</div>
-                  <div className="text-[10px] text-[#8f969b]">OpenAI · San Francisco</div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] bg-[#0a66c2]/10 text-[#70b5f9] border border-[#0a66c2]/20 px-1.5 py-0.5 rounded font-mono">89% match</span>
-                  <span className="text-[9px] font-bold uppercase text-[#8f969b] font-mono">Idle</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Simulator Logs Display */}
-          {applyState !== 'idle' && (
-            <div className="flex-1 overflow-y-auto space-y-1.5 text-[11px] leading-relaxed max-h-[170px] pr-2">
-              {applyLog.map((log, index) => (
-                <div
-                  key={index}
-                  className={`pl-3 border-l ${
-                    log.startsWith('✓')
-                      ? 'border-emerald-500 text-emerald-400 font-bold bg-emerald-500/5 py-1 px-1.5 rounded-r'
-                      : log.startsWith('↳')
-                      ? 'border-[#2f3539]/40 text-[#8f969b] ml-3'
-                      : 'border-[#70b5f9] text-slate-300'
-                  }`}
-                >
-                  {log}
-                </div>
-              ))}
-              {applyState !== 'success' && (
-                <div className="text-[#70b5f9] text-[11px] pl-3 animate-pulse border-l border-[#70b5f9]">
-                  ● {lang === 'pt-BR' ? 'Processando...' : 'Processing...'}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
-      {/* 2. AI Resume Optimizer (Colspan 5) */}
+      {/* 2. AI Resume Optimizer & Match Analysis (Colspan 5) */}
       <div className="md:col-span-5 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="mb-4">
@@ -271,13 +445,13 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
           </h3>
           <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
             {lang === 'pt-BR'
-              ? 'Escaneie a descrição de cargos no LinkedIn e reescreva seções ou summaries para atingir compatibilidade máxima de palavras-chave.'
-              : 'Scan LinkedIn description requirements to dynamically inject missing technical skills and tailor summary sentences.'}
+              ? 'Compare currículos e injete de forma cirúrgica palavras-chave e descrições para atingir compatibilidade máxima de ATS.'
+              : 'Analyze candidate profiles against requirements to dynamically inject structural keywords and summaries.'}
           </p>
         </div>
 
         {/* Tailor UI card */}
-        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 flex flex-col gap-3.5 min-h-[250px] shadow-inner font-sans">
+        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 flex flex-col gap-3.5 min-h-[300px] justify-between shadow-inner font-sans">
           <div className="flex justify-between items-center pb-2 border-b border-[#2f3539]/30">
             <span className="text-[11px] font-bold text-[#e9ecef] uppercase font-mono tracking-wide">
               {lang === 'pt-BR' ? 'Análise de ATS' : 'ATS Analysis'}
@@ -291,7 +465,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                     : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
                 }`}
               >
-                {lang === 'pt-BR' ? 'Original' : 'Original'}
+                Original
               </button>
               <button
                 onClick={() => setResumeView('optimized')}
@@ -301,7 +475,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                     : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
                 }`}
               >
-                {lang === 'pt-BR' ? 'Otimizado' : 'Optimized'}
+                Optimized
               </button>
             </div>
           </div>
@@ -322,25 +496,35 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
             </div>
 
             {/* Keyword badges status */}
-            <div className="space-y-2 pt-1.5 text-xs">
+            <div className="space-y-2 pt-1 text-xs">
               <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20">
                 <span className="text-[#8f969b]">TypeScript Core</span>
                 <span className="text-[10px] font-bold text-emerald-400 font-mono">Matched ✓</span>
               </div>
-              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20">
-                <span className="text-[#8f969b]">Redis & BullMQ</span>
+              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20 font-sans">
+                <div className="flex flex-col text-left">
+                  <span className="text-[#e9ecef] font-semibold">Redis & BullMQ</span>
+                  {resumeView === 'optimized' && (
+                    <span className="text-[8px] text-emerald-400 leading-tight mt-0.5">+ {lang === 'pt-BR' ? 'Adicionado resumo de microsserviços' : 'Added background processing'}</span>
+                  )}
+                </div>
                 {resumeView === 'original' ? (
-                  <span className="text-[10px] font-bold text-orange-400 font-mono">Missing ✗</span>
+                  <span className="text-[10px] font-bold text-orange-400 font-mono shrink-0">Missing ✗</span>
                 ) : (
-                  <span className="text-[10px] font-bold text-[#70b5f9] font-mono animate-pulse">[+] Inserted</span>
+                  <span className="text-[10px] font-bold text-[#70b5f9] font-mono animate-pulse shrink-0">[+] Inserted</span>
                 )}
               </div>
-              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20">
-                <span className="text-[#8f969b]">Next.js Server Actions</span>
+              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20 font-sans">
+                <div className="flex flex-col text-left">
+                  <span className="text-[#e9ecef] font-semibold">Next.js App Router</span>
+                  {resumeView === 'optimized' && (
+                    <span className="text-[8px] text-emerald-400 leading-tight mt-0.5">+ {lang === 'pt-BR' ? 'Injetado Server Components' : 'Injected Server Actions'}</span>
+                  )}
+                </div>
                 {resumeView === 'original' ? (
-                  <span className="text-[10px] font-bold text-orange-400 font-mono">Missing ✗</span>
+                  <span className="text-[10px] font-bold text-orange-400 font-mono shrink-0">Missing ✗</span>
                 ) : (
-                  <span className="text-[10px] font-bold text-[#70b5f9] font-mono animate-pulse">[+] Inserted</span>
+                  <span className="text-[10px] font-bold text-[#70b5f9] font-mono animate-pulse shrink-0">[+] Inserted</span>
                 )}
               </div>
             </div>
@@ -348,7 +532,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
         </div>
       </div>
 
-      {/* 3. AI Content Publisher (Colspan 5) */}
+      {/* 3. Real Post Creator UI (Colspan 5) */}
       <div className="md:col-span-5 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="mb-4">
@@ -359,127 +543,266 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
             </span>
           </div>
           <h3 className="text-xl font-bold text-white">
-            {lang === 'pt-BR' ? 'Criação e Agendamento' : 'AI Post Creator & Scheduler'}
+            {lang === 'pt-BR' ? 'Interface Real do Criador de Posts' : 'Post Creation Workspace'}
           </h3>
           <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
             {lang === 'pt-BR'
-              ? 'Gere posts corporativos elegantes utilizando inteligência contextual e gerencie agendamentos automáticos através de filas Redis robustas.'
-              : 'Write tech articles utilizing model prompts and queue auto-scheduling using microservice Redis channels.'}
+              ? 'Mockup real do nosso editor de publicações. Acesse o assistente inteligente de IA e anexe slides carrosséis dinâmicos.'
+              : 'Fidelity mockup of our post creator modal. Toggle AI assistance filters, draft posts, and compile PDF slides.'}
           </p>
         </div>
 
-        {/* Post editor mockup */}
-        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 flex flex-col gap-3 min-h-[250px] shadow-inner font-sans">
-          <div className="flex justify-between items-center pb-1.5 border-b border-[#2f3539]/30">
-            <span className="text-[10px] font-bold text-[#e9ecef] font-mono flex items-center gap-1">
-              <Rss className="size-3 text-purple-400" />
-              {lang === 'pt-BR' ? 'agendador-posts.json' : 'scheduler.json'}
+        {/* Post Creation Modal UI Mockup */}
+        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/90 p-4 flex flex-col gap-3 min-h-[300px] justify-between shadow-inner font-sans text-slate-300 relative text-left">
+          <div className="flex justify-between items-center pb-2 border-b border-[#2f3539]/30">
+            <span className="text-[10px] font-bold text-white">
+              {lang === 'pt-BR' ? 'Criar uma publicação' : 'Create a post'}
             </span>
-            <span className="text-[9px] font-bold text-purple-400 uppercase font-mono tracking-wider bg-purple-500/10 border border-purple-500/20 px-1.5 py-0.5 rounded">
-              BullMQ Queue
+            <span className="text-[9px] font-bold text-purple-400 uppercase font-mono bg-purple-500/10 border border-purple-500/20 px-1.5 py-0.5 rounded">
+              Publisher UI
             </span>
           </div>
-          <div className="flex-1 flex flex-col gap-2">
+
+          <div className="flex-1 flex flex-col gap-2.5 py-1">
+            {/* Profile Row */}
+            <div className="flex items-center gap-2">
+              <div className="size-7 rounded-full bg-[#0a66c2] text-white flex items-center justify-center font-bold text-[10px]">JL</div>
+              <div>
+                <div className="text-[10px] font-semibold text-white">Julio Lima</div>
+                <div className="flex items-center gap-1 text-[8px] text-[#8f969b] border border-[#2f3539]/60 rounded-full px-1.5 py-0.2 bg-[#12161a] mt-0.5">
+                  <Globe className="size-2.5 text-[#8f969b]" />
+                  <span>{lang === 'pt-BR' ? 'Qualquer pessoa' : 'Anyone'}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* AI Assistant Section (If visible) */}
+            {showAiAssistant ? (
+              <div className="p-2.5 bg-[#0a66c2]/5 border border-[#0a66c2]/20 rounded-lg space-y-2 animate-fadeIn">
+                <div className="flex justify-between items-center text-[9px] font-bold text-[#70b5f9]">
+                  <span className="flex items-center gap-1">
+                    <Sparkles className="size-3 fill-[#70b5f9]/10" />
+                    {lang === 'pt-BR' ? 'Assistente de Escrita IA' : 'AI Assistant Prompt'}
+                  </span>
+                  <button 
+                    onClick={() => setShowAiAssistant(false)} 
+                    className="text-red-400 hover:underline cursor-pointer"
+                  >
+                    {lang === 'pt-BR' ? 'Fechar' : 'Close'}
+                  </button>
+                </div>
+                <div className="flex gap-1.5">
+                  <input
+                    type="text"
+                    value={aiPrompt}
+                    onChange={(e) => setAiPrompt(e.target.value)}
+                    placeholder={lang === 'pt-BR' ? 'Ex: Dicas de BullMQ...' : 'Ex: BullMQ queue tips...'}
+                    className="flex-1 bg-[#090e11] border border-[#2f3539]/60 rounded px-2 py-1 text-[9px] outline-none"
+                  />
+                  <button
+                    onClick={runAiGeneration}
+                    disabled={aiGenerating}
+                    className="px-2 bg-[#0a66c2] hover:bg-[#004182] text-white font-bold rounded text-[9px] transition-colors cursor-pointer shrink-0"
+                  >
+                    {aiGenerating ? (
+                      <span className="inline-block animate-spin">●</span>
+                    ) : (
+                      (lang === 'pt-BR' ? 'Gerar' : 'Write')
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {/* Post Content Textarea */}
             <textarea
               value={postDraft}
               onChange={(e) => setPostDraft(e.target.value)}
-              className="w-full flex-1 bg-[#12161a]/60 border border-[#2f3539]/30 p-2 rounded-lg text-xs text-slate-300 resize-none font-mono focus:outline-none focus:border-purple-500/40"
+              className="w-full flex-1 bg-[#12161a]/40 border border-[#2f3539]/30 p-2 rounded-lg text-[10px] text-slate-300 resize-none font-mono focus:outline-none focus:border-[#70b5f9]/40 min-h-[90px]"
             />
-            <div className="flex items-center justify-between text-[10px] text-[#8f969b] mt-1">
-              <span>{postDraft.length} chars</span>
-              <span className="text-purple-400 font-semibold font-mono">
-                {lang === 'pt-BR' ? '↳ Fila: 1 pendente' : '↳ Queue: 1 pending'}
-              </span>
+
+            {/* Carousel PDF Preview attachment (If added) */}
+            {carouselPdfAdded && (
+              <div className="flex items-center justify-between p-2 bg-[#0a66c2]/5 border border-[#0a66c2]/20 rounded-lg animate-fadeIn text-[9px]">
+                <div className="flex items-center gap-2">
+                  <div className="size-6 bg-red-500/10 rounded flex items-center justify-center text-red-500 font-bold font-mono text-[9px]">PDF</div>
+                  <div>
+                    <div className="font-semibold text-white truncate max-w-[120px] sm:max-w-[150px]">carrossel-rsc-bullmq.pdf</div>
+                    <div className="text-[8px] text-[#8f969b]">1.4 MB · {lang === 'pt-BR' ? '3 slides prontos' : '3 generated slides'}</div>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setCarouselPdfAdded(false)}
+                  className="text-red-400 hover:text-red-300 font-bold px-1.5 cursor-pointer text-xs"
+                  title={lang === 'pt-BR' ? 'Remover' : 'Remove'}
+                >
+                  ×
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Action Toolbar */}
+          <div className="flex items-center justify-between border-t border-[#2f3539]/30 pt-2 text-[9px] text-[#8f969b]">
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowAiAssistant(!showAiAssistant)}
+                className={`p-1.5 rounded hover:bg-[#12161a] hover:text-white cursor-pointer transition-colors ${showAiAssistant ? 'text-[#70b5f9] bg-[#0a66c2]/10' : ''}`}
+                title={lang === 'pt-BR' ? 'Perguntar para IA' : 'Ask AI'}
+              >
+                <Sparkles className="size-3.5" />
+              </button>
+              <button
+                onClick={() => setCarouselPdfAdded(!carouselPdfAdded)}
+                className={`p-1.5 rounded hover:bg-[#12161a] hover:text-white cursor-pointer transition-colors ${carouselPdfAdded ? 'text-purple-400 bg-purple-500/10' : ''}`}
+                title={lang === 'pt-BR' ? 'Compilar Slides Carrossel' : 'Attach Carousel PDF'}
+              >
+                <Layers className="size-3.5" />
+              </button>
             </div>
+            
+            <button
+              onClick={() => {
+                alert(lang === 'pt-BR' ? 'Post publicado com sucesso!' : 'Post successfully published!');
+                setPostDraft('');
+                setCarouselPdfAdded(false);
+              }}
+              className="px-3 py-1 rounded bg-[#0a66c2] text-white font-bold hover:bg-[#004182] transition-colors cursor-pointer"
+            >
+              {lang === 'pt-BR' ? 'Publicar' : 'Publish'}
+            </button>
           </div>
         </div>
       </div>
 
-      {/* 4. Slide Carousel Creator (Colspan 7) */}
+      {/* 4. LinkedIn Feed Post Carousel Preview (Colspan 7) */}
       <div className="md:col-span-7 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
         <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
             <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
             <span className="text-[10px] font-mono font-bold text-blue-400 uppercase tracking-wider">
-              {lang === 'pt-BR' ? 'Carrossel PDF' : 'Slide Compiler'}
+              {lang === 'pt-BR' ? 'Feed do LinkedIn' : 'LinkedIn Timeline'}
             </span>
           </div>
           <h3 className="text-xl font-bold text-white">
-            {lang === 'pt-BR' ? 'Compilador de Slides no Grid' : 'Slide PDF Carousel Generator'}
+            {lang === 'pt-BR' ? 'Simulação de Post com Slides Carrossel' : 'LinkedIn Feed Carousel Post Preview'}
           </h3>
           <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
             {lang === 'pt-BR'
-              ? 'Estruture slides de alta conversão diretamente do markdown. Compile e exporte PDFs prontos para a timeline do LinkedIn.'
-              : 'Compile highly interactive slideshow carousels from raw configurations. Clean layout matching the monorepos CSS.'}
+              ? 'Como o post com os slides estruturados com IA é visualizado diretamente na timeline do LinkedIn pelos usuários.'
+              : 'Simulates how AI-tailored content and slide carousels render inside the standard LinkedIn timeline view.'}
           </p>
         </div>
 
-        {/* Carousel UI Mockup */}
-        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 flex flex-col gap-3 min-h-[250px] shadow-inner font-sans">
-          <div className="flex justify-between items-center pb-2 border-b border-[#2f3539]/30">
-            <span className="text-[10px] font-bold text-[#e9ecef] font-mono">
-              {lang === 'pt-BR' ? 'compilador-slides.pdf' : 'carousel-compiler.pdf'}
-            </span>
-            <div className="flex gap-1.5">
-              {(['premium', 'yellow', 'purple'] as const).map(theme => (
-                <button
-                  key={theme}
-                  onClick={() => setCarouselTheme(theme)}
-                  className={`px-1.5 py-0.5 rounded text-[9px] font-bold capitalize border transition-colors cursor-pointer ${
-                    carouselTheme === theme
-                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                      : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
-                  }`}
-                >
-                  {theme}
-                </button>
-              ))}
+        {/* Simulated LinkedIn Timeline Post Card */}
+        <div className="border border-[#2f3539]/60 rounded-xl bg-[#1d2226]/85 p-4 flex flex-col gap-3 min-h-[300px] justify-between shadow-inner font-sans text-slate-300 text-left">
+          
+          {/* Post Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="size-8.5 rounded-full bg-[#0a66c2] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow">JL</div>
+              <div>
+                <div className="text-xs font-bold text-white hover:text-[#70b5f9] hover:underline cursor-pointer flex items-center gap-1">
+                  <span>Julio Lima</span>
+                  <span className="text-[9px] font-normal text-slate-400">· {lang === 'pt-BR' ? '1º grau' : '1st'}</span>
+                </div>
+                <div className="text-[9px] text-[#8f969b] truncate max-w-[220px] sm:max-w-[320px]">Senior Software Engineer | Tech Creator</div>
+                <div className="text-[8px] text-[#8f969b] flex items-center gap-1.5 mt-0.5">
+                  <span>1 h · {lang === 'pt-BR' ? 'Editado' : 'Edited'} ·</span>
+                  <Globe className="size-2.5 text-[#8f969b]" />
+                </div>
+              </div>
             </div>
+            <MoreHorizontal className="size-4 text-[#8f969b] hover:text-white cursor-pointer" />
           </div>
 
-          <div className="flex-1 flex gap-3 items-center justify-between">
+          {/* Post Body text */}
+          <div className="text-[10.5px] text-slate-200 leading-relaxed space-y-1">
+            <p className="whitespace-pre-wrap">
+              {lang === 'pt-BR' 
+                ? 'Acabei de gerar um guia completo sobre workers em background e filas com BullMQ diretamente do meu docs! 🚀\nO formato carrossel ajuda a explicar melhor a arquitetura. Dê uma olhada:'
+                : 'Just generated a complete architecture guide explaining background queue workers with Redis and BullMQ! 🚀\nVisual slides make deep backend topics much easier to follow. Check it out:'}
+            </p>
+          </div>
+
+          {/* PDF Slides Carousel Widget Container */}
+          <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11] flex flex-col justify-between h-[155px] font-sans relative overflow-hidden group/carousel">
+            
+            {/* Header row in slides */}
+            <div className="px-4 py-2 border-b border-[#2f3539]/40 bg-[#12161a]/30 flex justify-between items-center">
+              <span className="text-[8.5px] font-bold text-[#70b5f9] font-mono tracking-wider">
+                {lang === 'pt-BR' ? 'GUIA DE ARQUITETURA' : 'ARCHITECTURE SLIDES'}
+              </span>
+              <span className="text-[9px] font-mono font-bold text-[#8f969b] bg-[#12161a] border border-[#2f3539]/60 px-1.5 py-0.2 rounded shadow-inner">
+                {currentSlide + 1} / 3
+              </span>
+            </div>
+
+            {/* Slide Body Content */}
+            <div className="px-6 py-3 flex-1 flex flex-col justify-center">
+              <h4 className="text-[11px] font-bold text-white mb-2 leading-tight">
+                {slides[currentSlide].title}
+              </h4>
+              <ul className="space-y-1 text-[9px] text-slate-300">
+                {slides[currentSlide].bullets.map((bullet, bIdx) => (
+                  <li key={bIdx} className="truncate">
+                    {bullet}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Slide footer */}
+            <div className="px-4 py-1.5 border-t border-[#2f3539]/30 bg-[#12161a]/20 text-[8px] text-[#70b5f9] font-medium truncate">
+              {slides[currentSlide].footer}
+            </div>
+
+            {/* Navigation arrows */}
             <button
               onClick={() => setCurrentSlide(prev => Math.max(0, prev - 1))}
               disabled={currentSlide === 0}
-              className="text-xs text-[#70b5f9] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-1"
+              className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center bg-[#090e11]/80 hover:bg-[#12161a] border border-[#2f3539] text-[#70b5f9] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-0 select-none shadow transition-opacity duration-200"
             >
               ◀
             </button>
-
-            {/* Slide body card */}
-            <div
-              className={`flex-1 rounded-lg border p-5 flex flex-col justify-between h-[130px] transition-all duration-300 relative overflow-hidden ${
-                carouselTheme === 'premium'
-                  ? 'bg-zinc-950 border-white/10 text-white'
-                  : carouselTheme === 'yellow'
-                  ? 'bg-yellow-400 border-yellow-500 text-black'
-                  : 'bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-950 border-purple-500/20 text-white'
-              }`}
-            >
-              <div>
-                <div className={`text-[10px] font-bold font-mono tracking-wider uppercase mb-1 ${
-                  carouselTheme === 'yellow' ? 'text-black/60' : 'text-[#70b5f9]'
-                }`}>
-                  SLIDE {currentSlide + 1} / {slides.length}
-                </div>
-                <h4 className="text-xs font-bold leading-tight">{slides[currentSlide].title}</h4>
-              </div>
-              <p className={`text-[10px] leading-relaxed ${
-                carouselTheme === 'yellow' ? 'text-black/80' : 'text-slate-400'
-              }`}>
-                {slides[currentSlide].desc}
-              </p>
-            </div>
-
             <button
               onClick={() => setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1))}
               disabled={currentSlide === slides.length - 1}
-              className="text-xs text-[#70b5f9] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-1"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center bg-[#090e11]/80 hover:bg-[#12161a] border border-[#2f3539] text-[#70b5f9] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-0 select-none shadow transition-opacity duration-200"
             >
               ▶
             </button>
           </div>
+
+          {/* Social Stats indicators line */}
+          <div className="flex justify-between items-center text-[9px] text-[#8f969b] border-b border-[#2f3539]/30 pb-2">
+            <span className="flex items-center gap-1.5 hover:text-[#70b5f9] hover:underline cursor-pointer">
+              <span>👍❤️ 142</span>
+            </span>
+            <span className="hover:text-[#70b5f9] hover:underline cursor-pointer">12 {lang === 'pt-BR' ? 'comentários' : 'comments'}</span>
+          </div>
+
+          {/* Feed Post Interactive Action buttons footer */}
+          <div className="flex justify-between items-center px-1 text-[10px] text-[#8f969b] font-semibold select-none">
+            <button className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-[#12161a] hover:text-[#70b5f9] cursor-pointer transition-colors">
+              <ThumbsUp className="size-3.5" />
+              <span>{lang === 'pt-BR' ? 'Gostei' : 'Like'}</span>
+            </button>
+            <button className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-[#12161a] hover:text-[#70b5f9] cursor-pointer transition-colors">
+              <MessageSquare className="size-3.5" />
+              <span>{lang === 'pt-BR' ? 'Comentar' : 'Comment'}</span>
+            </button>
+            <button className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-[#12161a] hover:text-[#70b5f9] cursor-pointer transition-colors">
+              <Share2 className="size-3.5" />
+              <span>{lang === 'pt-BR' ? 'Compartilhar' : 'Repost'}</span>
+            </button>
+            <button className="flex items-center gap-1.5 py-1 px-2 rounded hover:bg-[#12161a] hover:text-[#70b5f9] cursor-pointer transition-colors">
+              <Send className="size-3.5" />
+              <span>{lang === 'pt-BR' ? 'Enviar' : 'Send'}</span>
+            </button>
+          </div>
+
         </div>
       </div>
 
