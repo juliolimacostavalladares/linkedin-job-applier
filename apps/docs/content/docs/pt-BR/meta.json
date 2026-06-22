@@ -1,0 +1,13 @@
+{
+  "title": "Ferramentas LinkedIn",
+  "pages": [
+    "index",
+    "---Começando---",
+    "quickstart",
+    "architecture",
+    "extension",
+    "security",
+    "---Pacote Compartilhado---",
+    "shared"
+  ]
+}

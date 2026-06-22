@@ -593,7 +593,7 @@ console.log('OpenAPI publisher spec generated at', openapiPathPublisher);
 
 async function main() {
   // --- Gateway API Documentation (graphql-linkedin service) ---
-  const outputDir = path.join(projectRoot, 'content/docs/gateway');
+  const outputDir = path.join(projectRoot, 'content/docs/en/gateway');
   
   // Only remove generated subdirectories, preserve hand-written files like overview.mdx
   for (const sub of ['jobs', 'posts', 'profile']) {
@@ -620,6 +620,7 @@ async function main() {
     path.join(outputDir, 'meta.json'),
     JSON.stringify({
       title: 'LinkedIn Gateway',
+      root: true,
       pages: ['overview', 'jobs', 'posts', 'profile'],
     }, null, 2)
   );
@@ -651,7 +652,7 @@ async function main() {
   console.log('Gateway API documentation generated.');
 
   // --- Job Backend API Documentation (linkedin-job-backend service) ---
-  const outputDirBackend = path.join(projectRoot, 'content/docs/job-backend');
+  const outputDirBackend = path.join(projectRoot, 'content/docs/en/job-backend');
   
   // Only remove generated subdirectories, preserve hand-written files like overview.mdx
   for (const sub of ['config', 'credentials', 'resume', 'ai', 'applications']) {
@@ -678,6 +679,7 @@ async function main() {
     path.join(outputDirBackend, 'meta.json'),
     JSON.stringify({
       title: 'Job Backend',
+      root: true,
       pages: ['overview', 'credentials', 'resume', 'ai', 'applications'],
     }, null, 2)
   );
@@ -731,7 +733,7 @@ async function main() {
   console.log('Job Backend API documentation generated.');
 
   // --- Publisher Backend API Documentation (linkedin-publisher-backend service) ---
-  const outputDirPublisher = path.join(projectRoot, 'content/docs/publisher-backend');
+  const outputDirPublisher = path.join(projectRoot, 'content/docs/en/publisher-backend');
 
   // Only remove generated subdirectories, preserve hand-written files like overview.mdx
   for (const sub of ['posts', 'ai', 'carousel', 'profile', 'credentials']) {
@@ -758,6 +760,7 @@ async function main() {
     path.join(outputDirPublisher, 'meta.json'),
     JSON.stringify({
       title: 'Publisher Backend',
+      root: true,
       pages: ['overview', 'posts', 'ai', 'carousel', 'credentials', 'profile'],
     }, null, 2)
   );

@@ -1,0 +1,32 @@
+---
+title: Listar candidaturas de vaga
+full: true
+_openapi:
+  preload:
+    - >-
+      /Users/macbookpro/Documents/linkedin-job-explorer/apps/docs/public/openapi-backend-pt-BR.json
+  method: GET
+  webhook: false
+  toc: []
+  structuredData:
+    headings: []
+    contents:
+      - content: >-
+          Retorna uma lista de todos os registros de candidatura de vaga
+          armazenados no SQLite, detalhando status, URN da vaga, detalhes da
+          empresa e timestamps.
+---
+
+{/* Este arquivo foi gerado por Fumadocs. Não edite este arquivo diretamente. */}
+
+export default function Layout(props) {
+  const { APIPage, OpenAPIPage } = props.components ?? {};
+  // "APIPage" é o nome antigo da v10, isso permite ambos para compatibilidade retroativa
+  const Comp = OpenAPIPage ?? APIPage;
+  return (
+    <>
+      {props.children}
+      <Comp document="/Users/macbookpro/Documents/linkedin-job-explorer/apps/docs/public/openapi-backend-pt-BR.json" operations={[{"path":"/api/applications","method":"get"}]} showDescription />
+    </>
+  );
+}

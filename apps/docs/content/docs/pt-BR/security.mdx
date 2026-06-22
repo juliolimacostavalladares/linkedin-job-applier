@@ -1,0 +1,59 @@
+---
+title: Segurança & Conformidade
+description: Validação de credenciais, cabeçalhos seguros e sanitização de logs no LinkedIn Gateway
+---
+
+# Segurança & Conformidade
+
+Interagir com cookies de sessão do navegador requer proteções de segurança rigorosas. O LinkedIn Gateway implementa vários mecanismos para validar cookies em tempo real e sanitizar saídas de logs de diagnóstico.
+
+---
+
+## Sanitização de Logs
+
+Para prevenir vazamento acidental de cookies em fluxos de logs de produção (ex: AWS CloudWatch, Datadog), um middleware sanitizador dedicado intercepta logs e substitui tokens sensíveis por marcadores de redação.
+
+### Padrões Alvo Sanitizados
+O logger substitui automaticamente:
+- Valores de cookie `li_at`
+- Valores de cookie `JSESSIONID`
+- Valores nos cabeçalhos `x-linkedin-cookie` e `x-linkedin-csrf`
+
+```js
+// Entrada de Log Bruta
+"Headers: { 'x-linkedin-cookie': 'li_at=AQED12345; JSESSIONID=\"ajax:98765\";' }"
+
+// Saída de Log Sanitizada
+"Headers: { 'x-linkedin-cookie': '[REDACTED_COOKIE]' }"
+```
+
+---
+
+## Validação de Cookie & CSRF
+
+Antes de encaminhar payloads de requisição aos servidores do LinkedIn, o gateway valida o formato dos cabeçalhos usando schemas de expressão regular rigorosos.
+
+### Schema de Verificação Regex
+
+O gateway impõe as seguintes regras de formato:
+- **`x-linkedin-cookie`**: Deve conter tanto `li_at=` (contendo caracteres hex/alfanuméricos) quanto `JSESSIONID="ajax:...` (envolto em aspas duplas).
+- **`x-linkedin-csrf`**: Deve começar com `ajax:` e corresponder ao valor contido dentro do cookie.
+
+```typescript
+// Exemplo de código validador em utils/security.ts
+export function validateHeaders(cookie: string, csrf: string): boolean {
+  if (!cookie.includes('li_at=') || !cookie.includes('JSESSIONID=')) {
+    return false;
+  }
+  
+  const csrfMatch = cookie.match(/JSESSIONID="([^"]+)"/);
+  if (!csrfMatch || csrfMatch[1] !== csrf) {
+    return false; // Incompatibilidade de token CSRF
+  }
+  
+  return true;
+}
+```
+
+> [!IMPORTANT]
+> Esta validação previne que payloads malformados alcancem o LinkedIn, reduzindo requisições desnecessárias e protegendo o serviço contra escaneamentos de token de força bruta.

@@ -1,0 +1,29 @@
+---
+title: Recuperar status de configuração
+full: true
+_openapi:
+  preload:
+    - >-
+      /Users/macbookpro/Documents/linkedin-job-explorer/apps/docs/public/openapi-backend-pt-BR.json
+  method: GET
+  webhook: false
+  toc: []
+  structuredData:
+    headings: []
+    contents:
+      - content: Verifica se o backend tem credenciais de sessão válidas e vagas importadas.
+---
+
+{/* Este arquivo foi gerado por Fumadocs. Não edite este arquivo diretamente. */}
+
+export default function Layout(props) {
+  const { APIPage, OpenAPIPage } = props.components ?? {};
+  // "APIPage" é o nome antigo da v10, isso permite ambos para compatibilidade retroativa
+  const Comp = OpenAPIPage ?? APIPage;
+  return (
+    <>
+      {props.children}
+      <Comp document="/Users/macbookpro/Documents/linkedin-job-explorer/apps/docs/public/openapi-backend-pt-BR.json" operations={[{"path":"/api/config","method":"get"}]} showDescription />
+    </>
+  );
+}

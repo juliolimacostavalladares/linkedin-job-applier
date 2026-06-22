@@ -1,0 +1,12 @@
+{
+  "title": "Publisher Backend",
+  "root": true,
+  "pages": [
+    "overview",
+    "posts",
+    "ai",
+    "carousel",
+    "credentials",
+    "profile"
+  ]
+}

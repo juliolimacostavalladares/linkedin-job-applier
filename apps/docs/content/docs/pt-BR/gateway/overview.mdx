@@ -1,0 +1,95 @@
+---
+title: Visão Geral
+description: LinkedIn Gateway — Proxy REST e GraphQL para APIs LinkedIn Voyager
+---
+
+# LinkedIn Gateway
+
+O **LinkedIn Gateway** (`apps/graphql-linkedin`) é a camada de API fundamental da ferramenta. Fornece uma interface dual REST + GraphQL que faz proxy de todas as interações diretas com as APIs internas Voyager do LinkedIn.
+
+Tanto o **Job Backend** quanto o **Publisher Backend** consomem este serviço como sua camada de abstração da API LinkedIn.
+
+---
+
+## O Que Faz
+
+- **Operações de Vagas**: Buscar vagas Easy Apply, buscar detalhes, analisar formulários de candidatura, enviar candidaturas
+- **Publicação de Posts**: Criar e deletar posts do feed LinkedIn com anexos de mídia
+- **Análise de Perfil**: Baixar PDFs de perfil, extrair dados estruturados de experiência e educação
+
+---
+
+## Interface Dupla
+
+<Tabs>
+  <Tab value="rest">
+
+### API REST
+
+Endpoints REST padrão para integrações simples, webhooks e testes.
+
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/api/jobs` | Listar vagas Easy Apply |
+| `GET` | `/api/jobs/:id` | Obter detalhes da vaga |
+| `GET` | `/api/jobs/:id/apply-form` | Obter formulário de candidatura |
+| `POST` | `/api/jobs/:id/apply` | Enviar candidatura |
+| `POST` | `/api/posts` | Criar um post |
+| `DELETE` | `/api/posts/:id` | Deletar um post |
+| `GET` | `/api/profile/info` | Obter info do perfil |
+| `GET` | `/api/profile/resume-pdf` | Baixar PDF do currículo |
+
+  </Tab>
+  <Tab value="graphql">
+
+### API GraphQL
+
+Queries flexíveis para seleção de dados e operações em lote. Endpoint único em `/graphql`.
+
+```graphql
+query {
+  jobs(keywords: "React", remote: true) {
+    id
+    title
+    companyInfo
+    applied
+  }
+}
+```
+
+**Queries**: `jobs`, `jobDetail`, `applyForm`, `resumePdf`, `profileInfo`
+**Mutations**: `createPost`, `deletePost`, `submitApplication`
+
+  </Tab>
+</Tabs>
+
+---
+
+## Autenticação
+
+Todas as requisições requerem credenciais de sessão LinkedIn nos cabeçalhos:
+
+| Cabeçalho | Descrição |
+| :--- | :--- |
+| `x-linkedin-cookie` | Cookie de sessão completo (`li_at=...; JSESSIONID="ajax:..."`) |
+| `x-linkedin-csrf` | Token CSRF (corresponde ao valor `JSESSIONID`) |
+| `x-linkedin-headers-json` | Opcional: cabeçalhos de ambiente do navegador para correspondência anti-bot |
+
+---
+
+## Quando Usar Gateway vs Backend
+
+| Caso de Uso | Gateway Direto | Via Job Backend |
+| :--- | :--- | :--- |
+| Chamadas brutas de API LinkedIn | Sim | Não |
+| Busca de vagas com geração de query IA | Não | Sim |
+| Otimização de currículo & geração PDF | Não | Sim |
+| Rastreamento & histórico de candidaturas | Não | Sim |
+| Publicação de post com agendamento | Não | Via Publisher Backend |
+
+---
+
+## Relacionado
+
+- [Visão Geral Job Backend](/docs/job-backend/overview) — consome Gateway para operações de vagas
+- [Visão Geral Publisher Backend](/docs/publisher-backend/overview) — consome Gateway para publicação de posts

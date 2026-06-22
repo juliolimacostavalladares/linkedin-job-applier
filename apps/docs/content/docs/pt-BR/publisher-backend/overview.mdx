@@ -1,0 +1,89 @@
+---
+title: Visão Geral
+description: Publisher Backend — Criação e publicação de conteúdo LinkedIn com IA
+---
+
+# Publisher Backend
+
+O **Publisher Backend** (`apps/linkedin-publisher-backend`) é uma plataforma de criação de conteúdo para LinkedIn. Gerencia rascunhos de posts, geração de conteúdo com IA, renderização de PDFs de carrossel, upload de imagens e publicação agendada.
+
+---
+
+## O Que Faz
+
+- **Gestão de Posts**: CRUD completo para posts LinkedIn com anexos de mídia (imagens, PDFs)
+- **Geração de Conteúdo IA**: Gerar posts e estruturas de carrossel a partir de prompts usando Gemini
+- **Renderização de Carrossel**: Criar PDFs de carrossel otimizados para LinkedIn (1080x1350px) com 5 temas integrados
+- **Upload de Imagem**: Fluxo de upload multi-etapa via API Voyager Ambry do LinkedIn
+- **Publicação Agendada**: Agendador em background auto-publica posts em horários especificados
+
+---
+
+## Seções da API
+
+<Cards>
+  <Card title="Posts" href="/docs/publisher-backend/posts/createPost">
+    Criar, atualizar, publicar e deletar posts LinkedIn com suporte a mídia.
+  </Card>
+  <Card title="Conteúdo IA" href="/docs/publisher-backend/ai/generatePost">
+    Gerar conteúdo de post e estruturas de carrossel a partir de prompts.
+  </Card>
+  <Card title="Carrossel" href="/docs/publisher-backend/carousel/generatePdf">
+    Renderizar PDFs de carrossel a partir de configurações de slides com suporte a temas.
+  </Card>
+</Cards>
+
+---
+
+## Temas de Carrossel
+
+| Tema | Estilo |
+| :--- | :--- |
+| `dark-premium` | Fundo escuro com detalhes dourados |
+| `gradient-purple` | Gradiente roxo com visual moderno |
+| `startup-clean` | Branco limpo com destaques azuis |
+| `bold-yellow` | Alto contraste amarelo e preto |
+| `warm-creative` | Tons quentes com layout criativo |
+
+---
+
+## Publicação Agendada
+
+O backend executa um worker em background (intervalo de 30 segundos) que verifica posts com `status: 'scheduled'` e `scheduledAt <= now`, então os publica no LinkedIn via Gateway.
+
+---
+
+## Variáveis de Ambiente
+
+```bash
+# Integração LLM
+NINE_ROUTER_API_KEY=sua_chave_api
+NINE_ROUTER_BASE_URL=http://localhost:20128/v1
+NINE_ROUTER_MODEL=google/gemini-3.5-flash
+
+# Conexão Gateway
+LINKEDIN_SERVICE_URL=http://localhost:4000/graphql
+
+# Porta do Servidor
+PORT=3001
+```
+
+---
+
+## Stack Tecnológico
+
+| Componente | Tecnologia |
+| :--- | :--- |
+| Framework | Express (Node.js, TypeScript) |
+| Banco de Dados | Prisma + SQLite (`better-sqlite3`) |
+| LLM | Google Gemini via API compatível OpenAI |
+| PDF | Puppeteer (Chrome headless) |
+| Upload de Imagem | API LinkedIn Voyager Ambry |
+| Agendador | Worker `setInterval` em server.ts |
+
+---
+
+## Relacionado
+
+- [LinkedIn Gateway](/docs/gateway/overview) — o serviço Gateway que este backend consome
+- [Job Backend](/docs/job-backend/overview) — serviço irmão para candidaturas de vaga

@@ -1,0 +1,44 @@
+---
+title: Enviar formulário de candidatura
+full: true
+_openapi:
+  preload:
+    - >-
+      /Users/macbookpro/Documents/linkedin-job-explorer/apps/docs/public/openapi-pt-BR.json
+  method: POST
+  webhook: false
+  toc: []
+  structuredData:
+    headings: []
+    contents:
+      - content: >
+          Envia respostas de formulário Easy Apply e uploads de arquivos para
+          uma postagem de vaga.
+
+
+          ### Propriedades do Corpo da Requisição
+
+          - `formValues` (object, obrigatório): Um mapa plano de identificadores
+          string URN para valores de resposta (ex.:
+          `{"urn:li:fs_easyApplyFormElement:123456": "Yes"}`).
+
+          - `referenceId` (string, opcional): O ID de referência do formulário
+          retornado pelo endpoint de recuperação de formulário de candidatura.
+
+          - `resumeUrn` (string, opcional): O URN do LinkedIn do documento de
+          currículo enviado para anexar a esta candidatura.
+---
+
+{/* Este arquivo foi gerado por Fumadocs. Não edite este arquivo diretamente. */}
+
+export default function Layout(props) {
+  const { APIPage, OpenAPIPage } = props.components ?? {};
+  // "APIPage" é o nome antigo da v10, isso permite ambos para compatibilidade retroativa
+  const Comp = OpenAPIPage ?? APIPage;
+  return (
+    <>
+      {props.children}
+      <Comp document="/Users/macbookpro/Documents/linkedin-job-explorer/apps/docs/public/openapi-pt-BR.json" operations={[{"path":"/api/jobs/{id}/apply","method":"post"}]} showDescription />
+    </>
+  );
+}

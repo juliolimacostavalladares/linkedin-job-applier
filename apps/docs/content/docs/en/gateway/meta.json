@@ -1,0 +1,10 @@
+{
+  "title": "LinkedIn Gateway",
+  "root": true,
+  "pages": [
+    "overview",
+    "jobs",
+    "posts",
+    "profile"
+  ]
+}
