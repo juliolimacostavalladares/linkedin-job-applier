@@ -13,89 +13,54 @@ import {
 } from 'lucide-react';
 import { translations, type Locale } from './translations';
 
-// A deterministic halftone/dither wave pattern
-function WaveDither() {
-  const dots = [];
-  const rows = 24;
-  const cols = 40;
+// A professional network node graph visualization (Rebranding instead of generic waves)
+function NetworkNodesDither() {
+  const points = [
+    { x: 40, y: 70, r: 4 },
+    { x: 130, y: 140, r: 3 },
+    { x: 210, y: 60, r: 5 },
+    { x: 290, y: 190, r: 3.5 },
+    { x: 370, y: 80, r: 4 },
+    { x: 440, y: 150, r: 3 },
+    { x: 520, y: 90, r: 5 },
+    { x: 570, y: 210, r: 4 },
+    { x: 90, y: 210, r: 3 },
+    { x: 190, y: 250, r: 4 },
+    { x: 410, y: 240, r: 3.5 },
+  ];
 
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const x = (c / (cols - 1)) * 600;
-      const y = (r / (rows - 1)) * 300;
-
-      const waveValue = Math.sin(x * 0.012) * Math.cos(y * 0.018) + Math.sin((x + y) * 0.006);
-      const intensity = (waveValue + 2) / 4;
-      const size = intensity * 3.2;
-
-      if (size > 0.4) {
-        dots.push(
-          <circle
-            key={`${r}-${c}`}
-            cx={x.toFixed(2)}
-            cy={y.toFixed(2)}
-            r={size.toFixed(2)}
-            className="fill-brand-lime/10 dark:fill-brand-lime/15"
-          />
-        );
-      }
-    }
-  }
+  const connections = [
+    [0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4], [3, 5], [4, 6], [5, 6], [5, 7], [6, 7],
+    [1, 8], [8, 9], [3, 9], [5, 10], [7, 10]
+  ];
 
   return (
-    <svg viewBox="0 0 600 300" className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none z-0">
-      {dots}
+    <svg viewBox="0 0 600 300" className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none z-0">
+      {connections.map(([i, j], idx) => (
+        <line
+          key={`line-${idx}`}
+          x1={points[i].x}
+          y1={points[i].y}
+          x2={points[j].x}
+          y2={points[j].y}
+          className="stroke-[#70b5f9]/20"
+          strokeWidth="1.2"
+        />
+      ))}
+      {points.map((pt, idx) => (
+        <circle
+          key={`pt-${idx}`}
+          cx={pt.x}
+          cy={pt.y}
+          r={pt.r}
+          className="fill-[#70b5f9]/50 animate-[pulse_4s_ease-in-out_infinite]"
+        />
+      ))}
     </svg>
   );
 }
 
-function MountainDither() {
-  const dots = [];
-  const rows = 20;
-  const cols = 45;
-
-  for (let r = 0; r < rows; r++) {
-    for (let c = 0; c < cols; c++) {
-      const x = (c / (cols - 1)) * 600;
-      const y = (r / (rows - 1)) * 300;
-
-      const m1 = 160 + Math.sin(x * 0.012) * 35 + Math.cos(x * 0.006) * 15;
-      const m2 = 210 + Math.sin(x * 0.018) * 25 + Math.cos(x * 0.009) * 12;
-
-      let isMountain = false;
-      let density = 0;
-
-      if (y >= m2) {
-        isMountain = true;
-        density = (y - m2) / (300 - m2);
-      } else if (y >= m1) {
-        isMountain = true;
-        density = ((y - m1) / (300 - m1)) * 0.55;
-      }
-
-      if (isMountain) {
-        const size = 0.5 + density * 3.0;
-        dots.push(
-          <circle
-            key={`${r}-${c}`}
-            cx={x.toFixed(2)}
-            cy={y.toFixed(2)}
-            r={size.toFixed(2)}
-            className="fill-orange-500/15 dark:fill-orange-400/20"
-          />
-        );
-      }
-    }
-  }
-
-  return (
-    <svg viewBox="0 0 600 300" className="absolute inset-0 w-full h-full object-cover opacity-60 pointer-events-none z-0">
-      {dots}
-    </svg>
-  );
-}
-
-// A beautiful, interactive bento grid showing the 4 features
+// A beautiful, interactive bento grid showing the 4 features matching LinkedIn styling
 function BentoGridFeatures({ lang }: { lang: Locale }) {
   // 1. Resume Match View State
   const [resumeView, setResumeView] = useState<'original' | 'optimized'>('optimized');
@@ -195,19 +160,19 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
     <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch w-full mt-12 relative z-10 text-left">
       
       {/* 1. Job Applier & Loop Simulator (Colspan 7) */}
-      <div className="md:col-span-7 group relative overflow-hidden rounded-2xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-6 flex flex-col justify-between hover:border-brand-lime/30 transition-all duration-300 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-lime/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="md:col-span-7 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
-            <span className="h-2 w-2 rounded-full bg-brand-lime animate-pulse" />
-            <span className="text-[10px] font-mono font-bold text-brand-lime uppercase tracking-wider">
+            <span className="h-2 w-2 rounded-full bg-[#70b5f9] animate-pulse" />
+            <span className="text-[10px] font-mono font-bold text-[#70b5f9] uppercase tracking-wider">
               {lang === 'pt-BR' ? 'Módulo Applier' : 'Applier Module'}
             </span>
           </div>
-          <h3 className="text-xl font-bold text-fd-foreground">
+          <h3 className="text-xl font-bold text-white">
             {lang === 'pt-BR' ? 'Busca e Auto-Candidatura de Vagas' : 'Job Search & Auto-Apply'}
           </h3>
-          <p className="text-xs text-fd-muted-foreground mt-1 leading-relaxed">
+          <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
             {lang === 'pt-BR'
               ? 'Consulte listagens ativas e preencha formulários Easy Apply sem sobrecarga de navegador, rodando workers assíncronos diretamente nas APIs do LinkedIn.'
               : 'Query listings and submit Easy Apply packages without heavy browser processes, running async tasks directly against LinkedIn APIs.'}
@@ -215,23 +180,23 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
         </div>
 
         {/* Live Simulator Viewport */}
-        <div className="border border-fd-border/20 rounded-xl bg-fd-background/60 p-4 font-mono text-xs flex flex-col gap-3 min-h-[250px] relative overflow-hidden shadow-inner">
-          <div className="flex justify-between items-center pb-2 border-b border-fd-border/15">
-            <span className="text-[10px] font-semibold text-fd-muted-foreground flex items-center gap-1.5">
-              <Terminal className="size-3.5 text-brand-lime" />
+        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 font-mono text-xs flex flex-col gap-3 min-h-[250px] relative overflow-hidden shadow-inner">
+          <div className="flex justify-between items-center pb-2 border-b border-[#2f3539]/30">
+            <span className="text-[10px] font-semibold text-[#8f969b] flex items-center gap-1.5">
+              <Terminal className="size-3.5 text-[#70b5f9]" />
               voyager-apply-worker.log
             </span>
             {applyState === 'idle' ? (
               <button
                 onClick={runApplySimulation}
-                className="px-2.5 py-1 rounded bg-brand-lime text-black font-sans font-bold text-[10px] transition-transform active:scale-95 cursor-pointer shadow hover:bg-[#d5f002]"
+                className="px-2.5 py-1 rounded bg-[#0a66c2] text-white font-sans font-bold text-[10px] transition-transform active:scale-95 cursor-pointer shadow hover:bg-[#004182]"
               >
                 {lang === 'pt-BR' ? 'Executar Teste' : 'Run Simulator'}
               </button>
             ) : (
               <button
                 onClick={resetApplySimulation}
-                className="px-2.5 py-1 rounded border border-fd-border bg-fd-muted/30 text-fd-foreground font-sans font-semibold text-[10px] transition-transform active:scale-95 cursor-pointer hover:bg-fd-muted"
+                className="px-2.5 py-1 rounded border border-[#2f3539] bg-[#1d2226] text-[#e9ecef] font-sans font-semibold text-[10px] transition-transform active:scale-95 cursor-pointer hover:bg-[#2f3539]"
               >
                 {lang === 'pt-BR' ? 'Resetar' : 'Reset'}
               </button>
@@ -241,24 +206,24 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
           {/* Jobs Feed List */}
           {applyState === 'idle' && (
             <div className="space-y-2 py-1 font-sans">
-              <div className="flex justify-between items-center p-2 rounded-lg bg-fd-muted/10 border border-fd-border/10">
+              <div className="flex justify-between items-center p-2 rounded-lg bg-[#12161a]/40 border border-[#2f3539]/30">
                 <div>
-                  <div className="text-xs font-bold text-fd-foreground">Senior React Developer</div>
-                  <div className="text-[10px] text-fd-muted-foreground">Vercel Inc. · Remote</div>
+                  <div className="text-xs font-bold text-[#e9ecef]">Senior React Developer</div>
+                  <div className="text-[10px] text-[#8f969b]">Vercel Inc. · Remote</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] bg-brand-lime/10 text-brand-lime border border-brand-lime/20 px-1.5 py-0.5 rounded font-mono">95% match</span>
-                  <span className="text-[9px] font-bold uppercase text-fd-muted-foreground font-mono">Idle</span>
+                  <span className="text-[10px] bg-[#0a66c2]/10 text-[#70b5f9] border border-[#0a66c2]/20 px-1.5 py-0.5 rounded font-mono">95% match</span>
+                  <span className="text-[9px] font-bold uppercase text-[#8f969b] font-mono">Idle</span>
                 </div>
               </div>
-              <div className="flex justify-between items-center p-2 rounded-lg bg-fd-muted/10 border border-fd-border/10">
+              <div className="flex justify-between items-center p-2 rounded-lg bg-[#12161a]/40 border border-[#2f3539]/30">
                 <div>
-                  <div className="text-xs font-bold text-fd-foreground">TypeScript Compiler Architect</div>
-                  <div className="text-[10px] text-fd-muted-foreground">OpenAI · San Francisco</div>
+                  <div className="text-xs font-bold text-[#e9ecef]">TypeScript Compiler Architect</div>
+                  <div className="text-[10px] text-[#8f969b]">OpenAI · San Francisco</div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] bg-brand-lime/10 text-brand-lime border border-brand-lime/20 px-1.5 py-0.5 rounded font-mono">89% match</span>
-                  <span className="text-[9px] font-bold uppercase text-fd-muted-foreground font-mono">Idle</span>
+                  <span className="text-[10px] bg-[#0a66c2]/10 text-[#70b5f9] border border-[#0a66c2]/20 px-1.5 py-0.5 rounded font-mono">89% match</span>
+                  <span className="text-[9px] font-bold uppercase text-[#8f969b] font-mono">Idle</span>
                 </div>
               </div>
             </div>
@@ -274,15 +239,15 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                     log.startsWith('✓')
                       ? 'border-emerald-500 text-emerald-400 font-bold bg-emerald-500/5 py-1 px-1.5 rounded-r'
                       : log.startsWith('↳')
-                      ? 'border-fd-border/20 text-fd-muted-foreground ml-3'
-                      : 'border-brand-lime text-slate-300'
+                      ? 'border-[#2f3539]/40 text-[#8f969b] ml-3'
+                      : 'border-[#70b5f9] text-slate-300'
                   }`}
                 >
                   {log}
                 </div>
               ))}
               {applyState !== 'success' && (
-                <div className="text-brand-lime text-[11px] pl-3 animate-pulse border-l border-brand-lime">
+                <div className="text-[#70b5f9] text-[11px] pl-3 animate-pulse border-l border-[#70b5f9]">
                   ● {lang === 'pt-BR' ? 'Processando...' : 'Processing...'}
                 </div>
               )}
@@ -292,8 +257,8 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
       </div>
 
       {/* 2. AI Resume Optimizer (Colspan 5) */}
-      <div className="md:col-span-5 group relative overflow-hidden rounded-2xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-6 flex flex-col justify-between hover:border-brand-lime/30 transition-all duration-300 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-lime/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="md:col-span-5 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -301,10 +266,10 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
               {lang === 'pt-BR' ? 'Otimização ATS' : 'ATS Optimization'}
             </span>
           </div>
-          <h3 className="text-xl font-bold text-fd-foreground">
+          <h3 className="text-xl font-bold text-white">
             {lang === 'pt-BR' ? 'Otimizador de Currículos' : 'AI Resume Optimizer'}
           </h3>
-          <p className="text-xs text-fd-muted-foreground mt-1 leading-relaxed">
+          <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
             {lang === 'pt-BR'
               ? 'Escaneie a descrição de cargos no LinkedIn e reescreva seções ou summaries para atingir compatibilidade máxima de palavras-chave.'
               : 'Scan LinkedIn description requirements to dynamically inject missing technical skills and tailor summary sentences.'}
@@ -312,9 +277,9 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
         </div>
 
         {/* Tailor UI card */}
-        <div className="border border-fd-border/20 rounded-xl bg-fd-background/60 p-4 flex flex-col gap-3.5 min-h-[250px] shadow-inner font-sans">
-          <div className="flex justify-between items-center pb-2 border-b border-fd-border/15">
-            <span className="text-[11px] font-bold text-fd-foreground uppercase font-mono tracking-wide">
+        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 flex flex-col gap-3.5 min-h-[250px] shadow-inner font-sans">
+          <div className="flex justify-between items-center pb-2 border-b border-[#2f3539]/30">
+            <span className="text-[11px] font-bold text-[#e9ecef] uppercase font-mono tracking-wide">
               {lang === 'pt-BR' ? 'Análise de ATS' : 'ATS Analysis'}
             </span>
             <div className="flex gap-1.5">
@@ -323,7 +288,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                 className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
                   resumeView === 'original'
                     ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-                    : 'bg-fd-muted/30 border-fd-border text-fd-muted-foreground hover:text-fd-foreground'
+                    : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
                 }`}
               >
                 {lang === 'pt-BR' ? 'Original' : 'Original'}
@@ -332,8 +297,8 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                 onClick={() => setResumeView('optimized')}
                 className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
                   resumeView === 'optimized'
-                    ? 'bg-brand-lime/10 text-brand-lime border-brand-lime/20'
-                    : 'bg-fd-muted/30 border-fd-border text-fd-muted-foreground hover:text-fd-foreground'
+                    ? 'bg-[#0a66c2]/10 text-[#70b5f9] border-[#0a66c2]/20'
+                    : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
                 }`}
               >
                 {lang === 'pt-BR' ? 'Otimizado' : 'Optimized'}
@@ -341,41 +306,41 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
             </div>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-3 text-left">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-fd-muted-foreground font-mono">{lang === 'pt-BR' ? 'Taxa de Match:' : 'Match Rate:'}</span>
+              <span className="text-[#8f969b] font-mono">{lang === 'pt-BR' ? 'Taxa de Match:' : 'Match Rate:'}</span>
               <span className={`font-mono font-bold ${resumeView === 'original' ? 'text-orange-400' : 'text-emerald-400'}`}>
                 {resumeView === 'original' ? '58%' : '94%'}
               </span>
             </div>
             {/* Progress line */}
-            <div className="w-full bg-fd-muted/20 border border-fd-border/15 h-2 rounded-full overflow-hidden">
+            <div className="w-full bg-[#12161a] border border-[#2f3539]/30 h-2 rounded-full overflow-hidden">
               <div
-                className={`h-full transition-all duration-500 ${resumeView === 'original' ? 'bg-orange-400' : 'bg-brand-lime'}`}
+                className={`h-full transition-all duration-500 ${resumeView === 'original' ? 'bg-orange-400' : 'bg-[#0a66c2]'}`}
                 style={{ width: resumeView === 'original' ? '58%' : '94%' }}
               />
             </div>
 
             {/* Keyword badges status */}
-            <div className="space-y-2 pt-1.5 text-xs text-left">
-              <div className="flex justify-between items-center p-2 rounded bg-fd-muted/10 border border-fd-border/5">
-                <span className="text-fd-muted-foreground">TypeScript Core</span>
+            <div className="space-y-2 pt-1.5 text-xs">
+              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20">
+                <span className="text-[#8f969b]">TypeScript Core</span>
                 <span className="text-[10px] font-bold text-emerald-400 font-mono">Matched ✓</span>
               </div>
-              <div className="flex justify-between items-center p-2 rounded bg-fd-muted/10 border border-fd-border/5">
-                <span className="text-fd-muted-foreground">Redis & BullMQ</span>
+              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20">
+                <span className="text-[#8f969b]">Redis & BullMQ</span>
                 {resumeView === 'original' ? (
                   <span className="text-[10px] font-bold text-orange-400 font-mono">Missing ✗</span>
                 ) : (
-                  <span className="text-[10px] font-bold text-brand-lime font-mono animate-pulse">[+] Inserted</span>
+                  <span className="text-[10px] font-bold text-[#70b5f9] font-mono animate-pulse">[+] Inserted</span>
                 )}
               </div>
-              <div className="flex justify-between items-center p-2 rounded bg-fd-muted/10 border border-fd-border/5">
-                <span className="text-fd-muted-foreground">Next.js Server Actions</span>
+              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20">
+                <span className="text-[#8f969b]">Next.js Server Actions</span>
                 {resumeView === 'original' ? (
                   <span className="text-[10px] font-bold text-orange-400 font-mono">Missing ✗</span>
                 ) : (
-                  <span className="text-[10px] font-bold text-brand-lime font-mono animate-pulse">[+] Inserted</span>
+                  <span className="text-[10px] font-bold text-[#70b5f9] font-mono animate-pulse">[+] Inserted</span>
                 )}
               </div>
             </div>
@@ -384,8 +349,8 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
       </div>
 
       {/* 3. AI Content Publisher (Colspan 5) */}
-      <div className="md:col-span-5 group relative overflow-hidden rounded-2xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-6 flex flex-col justify-between hover:border-brand-lime/30 transition-all duration-300 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-lime/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="md:col-span-5 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
             <span className="h-2 w-2 rounded-full bg-purple-400 animate-pulse" />
@@ -393,10 +358,10 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
               {lang === 'pt-BR' ? 'Módulo Publisher' : 'Publisher Module'}
             </span>
           </div>
-          <h3 className="text-xl font-bold text-fd-foreground">
+          <h3 className="text-xl font-bold text-white">
             {lang === 'pt-BR' ? 'Criação e Agendamento' : 'AI Post Creator & Scheduler'}
           </h3>
-          <p className="text-xs text-fd-muted-foreground mt-1 leading-relaxed">
+          <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
             {lang === 'pt-BR'
               ? 'Gere posts corporativos elegantes utilizando inteligência contextual e gerencie agendamentos automáticos através de filas Redis robustas.'
               : 'Write tech articles utilizing model prompts and queue auto-scheduling using microservice Redis channels.'}
@@ -404,9 +369,9 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
         </div>
 
         {/* Post editor mockup */}
-        <div className="border border-fd-border/20 rounded-xl bg-fd-background/60 p-4 flex flex-col gap-3 min-h-[250px] shadow-inner font-sans">
-          <div className="flex justify-between items-center pb-1.5 border-b border-fd-border/15">
-            <span className="text-[10px] font-bold text-fd-foreground font-mono flex items-center gap-1">
+        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 flex flex-col gap-3 min-h-[250px] shadow-inner font-sans">
+          <div className="flex justify-between items-center pb-1.5 border-b border-[#2f3539]/30">
+            <span className="text-[10px] font-bold text-[#e9ecef] font-mono flex items-center gap-1">
               <Rss className="size-3 text-purple-400" />
               {lang === 'pt-BR' ? 'agendador-posts.json' : 'scheduler.json'}
             </span>
@@ -418,9 +383,9 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
             <textarea
               value={postDraft}
               onChange={(e) => setPostDraft(e.target.value)}
-              className="w-full flex-1 bg-fd-muted/10 border border-fd-border/15 p-2 rounded-lg text-xs text-slate-300 resize-none font-mono focus:outline-none focus:border-purple-500/40"
+              className="w-full flex-1 bg-[#12161a]/60 border border-[#2f3539]/30 p-2 rounded-lg text-xs text-slate-300 resize-none font-mono focus:outline-none focus:border-purple-500/40"
             />
-            <div className="flex items-center justify-between text-[10px] text-fd-muted-foreground mt-1">
+            <div className="flex items-center justify-between text-[10px] text-[#8f969b] mt-1">
               <span>{postDraft.length} chars</span>
               <span className="text-purple-400 font-semibold font-mono">
                 {lang === 'pt-BR' ? '↳ Fila: 1 pendente' : '↳ Queue: 1 pending'}
@@ -431,8 +396,8 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
       </div>
 
       {/* 4. Slide Carousel Creator (Colspan 7) */}
-      <div className="md:col-span-7 group relative overflow-hidden rounded-2xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-6 flex flex-col justify-between hover:border-brand-lime/30 transition-all duration-300 shadow-lg">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-lime/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="md:col-span-7 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
             <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
@@ -440,10 +405,10 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
               {lang === 'pt-BR' ? 'Carrossel PDF' : 'Slide Compiler'}
             </span>
           </div>
-          <h3 className="text-xl font-bold text-fd-foreground">
+          <h3 className="text-xl font-bold text-white">
             {lang === 'pt-BR' ? 'Compilador de Slides no Grid' : 'Slide PDF Carousel Generator'}
           </h3>
-          <p className="text-xs text-fd-muted-foreground mt-1 leading-relaxed">
+          <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
             {lang === 'pt-BR'
               ? 'Estruture slides de alta conversão diretamente do markdown. Compile e exporte PDFs prontos para a timeline do LinkedIn.'
               : 'Compile highly interactive slideshow carousels from raw configurations. Clean layout matching the monorepos CSS.'}
@@ -451,9 +416,9 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
         </div>
 
         {/* Carousel UI Mockup */}
-        <div className="border border-fd-border/20 rounded-xl bg-fd-background/60 p-4 flex flex-col gap-3 min-h-[250px] shadow-inner font-sans">
-          <div className="flex justify-between items-center pb-2 border-b border-fd-border/15">
-            <span className="text-[10px] font-bold text-fd-foreground font-mono">
+        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 flex flex-col gap-3 min-h-[250px] shadow-inner font-sans">
+          <div className="flex justify-between items-center pb-2 border-b border-[#2f3539]/30">
+            <span className="text-[10px] font-bold text-[#e9ecef] font-mono">
               {lang === 'pt-BR' ? 'compilador-slides.pdf' : 'carousel-compiler.pdf'}
             </span>
             <div className="flex gap-1.5">
@@ -464,7 +429,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
                   className={`px-1.5 py-0.5 rounded text-[9px] font-bold capitalize border transition-colors cursor-pointer ${
                     carouselTheme === theme
                       ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                      : 'bg-fd-muted/30 border-fd-border text-fd-muted-foreground hover:text-fd-foreground'
+                      : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
                   }`}
                 >
                   {theme}
@@ -477,7 +442,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
             <button
               onClick={() => setCurrentSlide(prev => Math.max(0, prev - 1))}
               disabled={currentSlide === 0}
-              className="text-xs text-fd-muted-foreground hover:text-fd-foreground disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-1"
+              className="text-xs text-[#70b5f9] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-1"
             >
               ◀
             </button>
@@ -494,7 +459,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
             >
               <div>
                 <div className={`text-[10px] font-bold font-mono tracking-wider uppercase mb-1 ${
-                  carouselTheme === 'yellow' ? 'text-black/60' : 'text-brand-lime'
+                  carouselTheme === 'yellow' ? 'text-black/60' : 'text-[#70b5f9]'
                 }`}>
                   SLIDE {currentSlide + 1} / {slides.length}
                 </div>
@@ -510,7 +475,7 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
             <button
               onClick={() => setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1))}
               disabled={currentSlide === slides.length - 1}
-              className="text-xs text-fd-muted-foreground hover:text-fd-foreground disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-1"
+              className="text-xs text-[#70b5f9] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-1"
             >
               ▶
             </button>
@@ -605,24 +570,24 @@ pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mt-10">
-      <div className="lg:col-span-7 relative flex flex-col rounded-xl border border-fd-border/30 bg-fd-card/60 backdrop-blur-md overflow-hidden shadow-xl min-h-[320px]">
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-fd-border/20 bg-fd-muted/30">
+      <div className="lg:col-span-7 relative flex flex-col rounded-xl border border-[#2f3539] bg-[#1d2226] overflow-hidden shadow-xl min-h-[320px]">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#2f3539] bg-[#12161a]/30">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
             <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/50" />
             <span className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
-            <span className="text-xs text-fd-muted-foreground ml-2 font-mono">
+            <span className="text-xs text-[#8f969b] ml-2 font-mono">
               {tab === 'graphql' ? 'query.graphql' : tab === 'rest' ? 'request.http' : 'terminal.sh'}
             </span>
           </div>
           <button
             onClick={() => navigator.clipboard.writeText(active.code)}
-            className="text-[10px] text-fd-foreground border border-fd-border px-2 py-0.5 rounded bg-fd-muted/30 hover:bg-fd-muted transition-all cursor-pointer animate-[pulse_4s_ease-in-out_infinite]"
+            className="text-[10px] text-[#e9ecef] border border-[#2f3539] px-2 py-0.5 rounded bg-[#12161a] hover:bg-[#2f3539] transition-all cursor-pointer"
           >
             Copy
           </button>
         </div>
-        <div className="flex-1 p-5 font-mono text-[13px] text-fd-foreground bg-fd-muted/5 overflow-auto text-left leading-relaxed">
+        <div className="flex-1 p-5 font-mono text-[13px] text-[#e9ecef] bg-[#12161a]/10 overflow-auto text-left leading-relaxed">
           <pre className="whitespace-pre">{active.code}</pre>
         </div>
       </div>
@@ -633,8 +598,8 @@ pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
               onClick={() => setTab('graphql')}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
                 tab === 'graphql'
-                  ? 'bg-brand-lime text-black border-brand-lime shadow-md shadow-brand-lime/10'
-                  : 'bg-fd-muted/40 border-fd-border text-fd-foreground hover:bg-fd-muted'
+                  ? 'bg-[#0a66c2] text-white border-[#0a66c2] shadow-md shadow-[#0a66c2]/10'
+                  : 'bg-[#1d2226] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
               }`}
             >
               GraphQL
@@ -643,8 +608,8 @@ pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
               onClick={() => setTab('rest')}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
                 tab === 'rest'
-                  ? 'bg-brand-lime text-black border-brand-lime shadow-md shadow-brand-lime/10'
-                  : 'bg-fd-muted/40 border-fd-border text-fd-foreground hover:bg-fd-muted'
+                  ? 'bg-[#0a66c2] text-white border-[#0a66c2] shadow-md shadow-[#0a66c2]/10'
+                  : 'bg-[#1d2226] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
               }`}
             >
               REST API
@@ -653,19 +618,19 @@ pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
               onClick={() => setTab('cli')}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
                 tab === 'cli'
-                  ? 'bg-brand-lime text-black border-brand-lime shadow-md shadow-brand-lime/10'
-                  : 'bg-fd-muted/40 border-fd-border text-fd-foreground hover:bg-fd-muted'
+                  ? 'bg-[#0a66c2] text-white border-[#0a66c2] shadow-md shadow-[#0a66c2]/10'
+                  : 'bg-[#1d2226] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
               }`}
             >
               CLI Automation
             </button>
           </div>
-          <h4 className="text-xl font-bold text-fd-foreground mb-3">{active.title}</h4>
-          <p className="text-sm text-fd-muted-foreground mb-6 leading-relaxed">{active.desc}</p>
-          <ul className="space-y-2">
+          <h4 className="text-xl font-bold text-[#e9ecef] mb-3 text-left">{active.title}</h4>
+          <p className="text-sm text-[#8f969b] mb-6 leading-relaxed text-left">{active.desc}</p>
+          <ul className="space-y-2 text-left">
             {active.bullets.map((bullet, idx) => (
-              <li key={idx} className="flex items-start gap-2.5 text-xs text-fd-muted-foreground">
-                <span className="h-5 w-5 rounded-full bg-brand-lime/10 text-brand-lime flex items-center justify-center shrink-0 mt-0.5 border border-brand-lime/20">
+              <li key={idx} className="flex items-start gap-2.5 text-xs text-[#8f969b]">
+                <span className="h-5 w-5 rounded-full bg-[#0a66c2]/10 text-[#70b5f9] flex items-center justify-center shrink-0 mt-0.5 border border-[#0a66c2]/20">
                   <Check className="size-3" />
                 </span>
                 <span>{bullet}</span>
@@ -683,27 +648,27 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
 
   const workflowSteps = [
     {
-      icon: <Network className="h-5 w-5 text-brand-lime" />,
+      icon: <Network className="h-5 w-5 text-indigo-400" />,
       title: text.workflow.steps.sync.title,
       description: text.workflow.steps.sync.desc
     },
     {
-      icon: <Search className="h-5 w-5 text-brand-lime" />,
+      icon: <Search className="h-5 w-5 text-blue-400" />,
       title: text.workflow.steps.search.title,
       description: text.workflow.steps.search.desc
     },
     {
-      icon: <PenTool className="h-5 w-5 text-brand-lime" />,
+      icon: <PenTool className="h-5 w-5 text-purple-400" />,
       title: text.workflow.steps.match.title,
       description: text.workflow.steps.match.desc
     },
     {
-      icon: <Send className="h-5 w-5 text-brand-lime" />,
+      icon: <Send className="h-5 w-5 text-emerald-400" />,
       title: text.workflow.steps.submit.title,
       description: text.workflow.steps.submit.desc
     },
     {
-      icon: <Layers className="h-5 w-5 text-brand-lime" />,
+      icon: <Layers className="h-5 w-5 text-orange-400" />,
       title: text.workflow.steps.track.title,
       description: text.workflow.steps.track.desc
     }
@@ -712,8 +677,8 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
   const packages = [
     {
       title: text.audiences.jobSeekers.title,
-      icon: <UserSearch className="h-6 w-6 text-brand-lime" />,
-      color: "brand-lime",
+      icon: <UserSearch className="h-6 w-6 text-blue-400" />,
+      color: "blue",
       features: [
         text.audiences.jobSeekers.f1,
         text.audiences.jobSeekers.f2,
@@ -744,36 +709,29 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
   ];
 
   return (
-    <main className="relative flex flex-col items-center overflow-hidden bg-fd-background grain-bg min-h-screen w-full pt-16">
-      {/* Grid mask overlay */}
-      <div className="absolute inset-0 z-0 pointer-events-none bg-[linear-gradient(to_right,#80808008_1px,transparent_1px),linear-gradient(to_bottom,#80808008_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_30%,#000_70%,transparent_100%)]" />
-
-      {/* Background glowing blobs */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-5%] right-[-5%] w-[550px] h-[550px] bg-emerald-500/10 rounded-full blur-[100px]" />
-        <div className="absolute top-[15%] right-[10%] w-[450px] h-[450px] bg-orange-500/12 rounded-full blur-[110px]" />
-        <div className="absolute top-[5%] left-[5%] w-[350px] h-[350px] bg-brand-lime/5 rounded-full blur-[90px]" />
-      </div>
+    <main className="relative flex flex-col items-center overflow-hidden bg-[#090e11] text-[#e9ecef] min-h-screen w-full pt-16">
+      {/* Background radial glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none z-0 bg-radial from-[#0a66c2]/10 via-[#0a66c2]/2 to-transparent blur-3xl opacity-80" />
 
       {/* Hero Section */}
       <section className="relative w-full px-6 pt-20 pb-16 overflow-hidden z-10">
         <div className="max-w-6xl mx-auto flex flex-col items-center text-center">
           {/* Announcement Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full border border-brand-lime/20 bg-brand-lime/5 px-3.5 py-1.5 text-xs text-brand-lime mb-8 hover:bg-brand-lime/10 transition-colors cursor-pointer">
-            <span className="flex h-1.5 w-1.5 rounded-full bg-brand-lime animate-pulse"></span>
-            <span className="font-semibold text-brand-lime">{text.hero.badge}</span>
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-sm text-blue-300 mb-8 transition-transform hover:scale-[1.02] cursor-pointer">
+            <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+            <span className="text-xs font-semibold">{text.hero.badge}</span>
           </div>
 
           {/* Title */}
-          <h1 className="mx-auto max-w-4xl font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-fd-foreground leading-[1.05] mb-8">
+          <h1 className="mx-auto max-w-4xl font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05] mb-8">
             {text.hero.titleNormal}{' '}
-            <span className="text-brand-lime">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
               {text.hero.titleHighlight}
             </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="mx-auto max-w-2xl text-sm sm:text-base md:text-lg text-fd-muted-foreground leading-relaxed mb-10">
+          <p className="mx-auto max-w-2xl text-sm sm:text-base md:text-lg text-slate-400 leading-relaxed mb-10">
             {text.hero.subtitle}
           </p>
 
@@ -781,7 +739,7 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full sm:w-auto">
             <Link
               href={`/docs/${lang}/quickstart`}
-              className="w-full sm:w-auto group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-brand-lime px-8 py-3.5 font-bold text-black shadow-lg shadow-brand-lime/15 transition-transform active:scale-95 hover:bg-[#d5f002] hover:scale-[1.02]"
+              className="w-full sm:w-auto group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-white px-8 py-3.5 font-bold text-zinc-950 transition-transform active:scale-95 hover:scale-[1.02]"
             >
               <span className="flex items-center gap-2">
                 {text.hero.ctaPrimary}
@@ -790,7 +748,7 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
             </Link>
             <Link
               href={`/docs/${lang}/quickstart`}
-              className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-fd-border bg-fd-card/50 px-8 py-3.5 font-semibold text-fd-foreground transition-colors hover:bg-fd-muted hover:scale-[1.02] active:scale-95"
+              className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-8 py-3.5 font-semibold text-white transition-colors hover:bg-white/10 hover:scale-[1.02] active:scale-95"
             >
               {text.hero.ctaSecondary}
             </Link>
@@ -798,40 +756,40 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
         </div>
 
         {/* Feature Bento Grid replacing original mockup dashboard */}
-        <div className="max-w-6xl mx-auto px-4 sm:px-0">
+        <div className="max-w-5xl mx-auto px-4 sm:px-0">
           <BentoGridFeatures lang={lang} />
         </div>
       </section>
 
       {/* EcosystemFeatures Section */}
-      <section id="features" className="w-full px-6 py-24 border-t border-fd-border/10 bg-fd-muted/5 z-10 relative">
+      <section id="features" className="w-full px-6 py-24 border-t border-[#2f3539] bg-[#12161a]/15 z-10 relative">
         <div className="max-w-6xl mx-auto">
           <div className="mb-16 text-left">
-            <h2 className="font-display text-3xl font-bold tracking-tight text-fd-foreground sm:text-4xl mb-4">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl mb-4">
               {text.features.title}
             </h2>
-            <p className="max-w-2xl text-sm sm:text-base text-fd-muted-foreground leading-relaxed">
+            <p className="max-w-2xl text-sm sm:text-base text-slate-400 leading-relaxed">
               {text.features.subtitle}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Card 1: Job Applier */}
-            <div className="group flex flex-col rounded-3xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-8 hover:bg-fd-card/60 transition-all duration-300 relative overflow-hidden col-span-1 md:col-span-2 shadow-sm hover:border-brand-lime/30">
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-lime/0 via-transparent to-emerald-500/0 group-hover:from-brand-lime/5 group-hover:to-emerald-500/5 transition-all duration-500" />
+            <div className="group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-all duration-300 relative overflow-hidden col-span-1 md:col-span-2 shadow-sm hover:border-[#70b5f9]/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500" />
               <div className="relative z-10 text-left">
-                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand-lime/10 border border-brand-lime/20">
-                  <Bot className="h-6 w-6 text-brand-lime" />
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                  <Bot className="h-6 w-6 text-blue-400" />
                 </div>
-                <h3 className="font-display text-xl font-bold text-fd-foreground mb-3">
+                <h3 className="font-display text-xl font-bold text-white mb-3">
                   {text.features.jobApplier.title}
                 </h3>
-                <p className="text-fd-muted-foreground mb-6 flex-1 text-sm leading-relaxed">
+                <p className="text-slate-400 mb-6 flex-1 text-sm leading-relaxed">
                   {text.features.jobApplier.desc}
                 </p>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {text.features.jobApplier.tags.map((tag, tIdx) => (
-                    <span key={tIdx} className="inline-flex rounded-md bg-fd-muted px-2 py-1 text-xs text-fd-foreground border border-fd-border/10 font-medium">
+                    <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
                       {tag}
                     </span>
                   ))}
@@ -839,40 +797,40 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
               </div>
 
               {/* Visual for Job Applier */}
-              <div className="mt-6 flex flex-col gap-3 h-full justify-end border-t border-fd-border/15 pt-6 text-left">
-                <div className="flex items-center justify-between rounded-lg bg-fd-background/80 border border-fd-border/10 p-3">
+              <div className="mt-6 flex flex-col gap-3 h-full justify-end border-t border-white/5 pt-6 text-left">
+                <div className="flex items-center justify-between rounded-lg bg-zinc-900 border border-white/5 p-3">
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded bg-brand-lime/10 flex items-center justify-center shrink-0 border border-brand-lime/25">
-                      <FileCheck2 className="h-4 w-4 text-brand-lime" />
+                    <div className="h-8 w-8 rounded bg-blue-500/20 flex items-center justify-center shrink-0 border border-blue-500/30">
+                      <FileCheck2 className="h-4 w-4 text-blue-400" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-fd-foreground truncate">
+                      <div className="text-sm font-medium text-white truncate">
                         {text.features.jobApplier.visual.jobTitle}
                       </div>
-                      <div className="text-xs text-fd-muted-foreground truncate">
+                      <div className="text-xs text-slate-500 truncate">
                         {text.features.jobApplier.visual.company}
                       </div>
                     </div>
                   </div>
-                  <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-xs font-semibold text-emerald-400 border border-emerald-500/20 shrink-0">
+                  <span className="inline-flex items-center rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-400 border border-green-500/20 shrink-0">
                     {text.features.jobApplier.visual.applied}
                   </span>
                 </div>
-                <div className="flex items-center justify-between rounded-lg bg-fd-background/80 border border-fd-border/10 p-3">
+                <div className="flex items-center justify-between rounded-lg bg-zinc-900 border border-white/5 p-3">
                   <div className="flex items-center gap-3">
-                    <div className="h-8 w-8 rounded bg-purple-500/10 flex items-center justify-center shrink-0 border border-purple-500/25">
+                    <div className="h-8 w-8 rounded bg-purple-500/20 flex items-center justify-center shrink-0 border border-purple-500/30">
                       <Sparkles className="h-4 w-4 text-purple-400" />
                     </div>
                     <div className="min-w-0">
-                      <div className="text-sm font-medium text-fd-foreground truncate">
+                      <div className="text-sm font-medium text-white truncate">
                         {text.features.jobApplier.visual.adjusting}
                       </div>
-                      <div className="text-xs text-fd-muted-foreground truncate">
+                      <div className="text-xs text-slate-500 truncate">
                         {text.features.jobApplier.visual.prompting}
                       </div>
                     </div>
                   </div>
-                  <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2.5 py-0.5 text-xs font-semibold text-blue-400 border border-blue-500/20 animate-pulse shrink-0">
+                  <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-400 border border-blue-500/20 animate-pulse shrink-0">
                     {text.features.jobApplier.visual.processing}
                   </span>
                 </div>
@@ -880,21 +838,21 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
             </div>
 
             {/* Card 2: Publisher */}
-            <div className="group flex flex-col rounded-3xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-8 hover:bg-fd-card/60 transition-all duration-300 relative overflow-hidden col-span-1 shadow-sm hover:border-brand-lime/30">
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-lime/0 via-transparent to-purple-500/0 group-hover:from-brand-lime/5 group-hover:to-purple-500/5 transition-all duration-500" />
+            <div className="group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-all duration-300 relative overflow-hidden col-span-1 shadow-sm hover:border-[#70b5f9]/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500" />
               <div className="relative z-10 text-left">
-                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-purple-500/10 border border-purple-500/20">
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10">
                   <PenTool className="h-6 w-6 text-purple-400" />
                 </div>
-                <h3 className="font-display text-xl font-bold text-fd-foreground mb-3">
+                <h3 className="font-display text-xl font-bold text-white mb-3">
                   {text.features.publisher.title}
                 </h3>
-                <p className="text-fd-muted-foreground mb-6 flex-1 text-sm leading-relaxed">
+                <p className="text-slate-400 mb-6 flex-1 text-sm leading-relaxed">
                   {text.features.publisher.desc}
                 </p>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {text.features.publisher.tags.map((tag, tIdx) => (
-                    <span key={tIdx} className="inline-flex rounded-md bg-fd-muted px-2 py-1 text-xs text-fd-foreground border border-fd-border/10 font-medium">
+                    <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
                       {tag}
                     </span>
                   ))}
@@ -902,40 +860,40 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
               </div>
 
               {/* Visual for Publisher */}
-              <div className="mt-6 h-full flex flex-col gap-2 rounded-lg border border-fd-border/15 bg-fd-background/80 overflow-hidden text-sm text-left">
-                <div className="flex items-center gap-2 border-b border-fd-border/15 bg-fd-muted/30 px-3 py-2">
-                  <Rss className="h-3.5 w-3.5 text-fd-muted-foreground shrink-0" />
-                  <span className="text-xs text-fd-muted-foreground truncate">
+              <div className="mt-6 h-full flex flex-col gap-2 rounded-lg border border-white/5 bg-zinc-900 overflow-hidden text-sm text-left">
+                <div className="flex items-center gap-2 border-b border-white/5 bg-black/40 px-3 py-2">
+                  <Rss className="h-3 w-3 text-slate-400 shrink-0" />
+                  <span className="text-xs text-slate-400 truncate">
                     {text.features.publisher.visual.scheduled}
                   </span>
                 </div>
                 <div className="p-3">
-                  <div className="h-2 w-3/4 rounded-full bg-fd-muted-foreground/20 mb-2" />
-                  <div className="h-2 w-full rounded-full bg-fd-muted-foreground/10 mb-2" />
-                  <div className="h-2 w-5/6 rounded-full bg-fd-muted-foreground/10 mb-4" />
-                  <div className="rounded bg-fd-background p-2 font-mono text-[10px] text-fd-muted-foreground border border-fd-border/10">
-                    <span className="text-purple-400">const</span> optimize = () {'=>'} {'{'} ... {'}'}
+                  <div className="h-2 w-3/4 rounded-full bg-white/20 mb-2" />
+                  <div className="h-2 w-full rounded-full bg-white/10 mb-2" />
+                  <div className="h-2 w-5/6 rounded-full bg-white/10 mb-4" />
+                  <div className="rounded bg-black p-2 font-mono text-[10px] text-zinc-400 border border-white/5">
+                    <span className="text-pink-400">const</span> optimize = () {'=>'} {'{'} ... {'}'}
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Card 3: Documentation Hub */}
-            <div className="group flex flex-col rounded-3xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md p-8 hover:bg-fd-card/60 transition-all duration-300 relative overflow-hidden col-span-1 md:col-span-3 shadow-sm hover:border-brand-lime/30">
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-lime/0 via-transparent to-indigo-500/0 group-hover:from-brand-lime/5 group-hover:to-indigo-500/5 transition-all duration-500" />
+            <div className="group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-all duration-300 relative overflow-hidden col-span-1 md:col-span-3 shadow-sm hover:border-[#70b5f9]/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500" />
               <div className="relative z-10 text-left">
-                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10">
                   <BookOpen className="h-6 w-6 text-emerald-400" />
                 </div>
-                <h3 className="font-display text-xl font-bold text-fd-foreground mb-3">
+                <h3 className="font-display text-xl font-bold text-white mb-3">
                   {text.features.docsHub.title}
                 </h3>
-                <p className="text-fd-muted-foreground mb-6 flex-1 text-sm leading-relaxed">
+                <p className="text-slate-400 mb-6 flex-1 text-sm leading-relaxed">
                   {text.features.docsHub.desc}
                 </p>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {text.features.docsHub.tags.map((tag, tIdx) => (
-                    <span key={tIdx} className="inline-flex rounded-md bg-fd-muted px-2 py-1 text-xs text-fd-foreground border border-fd-border/10 font-medium">
+                    <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
                       {tag}
                     </span>
                   ))}
@@ -943,34 +901,34 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
               </div>
 
               {/* Visual for Documentation Hub */}
-              <div className="mt-6 flex flex-col sm:flex-row gap-4 flex-1 w-full border-t border-fd-border/15 pt-6 text-left">
+              <div className="mt-6 flex flex-col sm:flex-row gap-4 flex-1 w-full border-t border-white/5 pt-6 text-left">
                 <div className="w-full sm:w-64 flex flex-col gap-2">
-                  <div className="text-xs font-semibold text-fd-muted-foreground uppercase tracking-wider mb-1">
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
                     {text.features.docsHub.visual.ref}
                   </div>
-                  <div className="flex items-center gap-2 rounded bg-fd-muted/20 px-2 py-1.5 text-xs font-semibold text-fd-foreground border border-fd-border/10 hover:bg-fd-muted transition-colors">
-                    <span className="text-[10px] font-bold text-blue-400 shrink-0">POST</span> /apply
+                  <div className="flex items-center gap-2 rounded bg-white/5 px-2 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors border border-white/5">
+                    <span className="text-[10px] font-bold text-[#70b5f9] shrink-0">POST</span> /apply
                   </div>
-                  <div className="flex items-center gap-2 rounded bg-fd-muted/20 px-2 py-1.5 text-xs font-semibold text-fd-foreground border border-fd-border/10 hover:bg-fd-muted transition-colors">
+                  <div className="flex items-center gap-2 rounded bg-white/5 px-2 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors border border-white/5">
                     <span className="text-[10px] font-bold text-green-400 shrink-0">GET</span> /jobs
                   </div>
-                  <div className="flex items-center gap-2 rounded bg-fd-muted/20 px-2 py-1.5 text-xs font-semibold text-fd-foreground border border-fd-border/10 hover:bg-fd-muted transition-colors">
-                    <span className="text-[10px] font-bold text-blue-400 shrink-0">POST</span> /publish
+                  <div className="flex items-center gap-2 rounded bg-white/5 px-2 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors border border-white/5">
+                    <span className="text-[10px] font-bold text-[#70b5f9] shrink-0">POST</span> /publish
                   </div>
                 </div>
-                <div className="flex-1 rounded-lg border border-fd-border/15 bg-fd-background/80 p-4 font-mono text-xs shadow-inner overflow-hidden">
+                <div className="flex-1 rounded-lg border border-white/5 bg-zinc-900 p-4 font-mono text-xs shadow-inner overflow-hidden">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <Terminal className="h-4 w-4 text-brand-lime" />
-                      <span className="text-fd-foreground text-xs font-bold">
+                      <Terminal className="h-4 w-4 text-[#70b5f9]" />
+                      <span className="text-slate-300 text-xs font-bold">
                         {text.features.docsHub.visual.reqExample}
                       </span>
                     </div>
-                    <button className="text-[10px] font-semibold text-fd-muted-foreground hover:text-fd-foreground hover:bg-fd-muted px-2.5 py-0.5 rounded border border-fd-border/10 transition-colors cursor-pointer">
+                    <button className="text-[10px] font-semibold text-slate-500 hover:text-white hover:bg-white/5 px-2 py-0.5 rounded border border-white/5 transition-colors cursor-pointer">
                       {text.features.docsHub.visual.copy}
                     </button>
                   </div>
-                  <div className="text-fd-muted-foreground leading-relaxed overflow-x-auto whitespace-pre">
+                  <div className="text-slate-400 leading-relaxed overflow-x-auto whitespace-pre">
                     <span className="text-purple-400 font-semibold">mutation</span> {'{'} <br />
                     &nbsp;&nbsp;applyToJob( <br />
                     &nbsp;&nbsp;&nbsp;&nbsp;jobUrl: <span className="text-orange-300">"https://linkedin.com/..."</span><br />
@@ -989,21 +947,21 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
       </section>
 
       {/* Code Playground Section (InteractiveIntegration) */}
-      <section className="w-full px-6 py-20 border-t border-fd-border/10 bg-fd-muted/5 relative">
+      <section className="w-full px-6 py-20 border-t border-[#2f3539] bg-[#12161a]/5 relative">
         <div className="max-w-6xl mx-auto relative z-10 text-left">
           <InteractiveIntegration lang={lang} />
         </div>
       </section>
 
       {/* DeepBrief Workflow Section */}
-      <section id="workflow" className="w-full py-24 border-t border-fd-border/10 bg-fd-background relative overflow-hidden z-10">
+      <section id="workflow" className="w-full py-24 border-t border-[#2f3539] bg-zinc-950/40 relative overflow-hidden z-10">
         <div className="mx-auto max-w-6xl px-6 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="text-left">
-              <h2 className="font-display text-3xl font-bold tracking-tight text-fd-foreground sm:text-4xl mb-6">
+              <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl mb-6">
                 {text.workflow.title}
               </h2>
-              <p className="text-sm sm:text-base text-fd-muted-foreground mb-10 leading-relaxed">
+              <p className="text-sm sm:text-base text-slate-400 mb-10 leading-relaxed">
                 {text.workflow.subtitle}
               </p>
 
@@ -1012,15 +970,15 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
                   <div key={idx} className="flex gap-4 relative transition-all duration-300 hover:translate-x-0.5">
                     {/* Connection Line */}
                     {idx !== workflowSteps.length - 1 && (
-                      <div className="absolute left-6 top-10 bottom-[-2rem] w-px bg-fd-border/20" />
+                      <div className="absolute left-6 top-10 bottom-[-2rem] w-px bg-white/10" />
                     )}
 
-                    <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-brand-lime/25 bg-brand-lime/5 text-brand-lime shadow-sm">
+                    <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-zinc-900 shadow-sm">
                       {step.icon}
                     </div>
                     <div className="pt-1 text-left">
-                      <h4 className="text-base font-semibold text-fd-foreground mb-1">{step.title}</h4>
-                      <p className="text-xs sm:text-sm text-fd-muted-foreground leading-relaxed">
+                      <h4 className="text-base font-semibold text-white mb-1">{step.title}</h4>
+                      <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
                         {step.description}
                       </p>
                     </div>
@@ -1030,27 +988,27 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
             </div>
 
             {/* Simulated Live Logs terminal panel */}
-            <div className="flex flex-col rounded-2xl border border-fd-border/30 bg-fd-card/45 backdrop-blur-md overflow-hidden shadow-2xl h-[420px] text-left">
-              <div className="flex items-center justify-between border-b border-fd-border/20 bg-fd-muted/30 px-4 py-3">
+            <div className="flex flex-col rounded-2xl border border-white/10 bg-[#12161a]/60 overflow-hidden shadow-2xl h-[420px] text-left">
+              <div className="flex items-center justify-between border-b border-white/5 bg-zinc-900/50 px-4 py-3">
                 <div className="flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
                   <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/50" />
                   <span className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
                 </div>
-                <span className="text-[10px] text-fd-muted-foreground font-mono">
+                <span className="text-[10px] text-[#8f969b] font-mono">
                   {text.workflow.log.title}
                 </span>
               </div>
-              <div className="flex-1 p-5 font-mono text-[11px] text-fd-foreground bg-fd-muted/5 space-y-2 overflow-y-auto leading-relaxed shadow-inner">
-                <div className="text-fd-muted-foreground">{text.workflow.log.l1}</div>
+              <div className="flex-1 p-5 font-mono text-[11px] text-[#e9ecef] bg-black/20 space-y-2 overflow-y-auto leading-relaxed shadow-inner">
+                <div className="text-[#8f969b]">{text.workflow.log.l1}</div>
                 <div className="text-emerald-400 font-medium">{text.workflow.log.l2}</div>
-                <div className="text-fd-muted-foreground pl-3">{text.workflow.log.l2_sub}</div>
-                <div className="text-brand-lime animate-pulse">{text.workflow.log.l3}</div>
-                <div className="text-fd-muted-foreground pl-3">{text.workflow.log.l3_sub1}</div>
-                <div className="text-fd-muted-foreground pl-3">{text.workflow.log.l3_sub2}</div>
+                <div className="text-[#8f969b] pl-3">{text.workflow.log.l2_sub}</div>
+                <div className="text-[#70b5f9] animate-pulse">{text.workflow.log.l3}</div>
+                <div className="text-[#8f969b] pl-3">{text.workflow.log.l3_sub1}</div>
+                <div className="text-[#8f969b] pl-3">{text.workflow.log.l3_sub2}</div>
                 <div className="text-emerald-400 font-semibold">{text.workflow.log.l4}</div>
                 <div className="text-emerald-400/80 font-bold bg-emerald-500/5 py-0.5 px-2 rounded-md max-w-fit">{text.workflow.log.l4_sub}</div>
-                <div className="text-brand-lime animate-pulse">{text.workflow.log.l5}</div>
+                <div className="text-[#70b5f9] animate-pulse">{text.workflow.log.l5}</div>
               </div>
             </div>
           </div>
@@ -1058,13 +1016,13 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
       </section>
 
       {/* Audiences Section */}
-      <section id="audiences" className="w-full px-6 py-24 relative border-t border-fd-border/10 bg-fd-muted/5 z-10">
+      <section id="audiences" className="w-full px-6 py-24 relative border-t border-[#2f3539] bg-[#090e11]/30 z-10">
         <div className="mx-auto max-w-6xl relative z-10">
           <div className="text-center mb-16">
-            <h2 className="font-display text-3xl font-bold tracking-tight text-fd-foreground sm:text-4xl mb-4">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl mb-4">
               {text.audiences.title}
             </h2>
-            <p className="mx-auto max-w-2xl text-sm sm:text-base text-fd-muted-foreground leading-relaxed">
+            <p className="mx-auto max-w-2xl text-sm sm:text-base text-[#8f969b] leading-relaxed">
               {text.audiences.subtitle}
             </p>
           </div>
@@ -1075,29 +1033,29 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
                 key={idx}
                 className={`relative rounded-3xl border transition-all duration-300 hover:scale-[1.01] ${
                   pkg.popular
-                    ? 'border-brand-lime bg-brand-lime/[0.03] shadow-brand-lime/5 shadow-lg'
-                    : 'border-fd-border/20 bg-fd-card/45 backdrop-blur-sm'
-                } p-8 flex flex-col justify-between`}
+                    ? 'border-purple-500/50 bg-purple-500/5 shadow-purple-500/5 shadow-lg'
+                    : 'border-white/10 bg-zinc-900/50'
+                } p-8 backdrop-blur-sm flex flex-col justify-between`}
               >
                 {pkg.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-lime px-3.5 py-1 text-[10px] font-bold text-black uppercase tracking-wider shadow-md">
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 px-3.5 py-1 text-[10px] font-bold text-white uppercase tracking-wider shadow-md">
                     {text.audiences.popularBadge}
                   </div>
                 )}
 
                 <div>
-                  <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-fd-muted border border-fd-border/10 shadow-sm">
+                  <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-sm">
                     {pkg.icon}
                   </div>
 
-                  <h3 className="font-display text-lg font-bold text-fd-foreground mb-6">
+                  <h3 className="font-display text-lg font-bold text-white mb-6">
                     {pkg.title}
                   </h3>
 
-                  <ul className="space-y-4 mb-8">
+                  <ul className="space-y-4 mb-8 text-left">
                     {pkg.features.map((feature, fIdx) => (
-                      <li key={fIdx} className="flex gap-3 items-start text-xs sm:text-sm text-fd-muted-foreground">
-                        <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-brand-lime" />
+                      <li key={fIdx} className="flex gap-3 items-start text-xs sm:text-sm text-slate-300">
+                        <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-emerald-400" />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -1106,10 +1064,10 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
 
                 <Link
                   href={`/docs/${lang}/quickstart`}
-                  className={`w-full rounded-full py-2.5 text-center text-xs font-bold tracking-wide transition-all border ${
+                  className={`w-full rounded-full py-2.5 text-center text-xs font-semibold tracking-wide transition-all border ${
                     pkg.popular
-                      ? 'bg-brand-lime text-black border-brand-lime hover:bg-[#d5f002]'
-                      : 'bg-fd-muted/30 border-fd-border text-fd-foreground hover:bg-fd-muted'
+                      ? 'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800'
+                      : 'bg-white/15 text-white hover:bg-white/20 active:bg-white/25 border border-white/10'
                   }`}
                 >
                   {text.audiences.exploreBtn}
@@ -1121,40 +1079,40 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
       </section>
 
       {/* Footer Section */}
-      <footer className="w-full px-6 py-16 border-t border-fd-border/10 relative z-10 bg-fd-background text-left">
+      <footer className="w-full px-6 py-16 border-t border-[#2f3539] relative z-10 bg-[#12161a] text-left">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-2.5 text-xs text-fd-muted-foreground">
-              <Layers className="h-5 w-5 text-brand-lime" />
-              <span className="font-bold text-fd-foreground text-sm">LinkedIn Job Explorer</span>
+            <div className="flex items-center gap-2.5 text-xs text-[#8f969b]">
+              <Layers className="h-5 w-5 text-[#70b5f9]" />
+              <span className="font-bold text-white text-sm">LinkedIn Job Explorer</span>
             </div>
-            <p className="text-xs text-fd-muted-foreground max-w-sm leading-relaxed">
+            <p className="text-xs text-[#8f969b] max-w-sm leading-relaxed">
               {text.footer.desc}
             </p>
           </div>
-          <div className="flex flex-wrap gap-x-8 gap-y-4 justify-center md:justify-end text-xs text-fd-muted-foreground font-medium">
-            <Link href={`/docs/${lang}/quickstart`} className="hover:text-brand-lime transition-colors">
+          <div className="flex flex-wrap gap-x-8 gap-y-4 justify-center md:justify-end text-xs text-[#8f969b] font-medium">
+            <Link href={`/docs/${lang}/quickstart`} className="hover:text-white transition-colors">
               {text.footer.links.docs}
             </Link>
-            <Link href={`/docs/${lang}/job-backend/overview`} className="hover:text-brand-lime transition-colors">
+            <Link href={`/docs/${lang}/job-backend/overview`} className="hover:text-white transition-colors">
               {text.footer.links.gateway}
             </Link>
-            <Link href={`/docs/${lang}/job-backend/overview`} className="hover:text-brand-lime transition-colors">
+            <Link href={`/docs/${lang}/job-backend/overview`} className="hover:text-white transition-colors">
               {text.footer.links.jobBackend}
             </Link>
-            <Link href={`/docs/${lang}/publisher-backend/overview`} className="hover:text-brand-lime transition-colors">
+            <Link href={`/docs/${lang}/publisher-backend/overview`} className="hover:text-white transition-colors">
               {text.footer.links.publisher}
             </Link>
           </div>
         </div>
 
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between pt-8 mt-8 border-t border-fd-border/10 text-[11px] text-fd-muted-foreground gap-4">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between pt-8 mt-8 border-t border-white/5 text-[11px] text-[#8f969b] gap-4">
           <p>{text.footer.rights}</p>
           <div className="flex gap-4">
-            <a href="#" className="hover:text-fd-foreground transition-colors">
+            <a href="#" className="hover:text-white transition-colors">
               {text.footer.privacy}
             </a>
-            <a href="#" className="hover:text-fd-foreground transition-colors">
+            <a href="#" className="hover:text-white transition-colors">
               {text.footer.terms}
             </a>
           </div>
