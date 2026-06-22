@@ -2,120 +2,123 @@
 export const translations = {
   'pt-BR': {
     navbar: {
-      products: "Módulos",
-      resources: "Recursos",
+      tools: "Ferramentas",
+      howItWorks: "Como Funciona",
+      forWho: "Para Quem",
       docs: "Documentação",
-      pricing: "Preços",
-      login: "Entrar",
-      getStarted: "Começar",
-      searchPlaceholder: "Buscar módulos ou documentação...",
-    },
-    announcement: {
-      badge: "Lançamento v2.0",
-      text: "LinkedIn Job Explorer agora com suporte nativo ao Gemini 1.5 Pro e BullMQ.",
+      login: "Fazer Login",
+      earlyAccess: "Acesso Antecipado",
     },
     hero: {
-      title: "LinkedIn Job Explorer — Uma única suíte para buscar vagas, auto-candidatura e gerar carrosséis",
-      subtitle: "Chega de rolar a tela e preencher formulários repetitivos. Consulte vagas via GraphQL, automatize candidaturas Easy Apply com IA Gemini de forma contextual e publique carrosséis em PDF direto do código.",
-      ctaPrimary: "Começar Grátis",
-      ctaSecondary: "Ver documentação",
-      bullets: {
-        free: "100% Código Aberto",
-        local: "Banco SQLite Local",
-        setup: "Pronto em 60 segundos",
-      }
-    },
-    submodules: {
-      title: "Módulos Integrados do Monorepo",
-      description: "Subprojetos desacoplados que operam juntos em harmonia no monorepo.",
-      list: {
-        extension: {
-          title: "Chrome Extension",
-          desc: "Captura credenciais da sessão ativa (li_at e JSESSIONID) com um clique e sincroniza.",
-        },
-        graphql: {
-          title: "GraphQL Gateway",
-          desc: "Busca estruturada de vagas agregada em um único schema flexível e fortemente tipado.",
-        },
-        jobBackend: {
-          title: "AI Job Solver",
-          desc: "Resolução inteligente de formulários de candidatura com IA contextual local.",
-        },
-        publisher: {
-          title: "BullMQ Publisher",
-          desc: "Filas de workers para geração de carrosséis e agendamento automático de posts.",
-        }
-      }
-    },
-    showcase: {
-      title: "Experimente em tempo real",
-      subtitle: "Clique nas abas abaixo para interagir com os componentes reais do nosso ecossistema.",
-      tabs: {
-        dashboard: "Painel Principal",
-        graphql: "GraphQL Gateway",
-        resume: "Otimizador de Currículo",
-        carousel: "Compilador de Carrossel",
-      }
+      badge: "O ecossistema definitivo para o LinkedIn",
+      titleNormal: "Automatize, crie e turbine seu ",
+      titleHighlight: "LinkedIn",
+      subtitle: "Três ferramentas integradas em um único ecossistema. Aplique para vagas automaticamente com IA, publique conteúdo profissional e integre via GraphQL.",
+      ctaPrimary: "Começar Gratuitamente",
+      ctaSecondary: "Ver Documentação",
     },
     features: {
-      title: "Arquitetura robusta construída para desenvolvedores",
-      subtitle: "Segurança, velocidade e flexibilidade. O monorepo oferece componentes de nível empresarial prontos para rodar localmente ou em nuvem.",
-      list: {
-        routing: {
-          title: "Roteador Inteligente de IA",
-          desc: "Alterne dinamicamente entre Gemini, Claude ou modelos locais (Ollama) para responder questionários complexos.",
-        },
-        observability: {
-          title: "Métricas & Custos em Tempo Real",
-          desc: "Acompanhe cada token consumido, taxa de sucesso de candidaturas e tempo de resposta da API LinkedIn Voyager.",
-        },
-        security: {
-          title: "Credenciais Seguras",
-          desc: "Seus cookies e dados pessoais nunca saem do seu banco de dados SQLite local. Segurança em primeiro lugar.",
-        },
-        caching: {
-          title: "Cache de Respostas",
-          desc: "Evite requisições duplicadas para as mesmas perguntas de candidatura com cache de contexto local inteligente.",
-        },
-        playground: {
-          title: "Geração de Conteúdo",
-          desc: "Desenvolva apresentações em PDF formatadas e posts LinkedIn completos a partir de templates de markdown.",
-        },
-        queue: {
-          title: "Filas com BullMQ & Redis",
-          desc: "Workers em segundo plano processam agendamentos de posts e submissões paralelas sem bloquear o sistema.",
+      title: "Uma plataforma, três soluções robustas.",
+      subtitle: "Combinamos raspagem inteligente, integração via Apollo GraphQL e modelos multimodais de IA (Gemini) para transformar sua rotina com o LinkedIn.",
+      jobApplier: {
+        title: "Job Applier",
+        desc: "Automação total para busca e candidatura de vagas ('Easy Apply'). IA gera respostas e otimiza o currículo.",
+        tags: ["Easy Apply", "Gemini IA", "Automação", "Chrome Extension"],
+        visual: {
+          jobTitle: "Engenheiro de Software Sênior",
+          company: "Google • Easy Apply",
+          applied: "Aplicado",
+          adjusting: "Ajustando Currículo",
+          prompting: "Prompt IA rodando...",
+          processing: "Processando",
+        }
+      },
+      publisher: {
+        title: "Publisher",
+        desc: "Criação de posts profissionais no LinkedIn com IA. Geração de carrosséis em PDF e agendamento inteligente.",
+        tags: ["Syntax Highlighting", "Agendamento", "IA"],
+        visual: {
+          scheduled: "Post agendado para amanhã 09:00",
+        }
+      },
+      docsHub: {
+        title: "Documentation Hub",
+        desc: "Portal técnico interativo com guias, API Explorer e documentação multilíngue para todas as ferramentas do ecossistema.",
+        tags: ["OpenAPI", "GraphQL Docs", "Guias de Onboarding"],
+        visual: {
+          ref: "API Reference",
+          reqExample: "Exemplo de Requisição (GraphQL)",
+          copy: "Copiar",
         }
       }
     },
-    faq: {
-      title: "Perguntas Frequentes",
-      subtitle: "Tudo o que você precisa saber sobre o LinkedIn Job Explorer.",
-      questions: [
-        {
-          q: "Esta ferramenta é oficial ou segura para a minha conta do LinkedIn?",
-          a: "Não é oficial. Ela usa APIs Voyager por trás do aplicativo do LinkedIn através dos seus cookies de sessão ativos. Como a comunicação simula o tráfego legítimo do navegador sem a sobrecarga do Selenium/Playwright e inclui rate limiting automático, o risco é minimizado. No entanto, recomendamos cautela no uso excessivo."
+    workflow: {
+      title: "O Motor por trás do Job Applier",
+      subtitle: "Desenhamos o fluxo perfeito para você nunca mais perder tempo preenchendo formulários repetitivos. Deixe a busca e aplicação no piloto automático.",
+      steps: {
+        sync: {
+          title: "Sincronização Segura",
+          desc: "Extensão captura e roteia as credenciais do LinkedIn de ponta a ponta sem armazenar em texto plano."
         },
-        {
-          q: "Preciso de chaves de API pagas da OpenAI ou Google?",
-          a: "Não necessariamente. Você pode usar a API gratuita do Gemini com seus limites padrão ou configurar modelos locais rodando no Ollama sem gastar nada."
+        search: {
+          title: "Busca Inteligente",
+          desc: "Backend lista milhares de vagas 'Easy Apply' baseadas no seu perfil e filtros avançados (remoto, sênior, stacks)."
         },
-        {
-          q: "Como a extensão do Chrome funciona?",
-          a: "Ela lê os cookies de autenticação (li_at e JSESSIONID) da aba ativa do LinkedIn.com no seu navegador e os envia via requisição POST segura e local para o seu job-backend rodando na porta 3000."
+        match: {
+          title: "Match & Otimização com IA",
+          desc: "Gemini analisa a descrição da vaga e reescreve summaries e respostas customizadas para as perguntas do formulário."
         },
-        {
-          q: "Posso fazer deploy em nuvem ou apenas rodar localmente?",
-          a: "Você pode rodar localmente com um simples comando Docker Compose ou fazer deploy em servidores de nuvem de sua preferência, já que o banco de dados é configurável para SQLite ou Postgres."
+        submit: {
+          title: "Automação de Submissão",
+          desc: "Preenchimento de campos e envio automático, lidando com paginadores de formulário e validações."
+        },
+        track: {
+          title: "Acompanhamento Dashboard",
+          desc: "Visualize todas as candidaturas, status, e métricas de conversão em uma interface unificada."
         }
-      ]
+      },
+      log: {
+        title: "Live Execution Log",
+        l1: "Extensão conectada. Auth token válido.",
+        l2: "Fetching vagas: \"React Developer\" (Remote)",
+        l2_sub: "↳ Encontradas 142 vagas 'Easy Apply'",
+        l3: "Processando Job ID #99281...",
+        l3_sub1: "↳ Analisando requisitos com Gemini 3.1 Pro...",
+        l3_sub2: "↳ Match Score: 94%. Gerando respostas customizadas.",
+        l4: "Submetendo aplicação...",
+        l4_sub: "✓ SUCCESS: Aplicação enviada para Google!",
+        l5: "Processando Job ID #88432...",
+      }
     },
-    cta: {
-      title: "ACELERE SUA CARREIRA",
-      subtitle: "Automação limpa, robusta e modular para profissionais de tecnologia.",
-      button: "Instalar via pnpm",
+    audiences: {
+      title: "O Pacote Completo",
+      subtitle: "Nós construímos o LinkedIn Job Explorer pensando em toda a sua jornada profissional na rede.",
+      popularBadge: "Mais Popular",
+      exploreBtn: "Explorar Solução",
+      jobSeekers: {
+        title: "Para Quem Procura Emprego",
+        f1: "Job Applier automatiza 100% das candidaturas",
+        f2: "IA personaliza respostas para cada vaga",
+        f3: "Dashboard centralizado do histórico"
+      },
+      creators: {
+        title: "Para Criadores de Conteúdo",
+        f1: "Publisher cria posts profissionais com IA",
+        f2: "Syntax highlighting nativo para devs",
+        f3: "Agendamento inteligente via cloud"
+      },
+      developers: {
+        title: "Para Desenvolvedores",
+        f1: "APIs GraphQL totalmente documentadas",
+        f2: "Extensibilidade via shared packages",
+        f3: "Portal Hub com guias interativos"
+      }
     },
     footer: {
-      built: "Construído de forma independente sob licença MIT",
+      desc: "O ecossistema definitivo para alavancar sua carreira e presença no LinkedIn construído para profissionais que valorizam o tempo.",
+      rights: "© 2026 LinkedIn Job Explorer. Todos os direitos reservados.",
+      privacy: "Privacidade",
+      terms: "Termos",
       links: {
         docs: "Documentação",
         gateway: "Gateway API",
@@ -189,166 +192,169 @@ export const translations = {
           c2: "Dicas de Tailwind v4.pdf"
         },
         microservices: "Rede de Microsserviços"
-      },
+      }
     },
     landingPlayground: {
-        carousel: {
-          title: "Compilador de Carrossel para LinkedIn",
-          subtitle: "Gere apresentações PDF prontas para postar. Teste o componente do publicador abaixo:",
-          themes: {
-            premium: "Dark Premium",
-            purple: "Gradiente Roxo",
-            yellow: "Amarelo Bold",
-            clean: "Clean Startup"
-          },
-          slides: [
-            {
-              title: "Como Criar Carrosséis que Convertem no LinkedIn",
-              subtitle: "Arraste para o lado para aprender o passo a passo ➔"
-            },
-            {
-              title: "Por que o formato de Carrossel?",
-              content: "● Geram 3x mais engajamento que posts comuns\n● Aumentam o tempo de permanência no seu post\n● Facilitam a explicação de conceitos complexos"
-            },
-            {
-              title: "Curtiu o Conteúdo?",
-              subtitle: "Siga meu perfil para dicas diárias de tecnologia e liderança!"
-            }
-          ]
+      carousel: {
+        title: "Compilador de Carrossel para LinkedIn",
+        subtitle: "Gere apresentações PDF prontas para postar. Teste o componente do publicador abaixo:",
+        themes: {
+          premium: "Dark Premium",
+          purple: "Gradiente Roxo",
+          yellow: "Amarelo Bold",
+          clean: "Clean Startup"
         },
-        resume: {
-          title: "Otimizador Easy Apply & Currículos por IA",
-          subtitle: "Modifique seu currículo sob demanda e responda formulários complexos automaticamente.",
-          original: "Currículo Original",
-          optimized: "Currículo Otimizado",
-          analysis: "Análise de Habilidades",
-          skills: {
-            s1: "TypeScript (Requisito Chave)",
-            s2: "Redis & BullMQ (Fila de Tarefas)",
-            s3: "Next.js App Router (Arquitetura)"
+        slides: [
+          {
+            title: "Como Criar Carrosséis que Convertem no LinkedIn",
+            subtitle: "Arraste para o lado para aprender o passo a passo ➔"
           },
-          match: "Taxa de Compatibilidade"
-        }
-    },
+          {
+            title: "Por que o formato de Carrossel?",
+            content: "● Geram 3x mais engajamento que posts comuns\n● Aumentam o tempo de permanência no seu post\n● Facilitam a explicação de conceitos complexos"
+          },
+          {
+            title: "Curtiu o Conteúdo?",
+            subtitle: "Siga meu perfil para dicas diárias de tecnologia e liderança!"
+          }
+        ]
+      },
+      resume: {
+        title: "Otimizador Easy Apply & Currículos por IA",
+        subtitle: "Modifique seu currículo sob demanda e responda formulários complexos automaticamente.",
+        original: "Currículo Original",
+        optimized: "Currículo Otimizado",
+        analysis: "Análise de Habilidades",
+        skills: {
+          s1: "TypeScript (Requisito Chave)",
+          s2: "Redis & BullMQ (Fila de Tarefas)",
+          s3: "Next.js App Router (Arquitetura)"
+        },
+        match: "Taxa de Compatibilidade"
+      }
+    }
   },
   en: {
     navbar: {
-      products: "Modules",
-      resources: "Resources",
-      docs: "Docs",
-      pricing: "Pricing",
+      tools: "Tools",
+      howItWorks: "How It Works",
+      forWho: "For Whom",
+      docs: "Documentation",
       login: "Log In",
-      getStarted: "Get Started",
-      searchPlaceholder: "Search modules or docs...",
-    },
-    announcement: {
-      badge: "Release v2.0",
-      text: "LinkedIn Job Explorer now features Gemini 1.5 Pro and BullMQ background workers.",
+      earlyAccess: "Early Access",
     },
     hero: {
-      title: "LinkedIn Job Explorer — One toolchain to search jobs, auto-apply, and schedule carousels",
-      subtitle: "Stop manual scrolling and repetitive form answering. Query jobs via GraphQL, automate Easy Apply responses with context-aware Gemini, and build PDF slideshows directly from code.",
-      ctaPrimary: "Get Started For Free",
-      ctaSecondary: "View documentation",
-      bullets: {
-        free: "100% Open Source",
-        local: "Local SQLite DB",
-        setup: "Setup in 60 seconds",
-      }
-    },
-    submodules: {
-      title: "Integrated Monorepo Modules",
-      description: "Decoupled subprojects operating together in harmony within the monorepo.",
-      list: {
-        extension: {
-          title: "Chrome Extension",
-          desc: "Captures active session credentials (li_at and JSESSIONID) with one click and synchronizes.",
-        },
-        graphql: {
-          title: "GraphQL Gateway",
-          desc: "Structured job fetching aggregated into a single, strongly-typed flexible schema.",
-        },
-        jobBackend: {
-          title: "AI Job Solver",
-          desc: "Intelligent application form resolution powered by local contextual AI.",
-        },
-        publisher: {
-          title: "BullMQ Publisher",
-          desc: "Worker queues for automated PDF carousel compilation and post scheduling.",
-        }
-      }
-    },
-    showcase: {
-      title: "Experience it live",
-      subtitle: "Click the tabs below to interact with the actual components of our ecosystem.",
-      tabs: {
-        dashboard: "Live Dashboard",
-        graphql: "GraphQL Gateway",
-        resume: "Resume Optimizer",
-        carousel: "Carousel Compiler",
-      }
+      badge: "The ultimate ecosystem for LinkedIn",
+      titleNormal: "Automate, create, and boost your ",
+      titleHighlight: "LinkedIn",
+      subtitle: "Three integrated tools in a single ecosystem. Apply for jobs automatically with AI, publish professional content, and integrate via GraphQL.",
+      ctaPrimary: "Start Free",
+      ctaSecondary: "View Documentation",
     },
     features: {
-      title: "Robust architecture built for developers",
-      subtitle: "Security, speed, and flexibility. The monorepo offers enterprise-grade submodules ready to run locally or in the cloud.",
-      list: {
-        routing: {
-          title: "Intelligent LLM Router",
-          desc: "Dynamically switch between Gemini, Claude, or local models (Ollama) to answer complex job questionnaires.",
-        },
-        observability: {
-          title: "Real-time Metrics & Costs",
-          desc: "Track every token consumed, application success rates, and response times of the LinkedIn Voyager API.",
-        },
-        security: {
-          title: "Secure Local Credentials",
-          desc: "Your cookies and personal data never leave your local SQLite database. Privacy-first architecture.",
-        },
-        caching: {
-          title: "Response Caching",
-          desc: "Prevent duplicate requests for the same questionnaire queries with smart local context caching.",
-        },
-        playground: {
-          title: "Content Generation",
-          desc: "Design well-formatted PDF presentations and complete LinkedIn posts from simple markdown files.",
-        },
-        queue: {
-          title: "BullMQ & Redis Queues",
-          desc: "Background workers process scheduled posts and parallel application submissions without locking the client.",
+      title: "One platform, three robust solutions.",
+      subtitle: "We combine intelligent scraping, Apollo GraphQL integration, and Gemini multimodal AI models to transform your LinkedIn routine.",
+      jobApplier: {
+        title: "Job Applier",
+        desc: "Total automation for job search and application ('Easy Apply'). AI generates responses and optimizes your resume.",
+        tags: ["Easy Apply", "Gemini AI", "Automation", "Chrome Extension"],
+        visual: {
+          jobTitle: "Senior Software Engineer",
+          company: "Google • Easy Apply",
+          applied: "Applied",
+          adjusting: "Adjusting Resume",
+          prompting: "AI prompt running...",
+          processing: "Processing",
+        }
+      },
+      publisher: {
+        title: "Publisher",
+        desc: "AI-powered professional content creation. Build PDF slideshow carousels and schedule posts seamlessly.",
+        tags: ["Syntax Highlighting", "Scheduling", "AI"],
+        visual: {
+          scheduled: "Post scheduled for tomorrow 09:00",
+        }
+      },
+      docsHub: {
+        title: "Documentation Hub",
+        desc: "Interactive technical portal featuring guides, API Explorer, and multilingual documentation for all submodules.",
+        tags: ["OpenAPI", "GraphQL Docs", "Onboarding Guides"],
+        visual: {
+          ref: "API Reference",
+          reqExample: "Request Example (GraphQL)",
+          copy: "Copy",
         }
       }
     },
-    faq: {
-      title: "Frequently Asked Questions",
-      subtitle: "Everything you need to know about LinkedIn Job Explorer.",
-      questions: [
-        {
-          q: "Is this tool official or safe for my LinkedIn account?",
-          a: "It is not official. It interfaces with LinkedIn's internal Voyager APIs using your active browser session cookies. Because it simulates natural browser API requests without Selenium/Playwright overhead and includes built-in rate limiters, risk is minimal. However, caution is advised when doing high volumes."
+    workflow: {
+      title: "The Engine behind Job Applier",
+      subtitle: "We designed the perfect flow so you never waste time filling repetitive forms again. Leave job searching and applying on autopilot.",
+      steps: {
+        sync: {
+          title: "Secure Sync",
+          desc: "Browser extension captures and routes LinkedIn credentials end-to-end without plaintext storage."
         },
-        {
-          q: "Do I need paid OpenAI or Google API keys?",
-          a: "Not necessarily. You can use Gemini's free tier with its standard rate limits, or hook it up to local models running on Ollama for a completely free experience."
+        search: {
+          title: "Intelligent Search",
+          desc: "Backend queries thousands of active 'Easy Apply' listings matching your target profile, location, and parameters."
         },
-        {
-          q: "How does the Chrome extension work?",
-          a: "It reads the authentication cookies (li_at and JSESSIONID) from your active LinkedIn.com tab and sends them via secure local POST request to your local job-backend server on port 3000."
+        match: {
+          title: "AI Tailoring & Optimization",
+          desc: "Gemini parses the job description requirements to refine resume summaries and resolve custom form questionnaire inputs."
         },
-        {
-          q: "Can I deploy it to the cloud or only run it locally?",
-          a: "You can run it locally with a single Docker Compose command, or deploy it to cloud servers since the database is configurable for both SQLite and Postgres."
+        submit: {
+          title: "Automated Submission",
+          desc: "Autofills questionnaires and submits resume packages, managing forms paginations and input rules."
+        },
+        track: {
+          title: "Dashboard Tracking",
+          desc: "Track active candidate workflows, status feeds, and automation performance counters in a single interface."
         }
-      ]
+      },
+      log: {
+        title: "Live Execution Log",
+        l1: "Extension connected. Active credentials loaded.",
+        l2: "Fetching jobs matching \"React Developer\" (Remote)",
+        l2_sub: "↳ Found 142 'Easy Apply' job postings",
+        l3: "Processing Job ID #99281...",
+        l3_sub1: "↳ Evaluating requirements via Gemini 3.1 Pro...",
+        l3_sub2: "↳ Match Score: 94%. Context answers compiled.",
+        l4: "Submitting application packet...",
+        l4_sub: "✓ SUCCESS: Easy Apply package sent to Google!",
+        l5: "Processing Job ID #88432...",
+      }
     },
-    cta: {
-      title: "ACCELERATE YOUR CAREER",
-      subtitle: "Clean, robust, and modular automation for tech professionals.",
-      button: "Install via pnpm",
+    audiences: {
+      title: "The Complete Package",
+      subtitle: "We built LinkedIn Job Explorer to support your entire professional networking lifecycle.",
+      popularBadge: "Most Popular",
+      exploreBtn: "Explore Solution",
+      jobSeekers: {
+        title: "For Job Seekers",
+        f1: "Job Applier automates 100% of Easy Apply forms",
+        f2: "AI contextually optimizes answers and resumes",
+        f3: "Centralized database tracking candidate history"
+      },
+      creators: {
+        title: "For Content Creators",
+        f1: "Publisher builds engaging text & carousels with AI",
+        f2: "Native syntax highlighting blocks for tech writers",
+        f3: "Smart publishing queue scheduling on the cloud"
+      },
+      developers: {
+        title: "For Developers",
+        f1: "Consolidated, fully-documented GraphQL gateway",
+        f2: "Modular package sharing and extensible blueprints",
+        f3: "Fumadocs onboarding guides and schema files"
+      }
     },
     footer: {
-      built: "Independently built under the MIT license",
+      desc: "The ultimate ecosystem to boost your career and LinkedIn presence built for professionals who value their time.",
+      rights: "© 2026 LinkedIn Job Explorer. All rights reserved.",
+      privacy: "Privacy",
+      terms: "Terms",
       links: {
-        docs: "Documentation",
+        docs: "Docs",
         gateway: "Gateway API",
         jobBackend: "Job Backend",
         publisher: "Publisher",
@@ -420,47 +426,47 @@ export const translations = {
           c2: "Tailwind v4 Tips.pdf"
         },
         microservices: "Microservices Network"
-      },
+      }
     },
     landingPlayground: {
-        carousel: {
-          title: "LinkedIn Slide Carousel Compiler",
-          subtitle: "Generate print-ready PDF slideshows. Test the publisher component below:",
-          themes: {
-            premium: "Dark Premium",
-            purple: "Gradient Purple",
-            yellow: "Bold Yellow",
-            clean: "Clean Startup"
-          },
-          slides: [
-            {
-              title: "How to Create LinkedIn Carousels that Convert",
-              subtitle: "Swipe to learn the step-by-step process ➔"
-            },
-            {
-              title: "Why the Carousel Format?",
-              content: "● Generate 3x more engagement than standard posts\n● Increase dwell time on your updates\n● Easily explain complex engineering concepts"
-            },
-            {
-              title: "Enjoyed the Content?",
-              subtitle: "Follow my profile for daily tech and leadership tips!"
-            }
-          ]
+      carousel: {
+        title: "LinkedIn Slide Carousel Compiler",
+        subtitle: "Generate print-ready PDF slideshows. Test the publisher component below:",
+        themes: {
+          premium: "Dark Premium",
+          purple: "Gradient Purple",
+          yellow: "Bold Yellow",
+          clean: "Clean Startup"
         },
-        resume: {
-          title: "AI Easy Apply & Resume Optimizer",
-          subtitle: "Optimize your resume on-demand and auto-answer complex questionnaires.",
-          original: "Original Resume",
-          optimized: "Optimized Resume",
-          analysis: "Skills Match Analysis",
-          skills: {
-            s1: "TypeScript (Key Requirement)",
-            s2: "Redis & BullMQ (Queue System)",
-            s3: "Next.js App Router (Architecture)"
+        slides: [
+          {
+            title: "How to Create LinkedIn Carousels that Convert",
+            subtitle: "Swipe to learn the step-by-step process ➔"
           },
-          match: "Compatibility Rate"
-        }
-    },
+          {
+            title: "Why the Carousel Format?",
+            content: "● Generate 3x more engagement than standard posts\n● Increase dwell time on your updates\n● Easily explain complex engineering concepts"
+          },
+          {
+            title: "Enjoyed the Content?",
+            subtitle: "Follow my profile for daily tech and leadership tips!"
+          }
+        ]
+      },
+      resume: {
+        title: "AI Easy Apply & Resume Optimizer",
+        subtitle: "Optimize your resume on-demand and auto-answer complex questionnaires.",
+        original: "Original Resume",
+        optimized: "Optimized Resume",
+        analysis: "Skills Match Analysis",
+        skills: {
+          s1: "TypeScript (Key Requirement)",
+          s2: "Redis & BullMQ (Queue System)",
+          s3: "Next.js App Router (Architecture)"
+        },
+        match: "Compatibility Rate"
+      }
+    }
   }
 } as const;
 

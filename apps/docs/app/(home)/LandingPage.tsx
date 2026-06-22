@@ -7,7 +7,9 @@ import {
   Zap, Bot, FileText, Terminal, Globe, RefreshCw,
   ImageIcon, ChevronRight, Database, Cpu, Check, Users,
   Search, Play, AlertCircle, ShieldAlert, Award,
-  ThumbsUp, MessageSquare, Share2, Send, Bookmark, MoreHorizontal, Sparkles
+  ThumbsUp, MessageSquare, Share2, Send, Bookmark, MoreHorizontal, Sparkles,
+  PenTool, BookOpen, FileCheck2, Rss, Network, UserSearch, Code2, CheckCircle2,
+  Menu, Code
 } from 'lucide-react';
 import { translations } from './translations';
 
@@ -1103,69 +1105,66 @@ function AIResumeOptimizerPreview({ lang }: { lang: 'pt-BR' | 'en' }) {
 export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
   const text = translations[lang];
   const [activeTab, setActiveTab] = useState<'dashboard' | 'graphql' | 'resume' | 'carousel' | 'post'>('dashboard');
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const submodulesList = [
+  const workflowSteps = [
     {
-      id: 'extension',
-      title: text.submodules.list.extension.title,
-      desc: text.submodules.list.extension.desc,
-      tab: 'dashboard' as const,
-      icon: Zap,
+      icon: <Network className="h-5 w-5 text-indigo-400" />,
+      title: text.workflow.steps.sync.title,
+      description: text.workflow.steps.sync.desc
     },
     {
-      id: 'graphql',
-      title: text.submodules.list.graphql.title,
-      desc: text.submodules.list.graphql.desc,
-      tab: 'graphql' as const,
-      icon: Globe,
+      icon: <Search className="h-5 w-5 text-blue-400" />,
+      title: text.workflow.steps.search.title,
+      description: text.workflow.steps.search.desc
     },
     {
-      id: 'jobBackend',
-      title: text.submodules.list.jobBackend.title,
-      desc: text.submodules.list.jobBackend.desc,
-      tab: 'resume' as const,
-      icon: Bot,
+      icon: <PenTool className="h-5 w-5 text-purple-400" />,
+      title: text.workflow.steps.match.title,
+      description: text.workflow.steps.match.desc
     },
     {
-      id: 'publisher',
-      title: text.submodules.list.publisher.title,
-      desc: text.submodules.list.publisher.desc,
-      tab: 'carousel' as const,
-      icon: ImageIcon,
+      icon: <Send className="h-5 w-5 text-emerald-400" />,
+      title: text.workflow.steps.submit.title,
+      description: text.workflow.steps.submit.desc
+    },
+    {
+      icon: <Layers className="h-5 w-5 text-orange-400" />,
+      title: text.workflow.steps.track.title,
+      description: text.workflow.steps.track.desc
     }
   ];
 
-  const featuresList = [
+  const packages = [
     {
-      title: text.features.list.routing.title,
-      desc: text.features.list.routing.desc,
-      icon: Cpu,
+      title: text.audiences.jobSeekers.title,
+      icon: <UserSearch className="h-6 w-6 text-blue-400" />,
+      color: "blue",
+      features: [
+        text.audiences.jobSeekers.f1,
+        text.audiences.jobSeekers.f2,
+        text.audiences.jobSeekers.f3
+      ]
     },
     {
-      title: text.features.list.observability.title,
-      desc: text.features.list.observability.desc,
-      icon: RefreshCw,
+      title: text.audiences.creators.title,
+      icon: <PenTool className="h-6 w-6 text-purple-400" />,
+      color: "purple",
+      popular: true,
+      features: [
+        text.audiences.creators.f1,
+        text.audiences.creators.f2,
+        text.audiences.creators.f3
+      ]
     },
     {
-      title: text.features.list.security.title,
-      desc: text.features.list.security.desc,
-      icon: Award,
-    },
-    {
-      title: text.features.list.caching.title,
-      desc: text.features.list.caching.desc,
-      icon: Database,
-    },
-    {
-      title: text.features.list.playground.title,
-      desc: text.features.list.playground.desc,
-      icon: FileText,
-    },
-    {
-      title: text.features.list.queue.title,
-      desc: text.features.list.queue.desc,
-      icon: Layers,
+      title: text.audiences.developers.title,
+      icon: <Code2 className="h-6 w-6 text-emerald-400" />,
+      color: "emerald",
+      features: [
+        text.audiences.developers.f1,
+        text.audiences.developers.f2,
+        text.audiences.developers.f3
+      ]
     }
   ];
 
@@ -1175,108 +1174,294 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none z-0 bg-radial from-[#0a66c2]/10 via-[#0a66c2]/2 to-transparent blur-3xl opacity-80" />
 
       {/* Hero Section */}
-      <section className="relative w-full px-6 pt-16 pb-12 overflow-hidden z-10">
+      <section className="relative w-full px-6 pt-20 pb-16 overflow-hidden z-10">
         <div className="max-w-6xl mx-auto flex flex-col items-center text-center">
           {/* Announcement Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1d2226] border border-[#2f3539] text-[11px] font-semibold text-[#70b5f9] mb-8 hover:border-[#70b5f9]/30 transition-all cursor-pointer">
-            <span className="px-2 py-0.5 rounded-full bg-[#0a66c2]/20 text-[#70b5f9] text-[9px] font-bold uppercase tracking-wider">
-              {text.announcement.badge}
-            </span>
-            <span className="text-[#e9ecef] opacity-90">{text.announcement.text}</span>
-            <ArrowRight className="size-3 text-[#70b5f9]" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-sm text-blue-300 mb-8 transition-transform hover:scale-[1.02] cursor-pointer">
+            <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+            <span className="text-xs font-semibold">{text.hero.badge}</span>
           </div>
 
           {/* Title */}
-          <h1 className="text-balance text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#e9ecef] leading-[1.05] max-w-4xl">
-            {text.hero.title}
+          <h1 className="mx-auto max-w-4xl font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05] mb-8">
+            {text.hero.titleNormal}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
+              {text.hero.titleHighlight}
+            </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="mt-6 max-w-2xl text-balance text-sm sm:text-base md:text-lg text-[#8f969b] leading-relaxed">
+          <p className="mx-auto max-w-2xl text-sm sm:text-base md:text-lg text-slate-400 leading-relaxed mb-10">
             {text.hero.subtitle}
           </p>
 
           {/* CTA Actions */}
-          <div className="mt-8 flex flex-wrap justify-center items-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full sm:w-auto">
             <Link
-              href="/docs/quickstart"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-bold text-white bg-[#0a66c2] hover:bg-[#004182] rounded-full shadow-lg shadow-[#0a66c2]/20 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 cursor-pointer"
+              href={`/docs/${lang}/quickstart`}
+              className="w-full sm:w-auto group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-white px-8 py-3.5 font-bold text-zinc-950 transition-transform active:scale-95 hover:scale-[1.02]"
             >
-              <span>{text.hero.ctaPrimary}</span>
-              <ArrowRight className="size-4" />
+              <span className="flex items-center gap-2">
+                {text.hero.ctaPrimary}
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
             </Link>
             <Link
-              href="/docs/quickstart"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-semibold text-[#e9ecef] bg-[#1d2226] hover:bg-[#2f3539] border border-[#2f3539] rounded-full transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+              href={`/docs/${lang}/quickstart`}
+              className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-8 py-3.5 font-semibold text-white transition-colors hover:bg-white/10 hover:scale-[1.02] active:scale-95"
             >
-              <span>{text.hero.ctaSecondary}</span>
+              {text.hero.ctaSecondary}
             </Link>
           </div>
+        </div>
 
-          {/* Supporting trust bullets */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-[#8f969b]">
-            <span className="flex items-center gap-1.5">
-              <Check className="size-3.5 text-emerald-400" />
-              {text.hero.bullets.free}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="size-3.5 text-emerald-400" />
-              {text.hero.bullets.local}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="size-3.5 text-emerald-400" />
-              {text.hero.bullets.setup}
-            </span>
+        {/* Abstract Dashboard Mockup with Node Graph background */}
+        <div className="mt-20 relative mx-auto w-full max-w-5xl rounded-2xl border border-white/10 bg-zinc-900/50 p-4 backdrop-blur-sm shadow-2xl overflow-hidden transition-all duration-300 hover:border-white/20">
+          <NetworkNodesDither />
+          <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent z-10 pointer-events-none rounded-2xl" />
+
+          {/* Mockup Window */}
+          <div className="rounded-xl border border-white/5 bg-zinc-950 overflow-hidden relative z-10">
+            <div className="flex items-center border-b border-white/5 px-4 py-3 bg-zinc-900/50">
+              <div className="flex gap-1.5">
+                <div className="h-3 w-3 rounded-full bg-red-500/50" />
+                <div className="h-3 w-3 rounded-full bg-yellow-500/50" />
+                <div className="h-3 w-3 rounded-full bg-green-500/50" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 md:h-[400px]">
+              <div className="col-span-1 border border-white/5 bg-white/[0.02] rounded-lg p-4 flex flex-col gap-4">
+                <div className="h-8 w-1/3 rounded-md bg-white/10" />
+                <div className="space-y-2 flex-1">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex items-center gap-3 p-2 rounded-md bg-white/5 border border-white/5">
+                      <Zap className="h-4 w-4 text-blue-400 shrink-0" />
+                      <div className="h-2 w-full rounded-full bg-white/10" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="col-span-1 md:col-span-2 border border-blue-500/20 bg-blue-500/[0.02] rounded-lg p-6 flex flex-col justify-between relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4">
+                  <div className="inline-flex items-center gap-1 rounded-full bg-blue-500/10 px-2 py-1 text-xs text-blue-400 border border-blue-500/20 font-mono">
+                    <Code className="h-3 w-3" />
+                    GraphQL
+                  </div>
+                </div>
+                <div className="h-6 w-1/4 rounded-md bg-blue-500/20 mb-6" />
+                <div className="flex-1 w-full rounded-md bg-zinc-950 border border-white/5 p-4 font-mono text-xs sm:text-sm text-slate-500 overflow-auto text-left leading-relaxed">
+                  <span className="text-pink-400">query</span> {'{'} <br />
+                  &nbsp;&nbsp;jobs(limit: <span className="text-orange-300">50</span>) {'{'} <br />
+                  &nbsp;&nbsp;&nbsp;&nbsp;title <br />
+                  &nbsp;&nbsp;&nbsp;&nbsp;easyApply <br />
+                  &nbsp;&nbsp;&nbsp;&nbsp;aiMatchScore <br />
+                  &nbsp;&nbsp;{'}'} <br />
+                  {'}'}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Explore submodules Row */}
-      <section className="w-full px-6 py-6 border-y border-[#2f3539] bg-[#12161a]/15 z-10">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <span className="text-xs text-[#8f969b] font-semibold shrink-0 uppercase tracking-widest">
-            {text.submodules.title}
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full md:w-auto flex-1 max-w-4xl justify-end">
-            {submodulesList.map((sub) => {
-              const IconComp = sub.icon;
-              return (
-                <button
-                  key={sub.id}
-                  onClick={() => {
-                    setActiveTab(sub.tab);
-                    const el = document.getElementById('showcase-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="group flex items-center justify-between gap-3 rounded-xl border border-[#2f3539] bg-[#1d2226]/50 hover:bg-[#1d2226] p-3 text-xs text-left cursor-pointer transition-all hover:border-[#70b5f9]/30"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="flex size-7 items-center justify-center rounded bg-[#12161a] text-[#70b5f9] group-hover:scale-105 transition-transform border border-[#2f3539]">
-                      <IconComp className="size-3.5" />
+      {/* EcosystemFeatures Section */}
+      <section id="features" className="w-full px-6 py-24 border-t border-[#2f3539] bg-[#12161a]/15 z-10 relative">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-16">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl mb-4">
+              {text.features.title}
+            </h2>
+            <p className="max-w-2xl text-sm sm:text-base text-slate-400 leading-relaxed">
+              {text.features.subtitle}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Card 1: Job Applier */}
+            <div className="group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-all duration-300 relative overflow-hidden col-span-1 md:col-span-2 shadow-sm hover:border-[#70b5f9]/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500" />
+              <div className="relative z-10">
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                  <Bot className="h-6 w-6 text-blue-400" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-white mb-3">
+                  {text.features.jobApplier.title}
+                </h3>
+                <p className="text-slate-400 mb-6 flex-1 text-sm leading-relaxed">
+                  {text.features.jobApplier.desc}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {text.features.jobApplier.tags.map((tag, tIdx) => (
+                    <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
+                      {tag}
                     </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Visual for Job Applier */}
+              <div className="mt-6 flex flex-col gap-3 h-full justify-end border-t border-white/5 pt-6 text-left">
+                <div className="flex items-center justify-between rounded-lg bg-zinc-900 border border-white/5 p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded bg-blue-500/20 flex items-center justify-center shrink-0">
+                      <FileCheck2 className="h-4 w-4 text-blue-400" />
+                    </div>
                     <div className="min-w-0">
-                      <span className="font-bold text-[#e9ecef] block truncate">{sub.title}</span>
-                      <span className="text-[#8f969b] text-[10px] block truncate opacity-75">{sub.desc}</span>
+                      <div className="text-sm font-medium text-white truncate">
+                        {text.features.jobApplier.visual.jobTitle}
+                      </div>
+                      <div className="text-xs text-slate-500 truncate">
+                        {text.features.jobApplier.visual.company}
+                      </div>
                     </div>
                   </div>
-                  <ChevronRight className="size-3 text-[#8f969b] group-hover:translate-x-0.5 transition-transform" />
-                </button>
-              );
-            })}
+                  <span className="inline-flex items-center rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-400 border border-green-500/20 shrink-0">
+                    {text.features.jobApplier.visual.applied}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg bg-zinc-900 border border-white/5 p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded bg-purple-500/20 flex items-center justify-center shrink-0">
+                      <Sparkles className="h-4 w-4 text-purple-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-white truncate">
+                        {text.features.jobApplier.visual.adjusting}
+                      </div>
+                      <div className="text-xs text-slate-500 truncate">
+                        {text.features.jobApplier.visual.prompting}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-400 border border-blue-500/20 animate-pulse shrink-0">
+                    {text.features.jobApplier.visual.processing}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Publisher */}
+            <div className="group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-all duration-300 relative overflow-hidden col-span-1 shadow-sm hover:border-[#70b5f9]/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500" />
+              <div className="relative z-10">
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                  <PenTool className="h-6 w-6 text-purple-400" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-white mb-3">
+                  {text.features.publisher.title}
+                </h3>
+                <p className="text-slate-400 mb-6 flex-1 text-sm leading-relaxed">
+                  {text.features.publisher.desc}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {text.features.publisher.tags.map((tag, tIdx) => (
+                    <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Visual for Publisher */}
+              <div className="mt-6 h-full flex flex-col gap-2 rounded-lg border border-white/5 bg-zinc-900 overflow-hidden text-sm text-left">
+                <div className="flex items-center gap-2 border-b border-white/5 bg-black/40 px-3 py-2">
+                  <Rss className="h-3 w-3 text-slate-400 shrink-0" />
+                  <span className="text-xs text-slate-400 truncate">
+                    {text.features.publisher.visual.scheduled}
+                  </span>
+                </div>
+                <div className="p-3">
+                  <div className="h-2 w-3/4 rounded-full bg-white/20 mb-2" />
+                  <div className="h-2 w-full rounded-full bg-white/10 mb-2" />
+                  <div className="h-2 w-5/6 rounded-full bg-white/10 mb-4" />
+                  <div className="rounded bg-black p-2 font-mono text-[10px] text-zinc-400 border border-white/5">
+                    <span className="text-pink-400">const</span> optimize = () {'=>'} {'{'} ... {'}'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Documentation Hub */}
+            <div className="group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-all duration-300 relative overflow-hidden col-span-1 md:col-span-3 shadow-sm hover:border-[#70b5f9]/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500" />
+              <div className="relative z-10">
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                  <BookOpen className="h-6 w-6 text-emerald-400" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-white mb-3">
+                  {text.features.docsHub.title}
+                </h3>
+                <p className="text-slate-400 mb-6 flex-1 text-sm leading-relaxed">
+                  {text.features.docsHub.desc}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {text.features.docsHub.tags.map((tag, tIdx) => (
+                    <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Visual for Documentation Hub */}
+              <div className="mt-6 flex flex-col sm:flex-row gap-4 flex-1 w-full border-t border-white/5 pt-6 text-left">
+                <div className="w-full sm:w-64 flex flex-col gap-2">
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    {text.features.docsHub.visual.ref}
+                  </div>
+                  <div className="flex items-center gap-2 rounded bg-white/5 px-2 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors">
+                    <span className="text-[10px] font-bold text-blue-400 shrink-0">POST</span> /apply
+                  </div>
+                  <div className="flex items-center gap-2 rounded bg-white/5 px-2 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors">
+                    <span className="text-[10px] font-bold text-green-400 shrink-0">GET</span> /jobs
+                  </div>
+                  <div className="flex items-center gap-2 rounded bg-white/5 px-2 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors">
+                    <span className="text-[10px] font-bold text-blue-400 shrink-0">POST</span> /publish
+                  </div>
+                </div>
+                <div className="flex-1 rounded-lg border border-white/5 bg-zinc-900 p-4 font-mono text-xs shadow-inner overflow-hidden">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Terminal className="h-4 w-4 text-emerald-400" />
+                      <span className="text-slate-300 text-xs font-bold">
+                        {text.features.docsHub.visual.reqExample}
+                      </span>
+                    </div>
+                    <button className="text-[10px] font-semibold text-slate-500 hover:text-white hover:bg-white/5 px-2 py-0.5 rounded border border-white/5 transition-colors cursor-pointer">
+                      {text.features.docsHub.visual.copy}
+                    </button>
+                  </div>
+                  <div className="text-slate-400 leading-relaxed overflow-x-auto whitespace-pre">
+                    <span className="text-purple-400">mutation</span> {'{'} <br />
+                    &nbsp;&nbsp;applyToJob( <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;jobUrl: <span className="text-orange-300">"https://linkedin.com/..."</span><br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;useAI: <span className="text-blue-300">true</span><br />
+                    &nbsp;&nbsp;) {'{'} <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;status <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;applicationId <br />
+                    &nbsp;&nbsp;{'}'} <br />
+                    {'}'}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Main Interactive Showcase Playground */}
-      <section id="showcase-section" className="w-full px-6 py-16 z-10 relative">
+      <section id="showcase-section" className="w-full px-6 py-20 z-10 relative border-t border-[#2f3539] bg-[#090e11]/50">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-10">
+          <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#e9ecef]">
-              {text.showcase.title}
+              {lang === 'pt-BR' ? 'Explore a Plataforma' : 'Explore the Platform'}
             </h2>
-            <p className="text-sm text-[#8f969b] mt-2 max-w-xl mx-auto leading-relaxed">
-              {text.showcase.subtitle}
+            <p className="text-xs sm:text-sm text-[#8f969b] mt-2 max-w-xl mx-auto leading-relaxed">
+              {lang === 'pt-BR'
+                ? 'Selecione uma das guias abaixo para testar as ferramentas integradas e seus fluxos interativos de IA.'
+                : 'Select one of the tabs below to test the integrated tools and their interactive AI workflows.'}
             </p>
           </div>
 
@@ -1303,11 +1488,11 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
                         : 'text-[#8f969b] hover:text-[#e9ecef] bg-transparent'
                     }`}
                   >
-                    {tab === 'dashboard' && text.showcase.tabs.dashboard}
-                    {tab === 'graphql' && text.showcase.tabs.graphql}
-                    {tab === 'resume' && text.showcase.tabs.resume}
-                    {tab === 'carousel' && text.showcase.tabs.carousel}
-                    {tab === 'post' && "LinkedIn Feed Post"}
+                    {tab === 'dashboard' && text.dashboard.nav.jobs}
+                    {tab === 'graphql' && "GraphQL Gateway"}
+                    {tab === 'resume' && text.landingPlayground.resume.title}
+                    {tab === 'carousel' && text.landingPlayground.carousel.title}
+                    {tab === 'post' && (lang === 'pt-BR' ? 'Post no LinkedIn' : 'LinkedIn Feed Post')}
                   </button>
                 ))}
               </div>
@@ -1332,198 +1517,184 @@ export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
         </div>
       </section>
 
-      {/* Core Features Bento Grid */}
-      <section className="w-full px-6 py-16 border-t border-[#2f3539] bg-[#12161a]/15 z-10">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="text-left mb-12">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#e9ecef]">
-              {text.features.title}
-            </h2>
-            <p className="text-sm text-[#8f969b] mt-2 max-w-xl leading-relaxed">
-              {text.features.subtitle}
-            </p>
-          </div>
+      {/* DeepBrief Workflow Section */}
+      <section id="workflow" className="w-full py-24 border-t border-[#2f3539] bg-zinc-950/40 relative overflow-hidden z-10">
+        <div className="mx-auto max-w-6xl px-6 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="text-left">
+              <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl mb-6">
+                {text.workflow.title}
+              </h2>
+              <p className="text-sm sm:text-base text-slate-400 mb-10 leading-relaxed">
+                {text.workflow.subtitle}
+              </p>
 
-          {/* Grid layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuresList.map((feat, idx) => {
-              const IconComp = feat.icon;
-              return (
-                <div
-                  key={idx}
-                  className="group relative overflow-hidden rounded-xl border border-[#2f3539] bg-[#1d2226] p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-sm"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="relative z-10">
-                    <div className="h-10 w-10 rounded-lg bg-[#0a66c2]/10 text-[#70b5f9] flex items-center justify-center mb-5 border border-[#0a66c2]/20">
-                      <IconComp className="size-5" />
+              <div className="space-y-8">
+                {workflowSteps.map((step, idx) => (
+                  <div key={idx} className="flex gap-4 relative transition-all duration-300 hover:translate-x-0.5">
+                    {/* Connection Line */}
+                    {idx !== workflowSteps.length - 1 && (
+                      <div className="absolute left-6 top-10 bottom-[-2rem] w-px bg-white/10" />
+                    )}
+
+                    <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-zinc-900 shadow-sm">
+                      {step.icon}
                     </div>
-                    <h3 className="text-base font-bold text-[#e9ecef] mb-2">{feat.title}</h3>
-                    <p className="text-xs text-[#8f969b] leading-relaxed">
-                      {feat.desc}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Developer Recommendations */}
-      <section className="w-full px-6 py-20 relative border-t border-[#2f3539] overflow-hidden">
-        <NetworkNodesDither />
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#e9ecef]">
-              Recomendado por Desenvolvedores
-            </h2>
-            <p className="text-sm text-[#8f969b] mt-2 max-w-xl mx-auto leading-relaxed">
-              Veja o que os profissionais que utilizam o monorepo dizem sobre a facilidade de integração e automação.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-4xl mx-auto">
-            {/* Recommendation 1 */}
-            <div className="rounded-xl border border-[#2f3539] bg-[#1d2226] p-6 flex flex-col justify-between shadow-sm relative">
-              <div className="absolute top-4 right-4 text-[#70b5f9]/20 text-5xl font-serif select-none pointer-events-none">“</div>
-              <div>
-                <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-[#2f3539]/50">
-                  <div className="size-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
-                    AS
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#e9ecef] flex items-center gap-1">
-                      Alex S.
-                      <span className="text-[10px] text-[#8f969b] font-normal">• 1º</span>
+                    <div className="pt-1">
+                      <h4 className="text-base font-semibold text-white mb-1">{step.title}</h4>
+                      <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                        {step.description}
+                      </p>
                     </div>
-                    <span className="text-[10px] text-[#8f969b] block leading-tight">
-                      Líder Fullstack
-                    </span>
                   </div>
-                </div>
-                <p className="text-xs text-[#8f969b] italic leading-relaxed">
-                  "Configurar a Gateway API levou menos de 5 minutos. A interface GraphQL é extremamente suave e economiza dezenas de consultas de endpoints manuais."
-                </p>
+                ))}
               </div>
             </div>
 
-            {/* Recommendation 2 */}
-            <div className="rounded-xl border border-[#2f3539] bg-[#1d2226] p-6 flex flex-col justify-between shadow-sm relative">
-              <div className="absolute top-4 right-4 text-[#70b5f9]/20 text-5xl font-serif select-none pointer-events-none">“</div>
-              <div>
-                <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-[#2f3539]/50">
-                  <div className="size-9 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-                    JK
+            {/* Execution Log Visualizer Frame */}
+            <div className="relative lg:h-[540px] w-full rounded-2xl border border-white/10 bg-zinc-900 p-2 overflow-hidden shadow-2xl text-left">
+              <div className="absolute inset-0 bg-gradient-to-tr from-blue-900/20 via-zinc-900 to-purple-900/20 pointer-events-none" />
+              <div className="relative h-full w-full rounded-xl border border-white/5 bg-zinc-950 p-6 flex flex-col gap-6">
+                <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                  <div className="text-xs sm:text-sm font-medium text-slate-300">
+                    {text.workflow.log.title}
                   </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#e9ecef] flex items-center gap-1">
-                      Jessica K.
-                      <span className="text-[10px] text-[#8f969b] font-normal">• 1º</span>
-                    </div>
-                    <span className="text-[10px] text-[#8f969b] block leading-tight">
-                      Engenheira de Machine Learning
-                    </span>
+                  <div className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                </div>
+
+                <div className="flex-1 font-mono text-[11px] sm:text-xs text-slate-400 space-y-4 overflow-y-auto leading-relaxed">
+                  <div className="pl-4 border-l-2 border-indigo-500/50">
+                    <span className="text-slate-500">[10:42:01]</span> {text.workflow.log.l1}
+                  </div>
+                  <div className="pl-4 border-l-2 border-blue-500/50">
+                    <span className="text-slate-500">[10:42:04]</span> {text.workflow.log.l2}
+                    <br />
+                    <span className="text-zinc-500 ml-4">{text.workflow.log.l2_sub}</span>
+                  </div>
+                  <div className="pl-4 border-l-2 border-purple-500/50">
+                    <span className="text-slate-500">[10:42:15]</span> {text.workflow.log.l3}
+                    <br />
+                    <span className="text-zinc-500 ml-4">{text.workflow.log.l3_sub1}</span>
+                    <br />
+                    <span className="text-purple-400 ml-4 font-semibold">{text.workflow.log.l3_sub2}</span>
+                  </div>
+                  <div className="pl-4 border-l-2 border-emerald-500/50 py-2.5 bg-emerald-500/5 rounded-r-md">
+                    <span className="text-slate-500">[10:42:22]</span> {text.workflow.log.l4}
+                    <br />
+                    <span className="text-emerald-400 font-bold ml-4">{text.workflow.log.l4_sub}</span>
+                  </div>
+                  <div className="pl-4 border-l-2 border-blue-500/50 opacity-50">
+                    <span className="text-slate-500">[10:42:25]</span> {text.workflow.log.l5}
                   </div>
                 </div>
-                <p className="text-xs text-[#8f969b] italic leading-relaxed">
-                  "Filas em background acopladas com o Gemini respondem com sucesso mais de 90% dos questionários de candidatura de forma correta e contextual."
-                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FAQ Accordion Section */}
-      <section className="w-full px-6 py-16 border-t border-[#2f3539] bg-[#12161a]/10 z-10">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#e9ecef]">
-              {text.faq.title}
+      {/* Audiences Section */}
+      <section id="audiences" className="w-full px-6 py-24 relative border-t border-[#2f3539] bg-[#090e11]/30 z-10">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-600/5 blur-[120px] rounded-full pointer-events-none" />
+
+        <div className="mx-auto max-w-6xl relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl mb-4">
+              {text.audiences.title}
             </h2>
-            <p className="text-sm text-[#8f969b] mt-2 leading-relaxed">
-              {text.faq.subtitle}
+            <p className="mx-auto max-w-2xl text-sm sm:text-base text-slate-400 leading-relaxed">
+              {text.audiences.subtitle}
             </p>
           </div>
 
-          {/* Accordion Questions List */}
-          <div className="space-y-4 text-left">
-            {text.faq.questions.map((faqItem, idx) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+            {packages.map((pkg, idx) => (
               <div
                 key={idx}
-                className="rounded-xl border border-[#2f3539] bg-[#1d2226] overflow-hidden transition-all duration-200"
+                className={`relative rounded-3xl border transition-all duration-300 hover:scale-[1.01] ${
+                  pkg.popular
+                    ? 'border-purple-500/50 bg-purple-500/5 shadow-purple-500/5 shadow-lg'
+                    : 'border-white/10 bg-zinc-900/50'
+                } p-8 backdrop-blur-sm flex flex-col justify-between`}
               >
-                <button
-                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full px-5 py-4 flex items-center justify-between gap-4 font-bold text-sm text-[#e9ecef] hover:text-[#70b5f9] text-left cursor-pointer focus:outline-none"
-                >
-                  <span>{faqItem.q}</span>
-                  <ChevronRight
-                    className={`size-4 text-[#8f969b] shrink-0 transition-transform duration-200 ${
-                      openFaq === idx ? 'rotate-90 text-[#70b5f9]' : ''
-                    }`}
-                  />
-                </button>
-                <div
-                  className={`transition-all duration-300 ease-in-out ${
-                    openFaq === idx ? 'max-h-[300px] border-t border-[#2f3539]/50' : 'max-h-0 pointer-events-none'
-                  } overflow-hidden`}
-                >
-                  <p className="p-5 text-xs text-[#8f969b] leading-relaxed bg-[#12161a]/40">
-                    {faqItem.a}
-                  </p>
+                {pkg.popular && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 px-3.5 py-1 text-[10px] font-bold text-white uppercase tracking-wider shadow-md">
+                    {text.audiences.popularBadge}
+                  </div>
+                )}
+
+                <div>
+                  <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-sm">
+                    {pkg.icon}
+                  </div>
+
+                  <h3 className="font-display text-lg font-bold text-white mb-6">
+                    {pkg.title}
+                  </h3>
+
+                  <ul className="space-y-4 mb-8">
+                    {pkg.features.map((feature, fIdx) => (
+                      <li key={fIdx} className="flex gap-3 items-start text-xs sm:text-sm text-slate-300">
+                        <CheckCircle2 className={`h-4.5 w-4.5 shrink-0 text-emerald-400`} />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
+
+                <Link
+                  href={`/docs/${lang}/quickstart`}
+                  className={`w-full rounded-full py-2.5 text-center text-xs font-semibold tracking-wide transition-all ${
+                    pkg.popular
+                      ? 'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800'
+                      : 'bg-white/15 text-white hover:bg-white/20 active:bg-white/25 border border-white/10'
+                  }`}
+                >
+                  {text.audiences.exploreBtn}
+                </Link>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Visual Bannered CTA Section */}
-      <section className="w-full px-6 py-20 relative bg-[#090e11] border-t border-[#2f3539] z-10 text-center">
-        <div className="absolute inset-0 bg-radial from-[#0a66c2]/5 via-transparent to-transparent pointer-events-none" />
-        <div className="max-w-4xl mx-auto relative z-10 flex flex-col items-center">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#e9ecef] tracking-wider uppercase font-mono mb-4">
-            {text.cta.title}
-          </h2>
-          <p className="text-sm text-[#8f969b] mb-8 max-w-md">
-            {text.cta.subtitle}
-          </p>
-          <Link
-            href="/docs/quickstart"
-            className="inline-flex items-center gap-2 px-8 py-4 text-sm font-bold text-white bg-[#0a66c2] hover:bg-[#004182] rounded-full hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer shadow-lg shadow-[#0a66c2]/10"
-          >
-            <span>{text.cta.button}</span>
-            <ArrowRight className="size-4" />
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="w-full px-6 py-12 border-t border-[#2f3539] relative z-10 bg-[#1d2226] text-left">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5 text-xs text-[#8f969b]">
-            <Layers className="h-4 w-4 text-[#70b5f9]" />
-            <span className="font-bold text-[#e9ecef]">LinkedIn Job Explorer</span>
-            <span className="text-[#2f3539]">·</span>
-            <span>{text.footer.built}</span>
+      {/* Footer Section */}
+      <footer className="w-full px-6 py-16 border-t border-[#2f3539] relative z-10 bg-[#12161a] text-left">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2.5 text-xs text-[#8f969b]">
+              <Layers className="h-5 w-5 text-[#70b5f9]" />
+              <span className="font-bold text-white text-sm">Job Explorer</span>
+            </div>
+            <p className="text-xs text-[#8f969b] max-w-sm leading-relaxed">
+              {text.footer.desc}
+            </p>
           </div>
-          <div className="flex items-center gap-6">
-            <Link href="/docs/quickstart" className="text-xs text-[#8f969b] hover:text-[#70b5f9] transition-colors">
+          <div className="flex flex-wrap gap-x-8 gap-y-4 justify-center md:justify-end text-xs text-[#8f969b] font-medium">
+            <Link href={`/docs/${lang}/quickstart`} className="hover:text-white transition-colors">
               {text.footer.links.docs}
             </Link>
-            <Link href="/docs/job-backend/credentials/getCredentialsStatus" className="text-xs text-[#8f969b] hover:text-[#70b5f9] transition-colors">
+            <Link href={`/docs/${lang}/job-backend/overview`} className="hover:text-white transition-colors">
               {text.footer.links.gateway}
             </Link>
-            <Link href="/docs/job-backend/overview" className="text-xs text-[#8f969b] hover:text-[#70b5f9] transition-colors">
+            <Link href={`/docs/${lang}/job-backend/overview`} className="hover:text-white transition-colors">
               {text.footer.links.jobBackend}
             </Link>
-            <Link href="/docs/publisher-backend/overview" className="text-xs text-[#8f969b] hover:text-[#70b5f9] transition-colors">
+            <Link href={`/docs/${lang}/publisher-backend/overview`} className="hover:text-white transition-colors">
               {text.footer.links.publisher}
             </Link>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between pt-8 mt-8 border-t border-white/5 text-[11px] text-[#8f969b] gap-4">
+          <p>{text.footer.rights}</p>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-white transition-colors">
+              {text.footer.privacy}
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              {text.footer.terms}
+            </a>
           </div>
         </div>
       </footer>
