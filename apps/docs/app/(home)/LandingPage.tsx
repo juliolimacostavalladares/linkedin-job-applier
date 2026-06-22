@@ -1,15 +1,17 @@
 "use client";
 
 import Link from 'next/link';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Layers, Briefcase, Rocket, ArrowRight,
   Zap, Bot, FileText, Terminal, Globe, RefreshCw,
   ImageIcon, ChevronRight, Database, Cpu, Check, Users,
   Search, Play, AlertCircle, ShieldAlert, Award,
-  ThumbsUp, MessageSquare, Share2, Send, Bookmark, MoreHorizontal, Sparkles
+  ThumbsUp, MessageSquare, Share2, Send, Bookmark, MoreHorizontal, Sparkles,
+  PenTool, BookOpen, FileCheck2, Rss, Network, UserSearch, Code2, CheckCircle2,
+  Code
 } from 'lucide-react';
-import { translations } from './translations';
+import { translations, type Locale } from './translations';
 
 // A professional network node graph visualization (Rebranding instead of generic waves)
 function NetworkNodesDither() {
@@ -58,667 +60,435 @@ function NetworkNodesDither() {
   );
 }
 
-interface LinkedInDashboardMockupProps {
-  lang: 'pt-BR' | 'en';
-}
+// A beautiful, interactive bento grid showing the 4 features matching LinkedIn styling
+function BentoGridFeatures({ lang }: { lang: Locale }) {
+  // 1. Resume Match View State
+  const [resumeView, setResumeView] = useState<'original' | 'optimized'>('optimized');
+  
+  // 2. Job Auto-Apply Simulator State
+  const [applyState, setApplyState] = useState<'idle' | 'scraping' | 'solving' | 'submitting' | 'success'>('idle');
+  const [applyLog, setApplyLog] = useState<string[]>([]);
 
-function LinkedInDashboardMockup({ lang }: LinkedInDashboardMockupProps) {
-  const t = translations[lang].dashboard;
+  // 3. Slide Carousel Compiler State
+  const [carouselTheme, setCarouselTheme] = useState<'premium' | 'yellow' | 'purple'>('premium');
+  const [currentSlide, setCurrentSlide] = useState(0);
 
-  const [activeTab, setActiveTab] = useState<'feed' | 'publisher' | 'logs'>('feed');
-  const [applyState, setApplyState] = useState<'idle' | 'searching' | 'matching' | 'solving' | 'tailoring' | 'success'>('idle');
-  const [publisherState, setPublisherState] = useState<'idle' | 'generating' | 'success'>('idle');
+  // 4. Publisher Draft State
+  const [postDraft, setPostDraft] = useState(
+    lang === 'pt-BR' 
+      ? 'Construindo microsserviços resilientes com Next.js App Router, Redis e workers em BullMQ para processamento paralelo.'
+      : 'Building resilient microservices using Next.js App Router, Redis, and BullMQ background workers for parallel scaling.'
+  );
 
-  // Interactive Counter Metrics
-  const [submissionsCount, setSubmissionsCount] = useState(142);
-  const [successRate, setSuccessRate] = useState(98.4);
-  const [tokensSaved, setTokensSaved] = useState(42.5);
-
-  const [typingText1, setTypingText1] = useState('');
-  const [typingText2, setTypingText2] = useState('');
-
-  const typingTimer1 = useRef<NodeJS.Timeout | null>(null);
-  const typingTimer2 = useRef<NodeJS.Timeout | null>(null);
-
-  // Simulation Sequence
-  const runSimulation = () => {
+  // Auto-Apply Simulator Function
+  const runApplySimulation = () => {
     if (applyState !== 'idle') return;
-
-    // Reset typings
-    setTypingText1('');
-    setTypingText2('');
-
-    if (typingTimer1.current) clearTimeout(typingTimer1.current);
-    if (typingTimer2.current) clearTimeout(typingTimer2.current);
-
-    setApplyState('searching');
+    
+    setApplyState('scraping');
+    setApplyLog(
+      lang === 'pt-BR'
+        ? ["[14:42:01] Buscando vagas para 'Senior Next.js Developer'...", "↳ Encontrada vaga Easy Apply em Vercel Inc."]
+        : ["[14:42:01] Fetching jobs for 'Senior Next.js Developer'...", "↳ Found active Easy Apply listing at Vercel Inc."]
+    );
 
     setTimeout(() => {
-      setApplyState('matching');
+      setApplyState('solving');
+      setApplyLog(prev => [
+        ...prev,
+        ...(lang === 'pt-BR'
+          ? ["[14:42:03] Fazendo parse do questionário de candidatura...", "↳ Pergunta: 'Quantos anos de Next.js?' -> IA: '5 anos'", "↳ Pergunta: 'Resuma experiência com RSC?' -> IA: 'Migrei arquiteturas legadas...'"]
+          : ["[14:42:03] Parsing application form questionnaire...", "↳ Question: 'Years of Next.js exp?' -> AI: '5 years'", "↳ Question: 'Describe RSC exp?' -> AI: 'Migrated legacy architectures...'"])
+      ]);
+
       setTimeout(() => {
-        setApplyState('solving');
+        setApplyState('submitting');
+        setApplyLog(prev => [
+          ...prev,
+          ...(lang === 'pt-BR'
+            ? ["[14:42:05] Otimizando currículo com Gemini...", "↳ Inserindo palavras-chave: Next.js App Router, BullMQ, Redis", "[14:42:06] Enviando formulário via Voyager API..."]
+            : ["[14:42:05] Optimizing CV with Gemini...", "↳ Inserting key phrases: Next.js App Router, BullMQ, Redis", "[14:42:06] Submitting form via Voyager API..."])
+        ]);
 
-        // Typing Q1 answer
-        const fullText1 = t.feed.mockJobs.job1.a1;
-        let index1 = 0;
-        const typeAnswer1 = () => {
-          if (index1 <= fullText1.length) {
-            setTypingText1(fullText1.slice(0, index1));
-            index1++;
-            typingTimer1.current = setTimeout(typeAnswer1, 30);
-          } else {
-            // Typing Q2 answer after Q1 is done
-            setTimeout(() => {
-              setApplyState('tailoring');
-              const fullText2 = t.feed.mockJobs.job1.a2;
-              let index2 = 0;
-              const typeAnswer2 = () => {
-                if (index2 <= fullText2.length) {
-                  setTypingText2(fullText2.slice(0, index2));
-                  index2++;
-                  typingTimer2.current = setTimeout(typeAnswer2, 30);
-                } else {
-                  setTimeout(() => {
-                    setApplyState('success');
-                    // Increment metrics
-                    setSubmissionsCount(prev => prev + 1);
-                    setSuccessRate(prev => Math.min(99.2, parseFloat((prev + 0.1).toFixed(1))));
-                    setTokensSaved(prev => parseFloat((prev + 1.2).toFixed(1)));
-                    setTimeout(() => {
-                      setApplyState('idle');
-                    }, 4000);
-                  }, 100);
-                }
-              };
-              typeAnswer2();
-            }, 1000);
-          }
-        };
-        typeAnswer1();
-
+        setTimeout(() => {
+          setApplyState('success');
+          setApplyLog(prev => [
+            ...prev,
+            ...(lang === 'pt-BR'
+              ? ["✓ [14:42:07] Candidatura enviada com sucesso!"]
+              : ["✓ [14:42:07] Application submitted successfully!"])
+          ]);
+        }, 1200);
       }, 1500);
     }, 1500);
   };
 
-  const runPublisherSimulation = () => {
-    if (publisherState !== 'idle') return;
-    setPublisherState('generating');
-    setTimeout(() => {
-      setPublisherState('success');
-      setTimeout(() => {
-        setPublisherState('idle');
-      }, 4000);
-    }, 2500);
+  const resetApplySimulation = () => {
+    setApplyState('idle');
+    setApplyLog([]);
   };
 
-  useEffect(() => {
-    return () => {
-      if (typingTimer1.current) clearTimeout(typingTimer1.current);
-      if (typingTimer2.current) clearTimeout(typingTimer2.current);
-    };
-  }, []);
-
-  return (
-    <div className="relative w-full rounded-xl border border-[#2f3539] bg-[#1d2226] overflow-hidden shadow-2xl z-10 transition-transform duration-500 hover:scale-[1.002]">
-      {/* simulated premium linkedin top nav bar */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-[#2f3539] bg-[#1d2226]">
-        <div className="flex items-center gap-4 w-full max-w-sm">
-          {/* logo wrapper */}
-          <div className="flex items-center justify-center size-8.5 rounded bg-[#0a66c2] text-white font-bold text-lg select-none shrink-0 shadow-md">
-            in
-          </div>
-          {/* simulated search bar */}
-          <div className="relative w-full hidden sm:block">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8f969b]">
-              <Search className="size-3.5" />
-            </span>
-            <input
-              type="text"
-              readOnly
-              placeholder={t.nav.searchPlaceholder}
-              className="w-full bg-[#12161a] border border-[#2f3539] rounded-md py-1.5 pl-9 pr-4 text-xs text-[#e9ecef] font-medium outline-none"
-            />
-          </div>
-        </div>
-
-        {/* nav navigation items */}
-        <div className="flex items-center gap-4 md:gap-6">
-          <button
-            onClick={() => setActiveTab('feed')}
-            className={`flex flex-col items-center gap-0.5 text-[10px] md:text-xs font-semibold py-1 border-b-2 transition-all cursor-pointer ${
-              activeTab === 'feed'
-                ? 'border-[#70b5f9] text-[#70b5f9]'
-                : 'border-transparent text-[#8f969b] hover:text-[#e9ecef]'
-            }`}
-          >
-            <Briefcase className="size-4" />
-            <span className="hidden md:inline">{t.nav.jobs}</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('publisher')}
-            className={`flex flex-col items-center gap-0.5 text-[10px] md:text-xs font-semibold py-1 border-b-2 transition-all cursor-pointer ${
-              activeTab === 'publisher'
-                ? 'border-[#70b5f9] text-[#70b5f9]'
-                : 'border-transparent text-[#8f969b] hover:text-[#e9ecef]'
-            }`}
-          >
-            <ImageIcon className="size-4" />
-            <span className="hidden md:inline">{t.nav.publisher}</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('logs')}
-            className={`flex flex-col items-center gap-0.5 text-[10px] md:text-xs font-semibold py-1 border-b-2 transition-all cursor-pointer ${
-              activeTab === 'logs'
-                ? 'border-[#70b5f9] text-[#70b5f9]'
-                : 'border-transparent text-[#8f969b] hover:text-[#e9ecef]'
-            }`}
-          >
-            <Terminal className="size-4" />
-            <span className="hidden md:inline">{t.nav.logs}</span>
-          </button>
-
-          {/* status monitor */}
-          <div className="h-6 w-[1px] bg-[#2f3539]" />
-          <div className="flex items-center gap-1.5">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-[10px] font-bold text-emerald-400 tracking-wider uppercase font-mono hidden sm:inline">
-              {t.nav.devMode}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main dashboard content container */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 p-4 gap-4 text-left bg-[#090e11] min-h-[500px]">
-        {/* Left Column: Sync center & metrics (Takes 3 columns) */}
-        <div className="lg:col-span-3 space-y-4">
-          {/* Card: Sync Status */}
-          <div className="p-4 rounded-xl border border-[#2f3539] bg-[#1d2226] shadow-sm">
-            <h4 className="text-xs font-bold text-[#e9ecef] tracking-wider uppercase mb-3 flex items-center gap-1.5 border-b border-[#2f3539] pb-2">
-              <Database className="size-3.5 text-[#70b5f9]" />
-              {t.syncCenter.title}
-            </h4>
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between text-[11px] text-[#8f969b]">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  {t.syncCenter.cookieStatus}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-[11px] text-[#8f969b]">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  {t.syncCenter.apiStatus}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-[11px] text-[#8f969b]">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  {t.syncCenter.dbStatus}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Card: Dynamic Analytics */}
-          <div className="p-4 rounded-xl border border-[#2f3539] bg-[#1d2226] shadow-sm">
-            <h4 className="text-xs font-bold text-[#e9ecef] tracking-wider uppercase mb-3 flex items-center gap-1.5 border-b border-[#2f3539] pb-2">
-              <Cpu className="size-3.5 text-[#70b5f9]" />
-              {t.syncCenter.metricsTitle}
-            </h4>
-            <div className="space-y-3.5">
-              <div>
-                <span className="text-[10px] text-[#8f969b] block mb-0.5">{t.syncCenter.appliedCount}</span>
-                <span className="text-xl font-bold font-mono text-[#e9ecef]">{submissionsCount}</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-[#8f969b] block mb-0.5">{t.syncCenter.successRate}</span>
-                <span className="text-xl font-bold font-mono text-emerald-400">{successRate}%</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-[#8f969b] block mb-0.5">{t.syncCenter.tokensSaved}</span>
-                <span className="text-xl font-bold font-mono text-[#70b5f9]">{tokensSaved}k</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Card: Active Search params */}
-          <div className="p-4 rounded-xl border border-[#2f3539] bg-[#1d2226] shadow-sm">
-            <h4 className="text-xs font-bold text-[#e9ecef] tracking-wider uppercase mb-3 flex items-center gap-1.5 border-b border-[#2f3539] pb-2">
-              <Search className="size-3.5 text-[#70b5f9]" />
-              {t.syncCenter.searchParams}
-            </h4>
-            <div className="space-y-3 text-[11px]">
-              <div>
-                <span className="text-[9px] font-bold text-[#8f969b] block tracking-wider uppercase mb-1">
-                  {t.syncCenter.keywords}
-                </span>
-                <div className="flex flex-wrap gap-1">
-                  <span className="px-1.5 py-0.5 rounded bg-[#12161a] border border-[#2f3539] text-[10px] text-[#70b5f9] font-mono font-semibold">
-                    TypeScript
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded bg-[#12161a] border border-[#2f3539] text-[10px] text-[#70b5f9] font-mono font-semibold">
-                    React
-                  </span>
-                  <span className="px-1.5 py-0.5 rounded bg-[#12161a] border border-[#2f3539] text-[10px] text-[#70b5f9] font-mono font-semibold">
-                    Node.js
-                  </span>
-                </div>
-              </div>
-              <div>
-                <span className="text-[9px] font-bold text-[#8f969b] block tracking-wider uppercase mb-1">
-                  {t.syncCenter.location}
-                </span>
-                <span className="text-[#e9ecef] font-mono font-medium">Remote / Worldwide</span>
-              </div>
-              <div>
-                <span className="text-[9px] font-bold text-[#8f969b] block tracking-wider uppercase mb-1">
-                  {t.syncCenter.applyMode}
-                </span>
-                <span className="text-emerald-400 font-mono font-medium">Gemini 1.5 Pro</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Center / Tab Contents (Takes 6 columns) */}
-        <div className="lg:col-span-6 flex flex-col justify-between border-x border-[#2f3539] px-0 lg:px-4 min-h-[450px]">
-          {/* TAB 1: Live Job Automation Feed */}
-          {activeTab === 'feed' && (
-            <div className="space-y-4 flex-1">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-[#e9ecef]">{t.feed.title}</h3>
-                <button
-                  onClick={runSimulation}
-                  disabled={applyState !== 'idle'}
-                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    applyState !== 'idle'
-                      ? 'bg-[#2f3539] text-[#8f969b] cursor-not-allowed'
-                      : 'bg-[#0a66c2] text-white hover:bg-[#004182] hover:scale-[1.01]'
-                  }`}
-                >
-                  <Play className="size-3 fill-white" />
-                  {t.feed.runBtn}
-                </button>
-              </div>
-
-              {/* Feed simulation area */}
-              <div className="space-y-4 relative max-h-[450px] overflow-y-auto pr-1">
-                {/* Search overlay indicator */}
-                {applyState === 'searching' && (
-                  <div className="p-5 rounded-xl border border-[#0a66c2]/30 bg-[#1d2226] flex flex-col items-center justify-center text-center animate-pulse py-8">
-                    <RefreshCw className="size-7 text-[#70b5f9] animate-spin mb-3" />
-                    <span className="text-xs text-[#e9ecef] font-semibold">Querying LinkedIn Voyager API...</span>
-                    <span className="text-[10px] text-[#8f969b] mt-1">Keywords: "TypeScript, React"</span>
-                  </div>
-                )}
-
-                {/* Job Found and answering simulation */}
-                {(applyState === 'matching' || applyState === 'solving' || applyState === 'tailoring' || applyState === 'success') && (
-                  <div className="rounded-xl border border-[#2f3539] bg-[#1d2226] overflow-hidden shadow-md animate-fade-in transition-all">
-                    {/* card header */}
-                    <div className="p-4 border-b border-[#2f3539] bg-[#12161a]/30 flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <div className="size-9 rounded bg-[#0a66c2] text-white flex items-center justify-center font-bold text-sm">
-                          V
-                        </div>
-                        <div>
-                          <h5 className="text-xs font-bold text-[#e9ecef]">{t.feed.mockJobs.job1.title}</h5>
-                          <span className="text-[10px] text-[#8f969b]">{t.feed.mockJobs.job1.company}</span>
-                        </div>
-                      </div>
-                      <div className="text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded border border-emerald-500/20">
-                        {t.feed.match}: 94%
-                      </div>
-                    </div>
-
-                    {/* AI Questionnaire logs */}
-                    <div className="p-4 space-y-3 font-mono text-[11px] bg-[#12161a]/20">
-                      {applyState === 'matching' && (
-                        <div className="flex items-center gap-1.5 text-[#8f969b] text-center justify-center py-4">
-                          <Cpu className="size-4 text-[#70b5f9] animate-spin" />
-                          <span>Matching qualifications with database profiles...</span>
-                        </div>
-                      )}
-
-                      {/* Question 1 */}
-                      {(applyState === 'solving' || applyState === 'tailoring' || applyState === 'success') && (
-                        <div className="p-2.5 rounded bg-[#090e11] border border-[#2f3539]">
-                          <span className="text-[#70b5f9] block mb-1">Q1: {t.feed.mockJobs.job1.q1}</span>
-                          <div className="text-emerald-400 min-h-[16px] break-words">
-                            A1: {typingText1}
-                            {applyState === 'solving' && typingText1.length < t.feed.mockJobs.job1.a1.length && (
-                              <span className="w-1.5 h-3 bg-emerald-400 inline-block animate-pulse ml-0.5" />
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Question 2 */}
-                      {(applyState === 'tailoring' || applyState === 'success') && (
-                        <div className="p-2.5 rounded bg-[#090e11] border border-[#2f3539]">
-                          <span className="text-[#70b5f9] block mb-1">Q2: {t.feed.mockJobs.job1.q2}</span>
-                          <div className="text-emerald-400 min-h-[16px] break-words">
-                            A2: {typingText2}
-                            {applyState === 'tailoring' && typingText2.length < t.feed.mockJobs.job1.a2.length && (
-                              <span className="w-1.5 h-3 bg-emerald-400 inline-block animate-pulse ml-0.5" />
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Status footer inside card */}
-                    <div className="px-4 py-2.5 bg-[#12161a]/30 border-t border-[#2f3539] flex items-center justify-between text-[10px]">
-                      <div className="flex items-center gap-1.5 text-[#8f969b]">
-                        <Bot className="size-3.5 text-[#70b5f9]" />
-                        <span>
-                          {applyState === 'solving'
-                            ? t.feed.solving
-                            : applyState === 'tailoring'
-                            ? t.feed.tailoring
-                            : applyState === 'success'
-                            ? t.feed.submitted
-                            : ''}
-                        </span>
-                      </div>
-                      {applyState === 'success' && (
-                        <span className="text-emerald-400 font-bold flex items-center gap-1 text-[11px] animate-bounce">
-                          <Check className="size-3.5" />
-                          {t.feed.submitted}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Always-on mock elements */}
-                <div className="rounded-xl border border-[#2f3539] bg-[#1d2226] opacity-60 overflow-hidden text-xs">
-                  <div className="p-3 bg-[#12161a]/10 border-b border-[#2f3539] flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="size-8 rounded bg-indigo-600 text-white flex items-center justify-center font-bold">O</div>
-                      <div>
-                        <h6 className="font-bold text-[#e9ecef]">{t.feed.mockJobs.job2.title}</h6>
-                        <span className="text-[10px] text-[#8f969b]">{t.feed.mockJobs.job2.company}</span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-500/5">98% Match</span>
-                  </div>
-                  <div className="p-3 font-mono text-[10px] space-y-1">
-                    <div className="text-[#8f969b]">Q: {t.feed.mockJobs.job2.q1}</div>
-                    <div className="text-emerald-500/80">A: {t.feed.mockJobs.job2.a1}</div>
-                  </div>
-                </div>
-
-                <div className="rounded-xl border border-[#2f3539] bg-[#1d2226] opacity-60 overflow-hidden text-xs">
-                  <div className="p-3 bg-[#12161a]/10 border-b border-[#2f3539] flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="size-8 rounded bg-orange-600 text-white flex items-center justify-center font-bold">S</div>
-                      <div>
-                        <h6 className="font-bold text-[#e9ecef]">{t.feed.mockJobs.job3.title}</h6>
-                        <span className="text-[10px] text-[#8f969b]">{t.feed.mockJobs.job3.company}</span>
-                      </div>
-                    </div>
-                    <span className="text-[10px] text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-500/5">90% Match</span>
-                  </div>
-                  <div className="p-3 font-mono text-[10px] space-y-1">
-                    <div className="text-[#8f969b]">Q: {t.feed.mockJobs.job3.q1}</div>
-                    <div className="text-emerald-500/80">A: {t.feed.mockJobs.job3.a1}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 2: Publisher Slide Carousel Tool */}
-          {activeTab === 'publisher' && (
-            <div className="space-y-4 flex-1">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold text-[#e9ecef]">{t.publisher.title}</h3>
-                <button
-                  onClick={runPublisherSimulation}
-                  disabled={publisherState !== 'idle'}
-                  className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
-                    publisherState !== 'idle'
-                      ? 'bg-[#2f3539] text-[#8f969b] cursor-not-allowed'
-                      : 'bg-[#0a66c2] text-white hover:bg-[#004182]'
-                  }`}
-                >
-                  <RefreshCw className={`size-3 ${publisherState === 'generating' ? 'animate-spin' : ''}`} />
-                  {t.publisher.btnText}
-                </button>
-              </div>
-
-              <div className="p-4 rounded-xl border border-[#2f3539] bg-[#1d2226] space-y-4 flex-1">
-                {publisherState === 'generating' && (
-                  <div className="p-6 rounded-lg border border-[#2f3539] bg-[#090e11] flex flex-col items-center justify-center text-center animate-pulse">
-                    <ImageIcon className="size-8 text-[#70b5f9] animate-bounce mb-2" />
-                    <span className="text-xs text-[#e9ecef] font-semibold">{t.publisher.generating}</span>
-                    <span className="text-[10px] text-[#8f969b] mt-1">Topic: Next.js Server Actions</span>
-                  </div>
-                )}
-
-                {publisherState === 'success' && (
-                  <div className="p-6 rounded-lg border border-[#2f3539] bg-[#090e11] flex flex-col items-center justify-center text-center">
-                    <Check className="size-8 text-emerald-400 mb-2" />
-                    <span className="text-xs text-emerald-400 font-semibold">{t.publisher.published}!</span>
-                    <span className="text-[10px] text-[#8f969b] mt-1">File: RSC-Survival-Guide.pdf (12 Slides)</span>
-                  </div>
-                )}
-
-                {/* Queue status */}
-                <div className="space-y-2">
-                  <span className="text-[10px] font-bold text-[#8f969b] tracking-wider uppercase block">
-                    {t.publisher.activeQueue}
-                  </span>
-                  <div className="space-y-2 text-xs font-mono">
-                    <div className="p-2.5 rounded bg-[#090e11] border border-[#2f3539] flex justify-between items-center">
-                      <div>
-                        <span className="text-[#e9ecef] font-bold">{t.publisher.carousels.c1}</span>
-                        <span className="text-[9px] text-[#8f969b] block">Size: 4.8MB · Slides: 10</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[9px] font-bold border border-emerald-500/20 uppercase">
-                        {t.publisher.ready}
-                      </span>
-                    </div>
-
-                    <div className="p-2.5 rounded bg-[#090e11] border border-[#2f3539] flex justify-between items-center opacity-65">
-                      <div>
-                        <span className="text-[#e9ecef] font-bold">{t.publisher.carousels.c2}</span>
-                        <span className="text-[9px] text-[#8f969b] block">Size: 3.2MB · Slides: 8</span>
-                      </div>
-                      <span className="px-2 py-0.5 rounded bg-[#0a66c2]/15 text-[#70b5f9] text-[9px] font-bold border border-[#0a66c2]/30 uppercase">
-                        Published
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 3: Queue Microservice Logs */}
-          {activeTab === 'logs' && (
-            <div className="space-y-4 flex-1">
-              <h3 className="text-sm font-bold text-[#e9ecef]">{t.publisher.activeQueue}</h3>
-              <div className="p-3 bg-[#090e11] border border-[#2f3539] rounded-lg flex-1 font-mono text-[10px] text-emerald-400 space-y-1.5 overflow-y-auto max-h-[360px] shadow-inner text-left">
-                <div>[06:12:01] <span className="text-[#70b5f9]">INFO</span> job-backend starting SQLite migrations...</div>
-                <div>[06:12:02] <span className="text-emerald-500 font-semibold">SUCCESS</span> Migration 05_add_subscription_status successfully applied.</div>
-                <div>[06:12:02] <span className="text-[#70b5f9]">INFO</span> Voyager API connection established for user session (li_at).</div>
-                <div>[06:12:05] <span className="text-[#70b5f9]">BULLMQ</span> Worker queue initialized on port 6379 (Redis).</div>
-                <div>[06:12:06] <span className="text-[#70b5f9]">INFO</span> job-backend service active on port 3001.</div>
-                <div>[06:12:07] <span className="text-[#70b5f9]">INFO</span> gateway-api service active on port 3002.</div>
-                <div>[06:12:08] <span className="text-[#70b5f9]">INFO</span> publisher-backend service active on port 3003.</div>
-                <div>[06:12:10] <span className="text-emerald-500 font-semibold">SYNC</span> Chrome extension synchronized 2 cookies in 120ms.</div>
-                <div>[06:12:12] <span className="text-[#70b5f9]">INFO</span> Running active search query for keywords: "TypeScript, React".</div>
-                <div className="animate-pulse">[06:12:15] <span className="text-emerald-400">BULLMQ</span> Waiting for new execution triggers...</div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Column: Microservices Status & Tools (Takes 3 columns) */}
-        <div className="lg:col-span-3 space-y-4">
-          {/* Card: Microservices Network */}
-          <div className="p-4 rounded-xl border border-[#2f3539] bg-[#1d2226] shadow-sm">
-            <h4 className="text-xs font-bold text-[#e9ecef] tracking-wider uppercase mb-3 flex items-center gap-1.5 border-b border-[#2f3539] pb-2">
-              <Layers className="size-3.5 text-[#70b5f9]" />
-              {t.publisher.microservices}
-            </h4>
-            <div className="space-y-2.5 font-mono text-[10px]">
-              <div className="flex items-center justify-between p-2 rounded bg-[#090e11] border border-[#2f3539]">
-                <span className="text-[#e9ecef] font-semibold">job-backend</span>
-                <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[8px] uppercase">
-                  Active
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded bg-[#090e11] border border-[#2f3539]">
-                <span className="text-[#e9ecef] font-semibold">gateway-api</span>
-                <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[8px] uppercase">
-                  Active
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded bg-[#090e11] border border-[#2f3539]">
-                <span className="text-[#e9ecef] font-semibold">publisher</span>
-                <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[8px] uppercase">
-                  Active
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-2 rounded bg-[#090e11] border border-[#2f3539]">
-                <span className="text-[#e9ecef] font-semibold">chrome-ext</span>
-                <span className="px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold text-[8px] uppercase">
-                  Synced
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick instructions / tips info card */}
-          <div className="p-4 rounded-xl border border-[#2f3539] bg-[#1d2226] text-xs space-y-2 shadow-sm">
-            <span className="font-bold text-[#e9ecef] block flex items-center gap-1.5 text-[11px] text-orange-400">
-              <Award className="size-3.5 text-[#70b5f9]" />
-              Developer Tip
-            </span>
-            <p className="text-[#8f969b] leading-relaxed text-[11px]">
-              Ensure the Chrome Extension captures the session correctly by signing in to LinkedIn first. Once synced, you do not need to keep LinkedIn tabs open.
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Rebranded LinkedIn Feed Post Component (narrative section replacement)
-function LinkedInFeedPost({ lang }: { lang: 'pt-BR' | 'en' }) {
-  const text = translations[lang];
-  const [likes, setLikes] = useState(124);
-  const [hasLiked, setHasLiked] = useState(false);
-
-  const toggleLike = () => {
-    if (hasLiked) {
-      setLikes(prev => prev - 1);
-      setHasLiked(false);
-    } else {
-      setLikes(prev => prev + 1);
-      setHasLiked(true);
+  // Carousel slide definitions
+  const slides = lang === 'pt-BR' ? [
+    {
+      title: "Como Criar Carrosséis que Convertem",
+      desc: "Use slides dinâmicos e limpos para atrair cliques na timeline do LinkedIn."
+    },
+    {
+      title: "BullMQ & Redis Workers",
+      desc: "Processe renders assíncronos de PDFs no backend sem congelar o cliente."
+    },
+    {
+      title: "Resultados com IA",
+      desc: "Agregue relevância técnica automática baseada nos seus dados de código."
     }
-  };
+  ] : [
+    {
+      title: "How to Build Carousels that Convert",
+      desc: "Use clean templates to increase dwell time on the LinkedIn feed."
+    },
+    {
+      title: "BullMQ & Redis Workers",
+      desc: "Process async PDF renders on the backend without locking the client thread."
+    },
+    {
+      title: "AI-Generated Relevance",
+      desc: "Aggregate direct technical details matching your repository updates."
+    }
+  ];
 
   return (
-    <div className="max-w-3xl mx-auto rounded-xl border border-[#2f3539] bg-[#1d2226] overflow-hidden shadow-md text-left mt-8">
-      {/* Post header user info */}
-      <div className="p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="size-11 rounded-full bg-[#0a66c2] text-white flex items-center justify-center font-bold text-lg border border-[#2f3539]">
-            in
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch w-full mt-12 relative z-10 text-left">
+      
+      {/* 1. Job Applier & Loop Simulator (Colspan 7) */}
+      <div className="md:col-span-7 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="h-2 w-2 rounded-full bg-[#70b5f9] animate-pulse" />
+            <span className="text-[10px] font-mono font-bold text-[#70b5f9] uppercase tracking-wider">
+              {lang === 'pt-BR' ? 'Módulo Applier' : 'Applier Module'}
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-bold text-[#e9ecef] hover:text-[#70b5f9] hover:underline cursor-pointer">
-                LinkedIn Job Explorer
-              </span>
-              <span className="text-[10px] bg-[#2f3539] text-[#8f969b] px-1.5 py-0.2 rounded font-bold uppercase">
-                Bot · 1st
+          <h3 className="text-xl font-bold text-white">
+            {lang === 'pt-BR' ? 'Busca e Auto-Candidatura de Vagas' : 'Job Search & Auto-Apply'}
+          </h3>
+          <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
+            {lang === 'pt-BR'
+              ? 'Consulte listagens ativas e preencha formulários Easy Apply sem sobrecarga de navegador, rodando workers assíncronos diretamente nas APIs do LinkedIn.'
+              : 'Query listings and submit Easy Apply packages without heavy browser processes, running async tasks directly against LinkedIn APIs.'}
+          </p>
+        </div>
+
+        {/* Live Simulator Viewport */}
+        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 font-mono text-xs flex flex-col gap-3 min-h-[250px] relative overflow-hidden shadow-inner">
+          <div className="flex justify-between items-center pb-2 border-b border-[#2f3539]/30">
+            <span className="text-[10px] font-semibold text-[#8f969b] flex items-center gap-1.5">
+              <Terminal className="size-3.5 text-[#70b5f9]" />
+              voyager-apply-worker.log
+            </span>
+            {applyState === 'idle' ? (
+              <button
+                onClick={runApplySimulation}
+                className="px-2.5 py-1 rounded bg-[#0a66c2] text-white font-sans font-bold text-[10px] transition-transform active:scale-95 cursor-pointer shadow hover:bg-[#004182]"
+              >
+                {lang === 'pt-BR' ? 'Executar Teste' : 'Run Simulator'}
+              </button>
+            ) : (
+              <button
+                onClick={resetApplySimulation}
+                className="px-2.5 py-1 rounded border border-[#2f3539] bg-[#1d2226] text-[#e9ecef] font-sans font-semibold text-[10px] transition-transform active:scale-95 cursor-pointer hover:bg-[#2f3539]"
+              >
+                {lang === 'pt-BR' ? 'Resetar' : 'Reset'}
+              </button>
+            )}
+          </div>
+
+          {/* Jobs Feed List */}
+          {applyState === 'idle' && (
+            <div className="space-y-2 py-1 font-sans">
+              <div className="flex justify-between items-center p-2 rounded-lg bg-[#12161a]/40 border border-[#2f3539]/30">
+                <div>
+                  <div className="text-xs font-bold text-[#e9ecef]">Senior React Developer</div>
+                  <div className="text-[10px] text-[#8f969b]">Vercel Inc. · Remote</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] bg-[#0a66c2]/10 text-[#70b5f9] border border-[#0a66c2]/20 px-1.5 py-0.5 rounded font-mono">95% match</span>
+                  <span className="text-[9px] font-bold uppercase text-[#8f969b] font-mono">Idle</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center p-2 rounded-lg bg-[#12161a]/40 border border-[#2f3539]/30">
+                <div>
+                  <div className="text-xs font-bold text-[#e9ecef]">TypeScript Compiler Architect</div>
+                  <div className="text-[10px] text-[#8f969b]">OpenAI · San Francisco</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] bg-[#0a66c2]/10 text-[#70b5f9] border border-[#0a66c2]/20 px-1.5 py-0.5 rounded font-mono">89% match</span>
+                  <span className="text-[9px] font-bold uppercase text-[#8f969b] font-mono">Idle</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Simulator Logs Display */}
+          {applyState !== 'idle' && (
+            <div className="flex-1 overflow-y-auto space-y-1.5 text-[11px] leading-relaxed max-h-[170px] pr-2">
+              {applyLog.map((log, index) => (
+                <div
+                  key={index}
+                  className={`pl-3 border-l ${
+                    log.startsWith('✓')
+                      ? 'border-emerald-500 text-emerald-400 font-bold bg-emerald-500/5 py-1 px-1.5 rounded-r'
+                      : log.startsWith('↳')
+                      ? 'border-[#2f3539]/40 text-[#8f969b] ml-3'
+                      : 'border-[#70b5f9] text-slate-300'
+                  }`}
+                >
+                  {log}
+                </div>
+              ))}
+              {applyState !== 'success' && (
+                <div className="text-[#70b5f9] text-[11px] pl-3 animate-pulse border-l border-[#70b5f9]">
+                  ● {lang === 'pt-BR' ? 'Processando...' : 'Processing...'}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 2. AI Resume Optimizer (Colspan 5) */}
+      <div className="md:col-span-5 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider">
+              {lang === 'pt-BR' ? 'Otimização ATS' : 'ATS Optimization'}
+            </span>
+          </div>
+          <h3 className="text-xl font-bold text-white">
+            {lang === 'pt-BR' ? 'Otimizador de Currículos' : 'AI Resume Optimizer'}
+          </h3>
+          <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
+            {lang === 'pt-BR'
+              ? 'Escaneie a descrição de cargos no LinkedIn e reescreva seções ou summaries para atingir compatibilidade máxima de palavras-chave.'
+              : 'Scan LinkedIn description requirements to dynamically inject missing technical skills and tailor summary sentences.'}
+          </p>
+        </div>
+
+        {/* Tailor UI card */}
+        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 flex flex-col gap-3.5 min-h-[250px] shadow-inner font-sans">
+          <div className="flex justify-between items-center pb-2 border-b border-[#2f3539]/30">
+            <span className="text-[11px] font-bold text-[#e9ecef] uppercase font-mono tracking-wide">
+              {lang === 'pt-BR' ? 'Análise de ATS' : 'ATS Analysis'}
+            </span>
+            <div className="flex gap-1.5">
+              <button
+                onClick={() => setResumeView('original')}
+                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                  resumeView === 'original'
+                    ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
+                    : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
+                }`}
+              >
+                {lang === 'pt-BR' ? 'Original' : 'Original'}
+              </button>
+              <button
+                onClick={() => setResumeView('optimized')}
+                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors cursor-pointer ${
+                  resumeView === 'optimized'
+                    ? 'bg-[#0a66c2]/10 text-[#70b5f9] border-[#0a66c2]/20'
+                    : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
+                }`}
+              >
+                {lang === 'pt-BR' ? 'Otimizado' : 'Optimized'}
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-3 text-left">
+            <div className="flex justify-between items-center text-xs">
+              <span className="text-[#8f969b] font-mono">{lang === 'pt-BR' ? 'Taxa de Match:' : 'Match Rate:'}</span>
+              <span className={`font-mono font-bold ${resumeView === 'original' ? 'text-orange-400' : 'text-emerald-400'}`}>
+                {resumeView === 'original' ? '58%' : '94%'}
               </span>
             </div>
-            <span className="text-[11px] text-[#8f969b] block leading-normal">
-              Developer Toolchain · Open Source Core Platform
-            </span>
-            <span className="text-[10px] text-[#8f969b] block mt-0.5">
-              2h · Edited · 🌐
-            </span>
+            {/* Progress line */}
+            <div className="w-full bg-[#12161a] border border-[#2f3539]/30 h-2 rounded-full overflow-hidden">
+              <div
+                className={`h-full transition-all duration-500 ${resumeView === 'original' ? 'bg-orange-400' : 'bg-[#0a66c2]'}`}
+                style={{ width: resumeView === 'original' ? '58%' : '94%' }}
+              />
+            </div>
+
+            {/* Keyword badges status */}
+            <div className="space-y-2 pt-1.5 text-xs">
+              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20">
+                <span className="text-[#8f969b]">TypeScript Core</span>
+                <span className="text-[10px] font-bold text-emerald-400 font-mono">Matched ✓</span>
+              </div>
+              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20">
+                <span className="text-[#8f969b]">Redis & BullMQ</span>
+                {resumeView === 'original' ? (
+                  <span className="text-[10px] font-bold text-orange-400 font-mono">Missing ✗</span>
+                ) : (
+                  <span className="text-[10px] font-bold text-[#70b5f9] font-mono animate-pulse">[+] Inserted</span>
+                )}
+              </div>
+              <div className="flex justify-between items-center p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/20">
+                <span className="text-[#8f969b]">Next.js Server Actions</span>
+                {resumeView === 'original' ? (
+                  <span className="text-[10px] font-bold text-orange-400 font-mono">Missing ✗</span>
+                ) : (
+                  <span className="text-[10px] font-bold text-[#70b5f9] font-mono animate-pulse">[+] Inserted</span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
-        <button className="text-[#8f969b] hover:text-[#e9ecef] p-1.5 rounded-full hover:bg-[#2f3539]/20 cursor-pointer">
-          <MoreHorizontal className="size-5" />
-        </button>
       </div>
 
-      {/* Post text content */}
-      <div className="px-4 pb-3 pt-1 text-sm text-[#e9ecef] leading-relaxed space-y-3">
-        <p>{text.hero.subtitle}</p>
-        <p className="text-[#70b5f9] font-medium hover:underline cursor-pointer">
-          #typescript #automation #linkedinapi #geminiai #opensource #monorepo
-        </p>
-      </div>
-
-      {/* Reactions stats row */}
-      <div className="px-4 py-2 border-t border-[#2f3539]/50 flex items-center justify-between text-[11px] text-[#8f969b]">
-        <div className="flex items-center gap-1">
-          <span className="flex items-center justify-center size-4.5 rounded-full bg-[#0a66c2] text-white text-[9px] font-bold">
-            👍
-          </span>
-          <span className="flex items-center justify-center size-4.5 rounded-full bg-emerald-500 text-white text-[9px] font-bold -ml-1.5">
-            👏
-          </span>
-          <span className="hover:text-[#70b5f9] hover:underline cursor-pointer ml-1">
-            {likes} likes
-          </span>
+      {/* 3. AI Content Publisher (Colspan 5) */}
+      <div className="md:col-span-5 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="h-2 w-2 rounded-full bg-purple-400 animate-pulse" />
+            <span className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-wider">
+              {lang === 'pt-BR' ? 'Módulo Publisher' : 'Publisher Module'}
+            </span>
+          </div>
+          <h3 className="text-xl font-bold text-white">
+            {lang === 'pt-BR' ? 'Criação e Agendamento' : 'AI Post Creator & Scheduler'}
+          </h3>
+          <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
+            {lang === 'pt-BR'
+              ? 'Gere posts corporativos elegantes utilizando inteligência contextual e gerencie agendamentos automáticos através de filas Redis robustas.'
+              : 'Write tech articles utilizing model prompts and queue auto-scheduling using microservice Redis channels.'}
+          </p>
         </div>
-        <div className="flex gap-2">
-          <span className="hover:text-[#70b5f9] hover:underline cursor-pointer">12 comments</span>
-          <span>•</span>
-          <span className="hover:text-[#70b5f9] hover:underline cursor-pointer">4 shares</span>
+
+        {/* Post editor mockup */}
+        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 flex flex-col gap-3 min-h-[250px] shadow-inner font-sans">
+          <div className="flex justify-between items-center pb-1.5 border-b border-[#2f3539]/30">
+            <span className="text-[10px] font-bold text-[#e9ecef] font-mono flex items-center gap-1">
+              <Rss className="size-3 text-purple-400" />
+              {lang === 'pt-BR' ? 'agendador-posts.json' : 'scheduler.json'}
+            </span>
+            <span className="text-[9px] font-bold text-purple-400 uppercase font-mono tracking-wider bg-purple-500/10 border border-purple-500/20 px-1.5 py-0.5 rounded">
+              BullMQ Queue
+            </span>
+          </div>
+          <div className="flex-1 flex flex-col gap-2">
+            <textarea
+              value={postDraft}
+              onChange={(e) => setPostDraft(e.target.value)}
+              className="w-full flex-1 bg-[#12161a]/60 border border-[#2f3539]/30 p-2 rounded-lg text-xs text-slate-300 resize-none font-mono focus:outline-none focus:border-purple-500/40"
+            />
+            <div className="flex items-center justify-between text-[10px] text-[#8f969b] mt-1">
+              <span>{postDraft.length} chars</span>
+              <span className="text-purple-400 font-semibold font-mono">
+                {lang === 'pt-BR' ? '↳ Fila: 1 pendente' : '↳ Queue: 1 pending'}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Post Actions footer panel */}
-      <div className="px-2 py-1 border-t border-[#2f3539] bg-[#12161a]/30 flex items-center justify-around text-xs font-semibold text-[#8f969b]">
-        <button
-          onClick={toggleLike}
-          className={`flex items-center gap-2 py-2 px-3 rounded hover:bg-[#2f3539]/20 transition-colors w-full justify-center cursor-pointer ${
-            hasLiked ? 'text-[#70b5f9]' : 'hover:text-[#e9ecef]'
-          }`}
-        >
-          <ThumbsUp className={`size-4.5 ${hasLiked ? 'fill-[#70b5f9]/20' : ''}`} />
-          <span>Like</span>
-        </button>
+      {/* 4. Slide Carousel Creator (Colspan 7) */}
+      <div className="md:col-span-7 group relative overflow-hidden rounded-2xl border border-[#2f3539] bg-[#1d2226]/50 p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-lg">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
+            <span className="text-[10px] font-mono font-bold text-blue-400 uppercase tracking-wider">
+              {lang === 'pt-BR' ? 'Carrossel PDF' : 'Slide Compiler'}
+            </span>
+          </div>
+          <h3 className="text-xl font-bold text-white">
+            {lang === 'pt-BR' ? 'Compilador de Slides no Grid' : 'Slide PDF Carousel Generator'}
+          </h3>
+          <p className="text-xs text-[#8f969b] mt-1 leading-relaxed">
+            {lang === 'pt-BR'
+              ? 'Estruture slides de alta conversão diretamente do markdown. Compile e exporte PDFs prontos para a timeline do LinkedIn.'
+              : 'Compile highly interactive slideshow carousels from raw configurations. Clean layout matching the monorepos CSS.'}
+          </p>
+        </div>
 
-        <button className="flex items-center gap-2 py-2 px-3 rounded hover:bg-[#2f3539]/20 hover:text-[#e9ecef] transition-colors w-full justify-center cursor-pointer">
-          <MessageSquare className="size-4.5" />
-          <span>Comment</span>
-        </button>
+        {/* Carousel UI Mockup */}
+        <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11]/80 p-4 flex flex-col gap-3 min-h-[250px] shadow-inner font-sans">
+          <div className="flex justify-between items-center pb-2 border-b border-[#2f3539]/30">
+            <span className="text-[10px] font-bold text-[#e9ecef] font-mono">
+              {lang === 'pt-BR' ? 'compilador-slides.pdf' : 'carousel-compiler.pdf'}
+            </span>
+            <div className="flex gap-1.5">
+              {(['premium', 'yellow', 'purple'] as const).map(theme => (
+                <button
+                  key={theme}
+                  onClick={() => setCarouselTheme(theme)}
+                  className={`px-1.5 py-0.5 rounded text-[9px] font-bold capitalize border transition-colors cursor-pointer ${
+                    carouselTheme === theme
+                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+                      : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
+                  }`}
+                >
+                  {theme}
+                </button>
+              ))}
+            </div>
+          </div>
 
-        <button className="flex items-center gap-2 py-2 px-3 rounded hover:bg-[#2f3539]/20 hover:text-[#e9ecef] transition-colors w-full justify-center cursor-pointer">
-          <Share2 className="size-4.5" />
-          <span>Share</span>
-        </button>
+          <div className="flex-1 flex gap-3 items-center justify-between">
+            <button
+              onClick={() => setCurrentSlide(prev => Math.max(0, prev - 1))}
+              disabled={currentSlide === 0}
+              className="text-xs text-[#70b5f9] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-1"
+            >
+              ◀
+            </button>
 
-        <button className="flex items-center gap-2 py-2 px-3 rounded hover:bg-[#2f3539]/20 hover:text-[#e9ecef] transition-colors w-full justify-center cursor-pointer">
-          <Send className="size-4.5" />
-          <span>Send</span>
-        </button>
+            {/* Slide body card */}
+            <div
+              className={`flex-1 rounded-lg border p-5 flex flex-col justify-between h-[130px] transition-all duration-300 relative overflow-hidden ${
+                carouselTheme === 'premium'
+                  ? 'bg-zinc-950 border-white/10 text-white'
+                  : carouselTheme === 'yellow'
+                  ? 'bg-yellow-400 border-yellow-500 text-black'
+                  : 'bg-gradient-to-br from-indigo-900 via-purple-900 to-indigo-950 border-purple-500/20 text-white'
+              }`}
+            >
+              <div>
+                <div className={`text-[10px] font-bold font-mono tracking-wider uppercase mb-1 ${
+                  carouselTheme === 'yellow' ? 'text-black/60' : 'text-[#70b5f9]'
+                }`}>
+                  SLIDE {currentSlide + 1} / {slides.length}
+                </div>
+                <h4 className="text-xs font-bold leading-tight">{slides[currentSlide].title}</h4>
+              </div>
+              <p className={`text-[10px] leading-relaxed ${
+                carouselTheme === 'yellow' ? 'text-black/80' : 'text-slate-400'
+              }`}>
+                {slides[currentSlide].desc}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1))}
+              disabled={currentSlide === slides.length - 1}
+              className="text-xs text-[#70b5f9] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-1"
+            >
+              ▶
+            </button>
+          </div>
+        </div>
       </div>
+
     </div>
   );
 }
 
 // State-driven Interactive Playground component showing API integration
-function InteractiveIntegration() {
+function InteractiveIntegration({ lang }: { lang: Locale }) {
   const [tab, setTab] = useState<'graphql' | 'rest' | 'cli'>('graphql');
 
   const contentMap = {
@@ -732,9 +502,17 @@ function InteractiveIntegration() {
     easyApply
   }
 }`,
-      title: "Query job lists via GraphQL Gateway",
-      desc: "Use clean GraphQL queries to fetch structured data across all LinkedIn services. The gateway aggregates profiles, applications, and postings into a single schema.",
-      bullets: [
+      title: lang === 'pt-BR' 
+        ? "Consultar listas de vagas via Gateway GraphQL" 
+        : "Query job lists via GraphQL Gateway",
+      desc: lang === 'pt-BR'
+        ? "Use consultas GraphQL limpas para buscar dados estruturados em todos os serviços LinkedIn. O gateway agrega perfis, candidaturas e postagens em um único schema."
+        : "Use clean GraphQL queries to fetch structured data across all LinkedIn services. The gateway aggregates profiles, applications, and postings into a single schema.",
+      bullets: lang === 'pt-BR' ? [
+        "Schema GraphQL consolidado para todas as APIs backend",
+        "Tipagem forte e arquivos de schema TypeScript auto-gerados",
+        "Busque relações aninhadas (Vaga -> Empresa -> URL de Candidatura) em uma única requisição"
+      ] : [
         "Consolidated GraphQL schema for all backend APIs",
         "Strong typing and auto-generated TypeScript schema files",
         "Fetch nested relations (Job -> Company -> Apply URL) in one roundtrip"
@@ -748,9 +526,17 @@ Content-Type: application/json
   "resumeId": "current-profile",
   "autoAnswer": true
 }`,
-      title: "REST endpoint for auto application submissions",
-      desc: "Trigger AI form-filling jobs programmatically. Send a job ID, specify your profile parameters, and let the background queues handle form navigation and answers.",
-      bullets: [
+      title: lang === 'pt-BR'
+        ? "Endpoint REST para envio automático de candidaturas"
+        : "REST endpoint for auto application submissions",
+      desc: lang === 'pt-BR'
+        ? "Acione jobs de preenchimento automático de formulários programaticamente. Envie um ID de vaga, especifique seus parâmetros de perfil, e deixe as filas em background lidarem com navegação e respostas de formulários."
+        : "Trigger AI form-filling jobs programmatically. Send a job ID, specify your profile parameters, and let the background queues handle form navigation and answers.",
+      bullets: lang === 'pt-BR' ? [
+        "Processamento de candidaturas em fila com persistência SQLite",
+        "Engine de parsing de questões contextuais com Gemini/Claude",
+        "Respostas REST abrangentes para depuração de integração"
+      ] : [
         "Queued application processing with SQLite persistence",
         "Gemini/Claude contextual question parsing engine",
         "Comprehensive REST responses for integration debugging"
@@ -762,9 +548,17 @@ pnpm --filter job-backend sync-profile --id user-123
 
 # Launch the publisher generator
 pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
-      title: "CLI Automation commands",
-      desc: "Perform quick administrative tasks, update profile credentials, test prompts, and trigger manual content generations with ease.",
-      bullets: [
+      title: lang === 'pt-BR'
+        ? "Comandos CLI de Automação"
+        : "CLI Automation commands",
+      desc: lang === 'pt-BR'
+        ? "Execute tarefas administrativas rápidas, atualize credenciais de perfil, teste prompts e acione gerações de conteúdo manuais com facilidade."
+        : "Perform quick administrative tasks, update profile credentials, test prompts, and trigger manual content generations with ease.",
+      bullets: lang === 'pt-BR' ? [
+        "Sintaxe CLI unificada via scripts pnpm",
+        "Ferramentas fáceis para desenvolvedores para migrações de banco de dados e sincronização openapi",
+        "Execute módulos de microsserviços individuais sozinhos ou em combinação"
+      ] : [
         "Unified CLI syntax via pnpm scripts",
         "Easy developer tooling for database migrations and openapi sync",
         "Run individual microservice modules standalone or in combination"
@@ -776,9 +570,7 @@ pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch mt-10">
-      {/* Code Editor block */}
       <div className="lg:col-span-7 relative flex flex-col rounded-xl border border-[#2f3539] bg-[#1d2226] overflow-hidden shadow-xl min-h-[320px]">
-        {/* Editor bar */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#2f3539] bg-[#12161a]/30">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
@@ -789,30 +581,24 @@ pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
             </span>
           </div>
           <button
-            onClick={() => {
-              navigator.clipboard.writeText(active.code);
-            }}
-            className="text-[10px] text-[#e9ecef] border border-[#2f3539] px-2.5 py-0.5 rounded bg-[#12161a] hover:bg-[#2f3539] transition-all cursor-pointer"
+            onClick={() => navigator.clipboard.writeText(active.code)}
+            className="text-[10px] text-[#e9ecef] border border-[#2f3539] px-2 py-0.5 rounded bg-[#12161a] hover:bg-[#2f3539] transition-all cursor-pointer"
           >
             Copy
           </button>
         </div>
-        {/* Editor code area */}
         <div className="flex-1 p-5 font-mono text-[13px] text-[#e9ecef] bg-[#12161a]/10 overflow-auto text-left leading-relaxed">
           <pre className="whitespace-pre">{active.code}</pre>
         </div>
       </div>
-
-      {/* Selector and explanation */}
       <div className="lg:col-span-5 flex flex-col justify-between">
         <div>
-          {/* Tab selectors */}
           <div className="flex gap-2 mb-6">
             <button
               onClick={() => setTab('graphql')}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
                 tab === 'graphql'
-                  ? 'bg-[#0a66c2] text-white border-[#0a66c2]'
+                  ? 'bg-[#0a66c2] text-white border-[#0a66c2] shadow-md shadow-[#0a66c2]/10'
                   : 'bg-[#1d2226] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
               }`}
             >
@@ -822,7 +608,7 @@ pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
               onClick={() => setTab('rest')}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
                 tab === 'rest'
-                  ? 'bg-[#0a66c2] text-white border-[#0a66c2]'
+                  ? 'bg-[#0a66c2] text-white border-[#0a66c2] shadow-md shadow-[#0a66c2]/10'
                   : 'bg-[#1d2226] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
               }`}
             >
@@ -832,18 +618,16 @@ pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
               onClick={() => setTab('cli')}
               className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
                 tab === 'cli'
-                  ? 'bg-[#0a66c2] text-white border-[#0a66c2]'
+                  ? 'bg-[#0a66c2] text-white border-[#0a66c2] shadow-md shadow-[#0a66c2]/10'
                   : 'bg-[#1d2226] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
               }`}
             >
               CLI Automation
             </button>
           </div>
-
-          <h4 className="text-xl font-bold text-[#e9ecef] mb-3">{active.title}</h4>
-          <p className="text-sm text-[#8f969b] mb-6 leading-relaxed">{active.desc}</p>
-
-          <ul className="space-y-2">
+          <h4 className="text-xl font-bold text-[#e9ecef] mb-3 text-left">{active.title}</h4>
+          <p className="text-sm text-[#8f969b] mb-6 leading-relaxed text-left">{active.desc}</p>
+          <ul className="space-y-2 text-left">
             {active.bullets.map((bullet, idx) => (
               <li key={idx} className="flex items-start gap-2.5 text-xs text-[#8f969b]">
                 <span className="h-5 w-5 rounded-full bg-[#0a66c2]/10 text-[#70b5f9] flex items-center justify-center shrink-0 mt-0.5 border border-[#0a66c2]/20">
@@ -859,671 +643,481 @@ pnpm --filter publisher-backend make-carousel --topic "NextJS 15 Tips"`,
   );
 }
 
-function LinkedInCarouselPreview({ lang }: { lang: 'pt-BR' | 'en' }) {
-  const t = translations[lang].landingPlayground.carousel;
-  const [theme, setTheme] = useState<'premium' | 'purple' | 'yellow' | 'clean'>('premium');
-  const [slideIndex, setSlideIndex] = useState(0);
-
-  const themeClasses = {
-    premium: "bg-[#161b22] border border-[#2f3539] text-[#e9ecef]",
-    purple: "bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 text-white",
-    yellow: "bg-yellow-400 text-black",
-    clean: "bg-white border border-[#e1e9ee] text-[#12161a]"
-  };
-
-  const activeSlide = t.slides[slideIndex] as unknown as { title: string; subtitle?: string; content?: string };
-
-  return (
-    <div className="rounded-xl border border-[#2f3539] bg-[#1d2226] p-6 flex flex-col justify-between shadow-md text-left min-h-[460px]">
-      <div>
-        <h4 className="text-sm font-bold text-[#e9ecef] tracking-wider uppercase mb-2 flex items-center gap-2">
-          <ImageIcon className="size-4 text-[#70b5f9]" />
-          {t.title}
-        </h4>
-        <p className="text-xs text-[#8f969b] mb-6 leading-relaxed">
-          {t.subtitle}
-        </p>
-
-        {/* Carousel Theme Selectors */}
-        <div className="flex gap-2 mb-6">
-          {(Object.keys(themeClasses) as Array<keyof typeof themeClasses>).map((k) => (
-            <button
-              key={k}
-              onClick={() => setTheme(k)}
-              className={`px-2.5 py-1 rounded text-[10px] font-semibold transition-all border cursor-pointer ${
-                theme === k
-                  ? 'bg-[#0a66c2] text-white border-[#0a66c2]'
-                  : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
-              }`}
-            >
-              {t.themes[k]}
-            </button>
-          ))}
-        </div>
-
-        {/* Simulated Slide Canvas Card */}
-        <div className={`aspect-square w-full max-w-[340px] mx-auto rounded-lg p-6 flex flex-col justify-between shadow-inner relative overflow-hidden transition-all duration-300 ${themeClasses[theme]}`}>
-          {/* Slide author badge */}
-          <div className="flex items-center gap-2">
-            <div className={`size-7 rounded-full flex items-center justify-center font-bold text-[10px] ${theme === 'yellow' ? 'bg-black text-yellow-400' : 'bg-[#0a66c2] text-white'}`}>
-              in
-            </div>
-            <div>
-              <span className={`text-[10px] font-bold block leading-none ${theme === 'clean' ? 'text-[#12161a]' : 'text-current'}`}>
-                Julio Lima
-              </span>
-              <span className={`text-[8px] opacity-60 block mt-0.5 ${theme === 'clean' ? 'text-[#8f969b]' : 'text-current'}`}>
-                LinkedIn Automation Agent
-              </span>
-            </div>
-          </div>
-
-          {/* Slide Body */}
-          <div className="my-auto text-left space-y-3">
-            <h3 className={`text-base sm:text-lg font-extrabold leading-snug tracking-tight ${theme === 'clean' ? 'text-[#12161a]' : 'text-current'}`}>
-              {activeSlide.title}
-            </h3>
-            {activeSlide.content && (
-              <p className={`text-[11px] font-mono whitespace-pre-line leading-relaxed opacity-85 ${theme === 'clean' ? 'text-[#24292f]' : 'text-current'}`}>
-                {activeSlide.content}
-              </p>
-            )}
-            {activeSlide.subtitle && (
-              <span className={`text-[10px] block font-semibold opacity-75 ${theme === 'clean' ? 'text-[#8f969b]' : 'text-current'}`}>
-                {activeSlide.subtitle}
-              </span>
-            )}
-          </div>
-
-          {/* Slide navigation/pagination indicators inside slide */}
-          <div className="flex justify-between items-center text-[9px] opacity-60">
-            <span>in/job-explorer</span>
-            <span>{slideIndex + 1} / {t.slides.length}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Buttons */}
-      <div className="flex justify-between items-center mt-6 pt-4 border-t border-[#2f3539]/50">
-        <button
-          onClick={() => setSlideIndex(prev => Math.max(0, prev - 1))}
-          disabled={slideIndex === 0}
-          className={`px-3 py-1 rounded text-xs transition-colors cursor-pointer ${
-            slideIndex === 0 ? 'text-[#2f3539] cursor-not-allowed' : 'text-[#70b5f9] hover:bg-[#2f3539]/10'
-          }`}
-        >
-          ← Prev
-        </button>
-
-        {/* Dots */}
-        <div className="flex gap-1.5">
-          {t.slides.map((_: unknown, idx: number) => (
-            <span
-              key={idx}
-              className={`size-1.5 rounded-full transition-all ${
-                slideIndex === idx ? 'bg-[#70b5f9] scale-125' : 'bg-[#2f3539]'
-              }`}
-            />
-          ))}
-        </div>
-
-        <button
-          onClick={() => setSlideIndex(prev => Math.min(t.slides.length - 1, prev + 1))}
-          disabled={slideIndex === t.slides.length - 1}
-          className={`px-3 py-1 rounded text-xs transition-colors cursor-pointer ${
-            slideIndex === t.slides.length - 1 ? 'text-[#2f3539] cursor-not-allowed' : 'text-[#70b5f9] hover:bg-[#2f3539]/10'
-          }`}
-        >
-          Next →
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function AIResumeOptimizerPreview({ lang }: { lang: 'pt-BR' | 'en' }) {
-  const t = translations[lang].landingPlayground.resume;
-  const [viewState, setViewState] = useState<'original' | 'optimized'>('optimized');
-  const [score, setScore] = useState(94);
-
-  useEffect(() => {
-    setScore(viewState === 'original' ? 58 : 94);
-  }, [viewState]);
-
-  return (
-    <div className="rounded-xl border border-[#2f3539] bg-[#1d2226] p-6 flex flex-col justify-between shadow-md text-left min-h-[460px]">
-      <div>
-        <h4 className="text-sm font-bold text-[#e9ecef] tracking-wider uppercase mb-2 flex items-center gap-2">
-          <Bot className="size-4 text-[#70b5f9]" />
-          {t.title}
-        </h4>
-        <p className="text-xs text-[#8f969b] mb-6 leading-relaxed">
-          {t.subtitle}
-        </p>
-
-        {/* View state selectors */}
-        <div className="flex gap-2 mb-6">
-          <button
-            onClick={() => setViewState('original')}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
-              viewState === 'original'
-                ? 'bg-[#0a66c2] text-white border-[#0a66c2]'
-                : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
-            }`}
-          >
-            {t.original}
-          </button>
-          <button
-            onClick={() => setViewState('optimized')}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold border transition-all cursor-pointer ${
-              viewState === 'optimized'
-                ? 'bg-[#0a66c2] text-white border-[#0a66c2]'
-                : 'bg-[#12161a] border-[#2f3539] text-[#8f969b] hover:text-[#e9ecef]'
-            }`}
-          >
-            {t.optimized}
-          </button>
-        </div>
-
-        {/* CV Match Card Preview */}
-        <div className="p-4 rounded-lg bg-[#090e11] border border-[#2f3539] space-y-4">
-          <div className="flex justify-between items-center">
-            <span className="text-[11px] font-bold text-[#e9ecef] tracking-wider uppercase">
-              {t.analysis}
-            </span>
-            <span className={`text-xs font-bold px-2 py-0.5 rounded font-mono border transition-all ${
-              viewState === 'original'
-                ? 'bg-orange-500/10 text-orange-400 border-orange-500/20'
-                : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-            }`}>
-              {t.match}: {score}%
-            </span>
-          </div>
-
-          {/* Progress bar match */}
-          <div className="w-full bg-[#1d2226] rounded-full h-2 overflow-hidden border border-[#2f3539]">
-            <div
-              className={`h-full transition-all duration-500 ${
-                viewState === 'original' ? 'bg-orange-500' : 'bg-emerald-500'
-              }`}
-              style={{ width: `${score}%` }}
-            />
-          </div>
-
-          {/* Skill items tailoring analysis */}
-          <div className="space-y-2.5 pt-2 text-xs">
-            <div className="flex items-center justify-between p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/30">
-              <span className="text-[#8f969b]">{t.skills.s1}</span>
-              <span className="font-semibold text-emerald-400 flex items-center gap-1">
-                <Check className="size-3.5" /> Matched
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/30">
-              <span className="text-[#8f969b]">{t.skills.s2}</span>
-              {viewState === 'original' ? (
-                <span className="font-semibold text-orange-400 flex items-center gap-1">
-                  <AlertCircle className="size-3.5" /> Missing
-                </span>
-              ) : (
-                <span className="font-semibold text-emerald-400 flex items-center gap-1 font-mono text-[11px] animate-pulse">
-                  [+] AI Auto-Inserted
-                </span>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between p-2 rounded bg-[#161b22]/50 border border-[#2f3539]/30">
-              <span className="text-[#8f969b]">{t.skills.s3}</span>
-              {viewState === 'original' ? (
-                <span className="font-semibold text-orange-400 flex items-center gap-1">
-                  <AlertCircle className="size-3.5" /> Missing
-                </span>
-              ) : (
-                <span className="font-semibold text-emerald-400 flex items-center gap-1 font-mono text-[11px] animate-pulse">
-                  [+] AI Auto-Tailored
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="text-[10px] text-[#8f969b] leading-normal pt-4 border-t border-[#2f3539]/50 flex items-center gap-1.5">
-        <Sparkles className="size-3.5 text-[#70b5f9]" />
-        <span>
-          {viewState === 'original'
-            ? "Original CV lacks job contextual search phrases."
-            : "Optimization complete via Gemini LLM. Ready for Easy Apply submission."}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 export default function LandingPage({ lang }: { lang: 'pt-BR' | 'en' }) {
   const text = translations[lang];
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'graphql' | 'resume' | 'carousel' | 'post'>('dashboard');
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
-  const submodulesList = [
+  const workflowSteps = [
     {
-      id: 'extension',
-      title: text.submodules.list.extension.title,
-      desc: text.submodules.list.extension.desc,
-      tab: 'dashboard' as const,
-      icon: Zap,
+      icon: <Network className="h-5 w-5 text-indigo-400" />,
+      title: text.workflow.steps.sync.title,
+      description: text.workflow.steps.sync.desc
     },
     {
-      id: 'graphql',
-      title: text.submodules.list.graphql.title,
-      desc: text.submodules.list.graphql.desc,
-      tab: 'graphql' as const,
-      icon: Globe,
+      icon: <Search className="h-5 w-5 text-blue-400" />,
+      title: text.workflow.steps.search.title,
+      description: text.workflow.steps.search.desc
     },
     {
-      id: 'jobBackend',
-      title: text.submodules.list.jobBackend.title,
-      desc: text.submodules.list.jobBackend.desc,
-      tab: 'resume' as const,
-      icon: Bot,
+      icon: <PenTool className="h-5 w-5 text-purple-400" />,
+      title: text.workflow.steps.match.title,
+      description: text.workflow.steps.match.desc
     },
     {
-      id: 'publisher',
-      title: text.submodules.list.publisher.title,
-      desc: text.submodules.list.publisher.desc,
-      tab: 'carousel' as const,
-      icon: ImageIcon,
+      icon: <Send className="h-5 w-5 text-emerald-400" />,
+      title: text.workflow.steps.submit.title,
+      description: text.workflow.steps.submit.desc
+    },
+    {
+      icon: <Layers className="h-5 w-5 text-orange-400" />,
+      title: text.workflow.steps.track.title,
+      description: text.workflow.steps.track.desc
     }
   ];
 
-  const featuresList = [
+  const packages = [
     {
-      title: text.features.list.routing.title,
-      desc: text.features.list.routing.desc,
-      icon: Cpu,
+      title: text.audiences.jobSeekers.title,
+      icon: <UserSearch className="h-6 w-6 text-blue-400" />,
+      color: "blue",
+      features: [
+        text.audiences.jobSeekers.f1,
+        text.audiences.jobSeekers.f2,
+        text.audiences.jobSeekers.f3
+      ]
     },
     {
-      title: text.features.list.observability.title,
-      desc: text.features.list.observability.desc,
-      icon: RefreshCw,
+      title: text.audiences.creators.title,
+      icon: <PenTool className="h-6 w-6 text-purple-400" />,
+      color: "purple",
+      popular: true,
+      features: [
+        text.audiences.creators.f1,
+        text.audiences.creators.f2,
+        text.audiences.creators.f3
+      ]
     },
     {
-      title: text.features.list.security.title,
-      desc: text.features.list.security.desc,
-      icon: Award,
-    },
-    {
-      title: text.features.list.caching.title,
-      desc: text.features.list.caching.desc,
-      icon: Database,
-    },
-    {
-      title: text.features.list.playground.title,
-      desc: text.features.list.playground.desc,
-      icon: FileText,
-    },
-    {
-      title: text.features.list.queue.title,
-      desc: text.features.list.queue.desc,
-      icon: Layers,
+      title: text.audiences.developers.title,
+      icon: <Code2 className="h-6 w-6 text-emerald-400" />,
+      color: "emerald",
+      features: [
+        text.audiences.developers.f1,
+        text.audiences.developers.f2,
+        text.audiences.developers.f3
+      ]
     }
   ];
 
   return (
     <main className="relative flex flex-col items-center overflow-hidden bg-[#090e11] text-[#e9ecef] min-h-screen w-full pt-16">
       {/* Background radial glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none z-0 bg-radial from-[#0a66c2]/10 via-[#0a66c2]/2 to-transparent blur-3xl opacity-80" />
+      <div 
+        className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[600px] pointer-events-none z-0 blur-3xl opacity-90" 
+        style={{ background: 'radial-gradient(circle at 50% 30%, rgba(10, 102, 194, 0.38) 0%, rgba(10, 102, 194, 0.08) 50%, transparent 80%)' }}
+      />
 
       {/* Hero Section */}
-      <section className="relative w-full px-6 pt-16 pb-12 overflow-hidden z-10">
+      <section className="relative w-full px-6 pt-20 pb-16 overflow-hidden z-10">
         <div className="max-w-6xl mx-auto flex flex-col items-center text-center">
           {/* Announcement Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#1d2226] border border-[#2f3539] text-[11px] font-semibold text-[#70b5f9] mb-8 hover:border-[#70b5f9]/30 transition-all cursor-pointer">
-            <span className="px-2 py-0.5 rounded-full bg-[#0a66c2]/20 text-[#70b5f9] text-[9px] font-bold uppercase tracking-wider">
-              {text.announcement.badge}
-            </span>
-            <span className="text-[#e9ecef] opacity-90">{text.announcement.text}</span>
-            <ArrowRight className="size-3 text-[#70b5f9]" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-sm text-blue-300 mb-8 transition-transform hover:scale-[1.02] cursor-pointer">
+            <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+            <span className="text-xs font-semibold">{text.hero.badge}</span>
           </div>
 
           {/* Title */}
-          <h1 className="text-balance text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-[#e9ecef] leading-[1.05] max-w-4xl">
-            {text.hero.title}
+          <h1 className="mx-auto max-w-4xl font-display text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05] mb-8">
+            {text.hero.titleNormal}{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
+              {text.hero.titleHighlight}
+            </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="mt-6 max-w-2xl text-balance text-sm sm:text-base md:text-lg text-[#8f969b] leading-relaxed">
+          <p className="mx-auto max-w-2xl text-sm sm:text-base md:text-lg text-slate-400 leading-relaxed mb-10">
             {text.hero.subtitle}
           </p>
 
           {/* CTA Actions */}
-          <div className="mt-8 flex flex-wrap justify-center items-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-4 w-full sm:w-auto">
             <Link
-              href="/docs/quickstart"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-bold text-white bg-[#0a66c2] hover:bg-[#004182] rounded-full shadow-lg shadow-[#0a66c2]/20 hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 cursor-pointer"
+              href={`/docs/${lang}/quickstart`}
+              className="w-full sm:w-auto group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-white px-8 py-3.5 font-bold text-zinc-950 transition-transform active:scale-95 hover:scale-[1.02]"
             >
-              <span>{text.hero.ctaPrimary}</span>
-              <ArrowRight className="size-4" />
+              <span className="flex items-center gap-2">
+                {text.hero.ctaPrimary}
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
             </Link>
             <Link
-              href="/docs/quickstart"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 text-sm font-semibold text-[#e9ecef] bg-[#1d2226] hover:bg-[#2f3539] border border-[#2f3539] rounded-full transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+              href={`/docs/${lang}/quickstart`}
+              className="w-full sm:w-auto inline-flex items-center justify-center rounded-full border border-white/10 bg-white/5 px-8 py-3.5 font-semibold text-white transition-colors hover:bg-white/10 hover:scale-[1.02] active:scale-95"
             >
-              <span>{text.hero.ctaSecondary}</span>
+              {text.hero.ctaSecondary}
             </Link>
           </div>
+        </div>
 
-          {/* Supporting trust bullets */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-[#8f969b]">
-            <span className="flex items-center gap-1.5">
-              <Check className="size-3.5 text-emerald-400" />
-              {text.hero.bullets.free}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="size-3.5 text-emerald-400" />
-              {text.hero.bullets.local}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Check className="size-3.5 text-emerald-400" />
-              {text.hero.bullets.setup}
-            </span>
-          </div>
+        {/* Feature Bento Grid replacing original mockup dashboard */}
+        <div className="max-w-5xl mx-auto px-4 sm:px-0">
+          <BentoGridFeatures lang={lang} />
         </div>
       </section>
 
-      {/* Explore submodules Row */}
-      <section className="w-full px-6 py-6 border-y border-[#2f3539] bg-[#12161a]/15 z-10">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <span className="text-xs text-[#8f969b] font-semibold shrink-0 uppercase tracking-widest">
-            {text.submodules.title}
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full md:w-auto flex-1 max-w-4xl justify-end">
-            {submodulesList.map((sub) => {
-              const IconComp = sub.icon;
-              return (
-                <button
-                  key={sub.id}
-                  onClick={() => {
-                    setActiveTab(sub.tab);
-                    const el = document.getElementById('showcase-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="group flex items-center justify-between gap-3 rounded-xl border border-[#2f3539] bg-[#1d2226]/50 hover:bg-[#1d2226] p-3 text-xs text-left cursor-pointer transition-all hover:border-[#70b5f9]/30"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="flex size-7 items-center justify-center rounded bg-[#12161a] text-[#70b5f9] group-hover:scale-105 transition-transform border border-[#2f3539]">
-                      <IconComp className="size-3.5" />
-                    </span>
-                    <div className="min-w-0">
-                      <span className="font-bold text-[#e9ecef] block truncate">{sub.title}</span>
-                      <span className="text-[#8f969b] text-[10px] block truncate opacity-75">{sub.desc}</span>
-                    </div>
-                  </div>
-                  <ChevronRight className="size-3 text-[#8f969b] group-hover:translate-x-0.5 transition-transform" />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Main Interactive Showcase Playground */}
-      <section id="showcase-section" className="w-full px-6 py-16 z-10 relative">
+      {/* EcosystemFeatures Section */}
+      <section id="features" className="w-full px-6 py-24 border-t border-[#2f3539] bg-[#12161a]/15 z-10 relative">
         <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#e9ecef]">
-              {text.showcase.title}
-            </h2>
-            <p className="text-sm text-[#8f969b] mt-2 max-w-xl mx-auto leading-relaxed">
-              {text.showcase.subtitle}
-            </p>
-          </div>
-
-          {/* Interactive Showcase Sandbox */}
-          <div className="rounded-2xl border border-[#2f3539] bg-[#12161a] overflow-hidden shadow-2xl flex flex-col min-h-[580px]">
-            {/* Top Bar navigation */}
-            <div className="flex flex-wrap items-center justify-between gap-4 px-4 py-3 bg-[#1d2226]/60 border-b border-[#2f3539]/60">
-              {/* Window buttons */}
-              <div className="flex gap-1.5 items-center shrink-0">
-                <span className="size-3 rounded-full bg-red-500/80" />
-                <span className="size-3 rounded-full bg-yellow-500/80" />
-                <span className="size-3 rounded-full bg-green-500/80" />
-              </div>
-
-              {/* Showcase Tab selectors */}
-              <div className="flex flex-wrap gap-1 bg-[#12161a]/60 p-1 rounded-lg border border-[#2f3539]/40">
-                {(['dashboard', 'graphql', 'resume', 'carousel', 'post'] as const).map((tab) => (
-                  <button
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`px-3.5 py-1.5 rounded-md text-xs font-semibold tracking-wide transition-all cursor-pointer ${
-                      activeTab === tab
-                        ? 'bg-[#0a66c2] text-white border border-[#0a66c2]/30 shadow-sm'
-                        : 'text-[#8f969b] hover:text-[#e9ecef] bg-transparent'
-                    }`}
-                  >
-                    {tab === 'dashboard' && text.showcase.tabs.dashboard}
-                    {tab === 'graphql' && text.showcase.tabs.graphql}
-                    {tab === 'resume' && text.showcase.tabs.resume}
-                    {tab === 'carousel' && text.showcase.tabs.carousel}
-                    {tab === 'post' && "LinkedIn Feed Post"}
-                  </button>
-                ))}
-              </div>
-
-              {/* Status info */}
-              <div className="text-[10px] text-[#8f969b] font-mono select-none">
-                ENV: localhost:3000
-              </div>
-            </div>
-
-            {/* Showcase Viewport */}
-            <div className="flex-1 p-6 bg-[#090e11]/80 overflow-y-auto">
-              <div className="max-w-4xl mx-auto h-full">
-                {activeTab === 'dashboard' && <LinkedInDashboardMockup lang={lang} />}
-                {activeTab === 'graphql' && <InteractiveIntegration />}
-                {activeTab === 'resume' && <AIResumeOptimizerPreview lang={lang} />}
-                {activeTab === 'carousel' && <LinkedInCarouselPreview lang={lang} />}
-                {activeTab === 'post' && <LinkedInFeedPost lang={lang} />}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Core Features Bento Grid */}
-      <section className="w-full px-6 py-16 border-t border-[#2f3539] bg-[#12161a]/15 z-10">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="text-left mb-12">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#e9ecef]">
+          <div className="mb-16 text-left">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl mb-4">
               {text.features.title}
             </h2>
-            <p className="text-sm text-[#8f969b] mt-2 max-w-xl leading-relaxed">
+            <p className="max-w-2xl text-sm sm:text-base text-slate-400 leading-relaxed">
               {text.features.subtitle}
             </p>
           </div>
 
-          {/* Grid layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuresList.map((feat, idx) => {
-              const IconComp = feat.icon;
-              return (
-                <div
-                  key={idx}
-                  className="group relative overflow-hidden rounded-xl border border-[#2f3539] bg-[#1d2226] p-6 flex flex-col justify-between hover:border-[#70b5f9]/30 transition-all duration-300 shadow-sm"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#0a66c2]/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  <div className="relative z-10">
-                    <div className="h-10 w-10 rounded-lg bg-[#0a66c2]/10 text-[#70b5f9] flex items-center justify-center mb-5 border border-[#0a66c2]/20">
-                      <IconComp className="size-5" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Card 1: Job Applier */}
+            <div className="group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-all duration-300 relative overflow-hidden col-span-1 md:col-span-2 shadow-sm hover:border-[#70b5f9]/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500" />
+              <div className="relative z-10 text-left">
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                  <Bot className="h-6 w-6 text-blue-400" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-white mb-3">
+                  {text.features.jobApplier.title}
+                </h3>
+                <p className="text-slate-400 mb-6 flex-1 text-sm leading-relaxed">
+                  {text.features.jobApplier.desc}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {text.features.jobApplier.tags.map((tag, tIdx) => (
+                    <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Visual for Job Applier */}
+              <div className="mt-6 flex flex-col gap-3 h-full justify-end border-t border-white/5 pt-6 text-left">
+                <div className="flex items-center justify-between rounded-lg bg-zinc-900 border border-white/5 p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded bg-blue-500/20 flex items-center justify-center shrink-0 border border-blue-500/30">
+                      <FileCheck2 className="h-4 w-4 text-blue-400" />
                     </div>
-                    <h3 className="text-base font-bold text-[#e9ecef] mb-2">{feat.title}</h3>
-                    <p className="text-xs text-[#8f969b] leading-relaxed">
-                      {feat.desc}
-                    </p>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-white truncate">
+                        {text.features.jobApplier.visual.jobTitle}
+                      </div>
+                      <div className="text-xs text-slate-500 truncate">
+                        {text.features.jobApplier.visual.company}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-green-500/10 px-2 py-1 text-xs font-medium text-green-400 border border-green-500/20 shrink-0">
+                    {text.features.jobApplier.visual.applied}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg bg-zinc-900 border border-white/5 p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded bg-purple-500/20 flex items-center justify-center shrink-0 border border-purple-500/30">
+                      <Sparkles className="h-4 w-4 text-purple-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-medium text-white truncate">
+                        {text.features.jobApplier.visual.adjusting}
+                      </div>
+                      <div className="text-xs text-slate-500 truncate">
+                        {text.features.jobApplier.visual.prompting}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-400 border border-blue-500/20 animate-pulse shrink-0">
+                    {text.features.jobApplier.visual.processing}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Publisher */}
+            <div className="group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-all duration-300 relative overflow-hidden col-span-1 shadow-sm hover:border-[#70b5f9]/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500" />
+              <div className="relative z-10 text-left">
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                  <PenTool className="h-6 w-6 text-purple-400" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-white mb-3">
+                  {text.features.publisher.title}
+                </h3>
+                <p className="text-slate-400 mb-6 flex-1 text-sm leading-relaxed">
+                  {text.features.publisher.desc}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {text.features.publisher.tags.map((tag, tIdx) => (
+                    <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Visual for Publisher */}
+              <div className="mt-6 h-full flex flex-col gap-2 rounded-lg border border-white/5 bg-zinc-900 overflow-hidden text-sm text-left">
+                <div className="flex items-center gap-2 border-b border-white/5 bg-black/40 px-3 py-2">
+                  <Rss className="h-3 w-3 text-slate-400 shrink-0" />
+                  <span className="text-xs text-slate-400 truncate">
+                    {text.features.publisher.visual.scheduled}
+                  </span>
+                </div>
+                <div className="p-3">
+                  <div className="h-2 w-3/4 rounded-full bg-white/20 mb-2" />
+                  <div className="h-2 w-full rounded-full bg-white/10 mb-2" />
+                  <div className="h-2 w-5/6 rounded-full bg-white/10 mb-4" />
+                  <div className="rounded bg-black p-2 font-mono text-[10px] text-zinc-400 border border-white/5">
+                    <span className="text-pink-400">const</span> optimize = () {'=>'} {'{'} ... {'}'}
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            </div>
+
+            {/* Card 3: Documentation Hub */}
+            <div className="group flex flex-col rounded-3xl border border-white/10 bg-white/[0.02] p-8 hover:bg-white/[0.04] transition-all duration-300 relative overflow-hidden col-span-1 md:col-span-3 shadow-sm hover:border-[#70b5f9]/30">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-transparent to-purple-500/0 group-hover:from-blue-500/5 group-hover:to-purple-500/5 transition-all duration-500" />
+              <div className="relative z-10 text-left">
+                <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                  <BookOpen className="h-6 w-6 text-emerald-400" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-white mb-3">
+                  {text.features.docsHub.title}
+                </h3>
+                <p className="text-slate-400 mb-6 flex-1 text-sm leading-relaxed">
+                  {text.features.docsHub.desc}
+                </p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {text.features.docsHub.tags.map((tag, tIdx) => (
+                    <span key={tIdx} className="inline-flex rounded-md bg-white/5 px-2 py-1 text-xs text-slate-300 border border-white/5 font-medium">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Visual for Documentation Hub */}
+              <div className="mt-6 flex flex-col sm:flex-row gap-4 flex-1 w-full border-t border-white/5 pt-6 text-left">
+                <div className="w-full sm:w-64 flex flex-col gap-2">
+                  <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+                    {text.features.docsHub.visual.ref}
+                  </div>
+                  <div className="flex items-center gap-2 rounded bg-white/5 px-2 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors border border-white/5">
+                    <span className="text-[10px] font-bold text-[#70b5f9] shrink-0">POST</span> /apply
+                  </div>
+                  <div className="flex items-center gap-2 rounded bg-white/5 px-2 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors border border-white/5">
+                    <span className="text-[10px] font-bold text-green-400 shrink-0">GET</span> /jobs
+                  </div>
+                  <div className="flex items-center gap-2 rounded bg-white/5 px-2 py-1.5 text-xs font-semibold text-slate-300 hover:bg-white/10 transition-colors border border-white/5">
+                    <span className="text-[10px] font-bold text-[#70b5f9] shrink-0">POST</span> /publish
+                  </div>
+                </div>
+                <div className="flex-1 rounded-lg border border-white/5 bg-zinc-900 p-4 font-mono text-xs shadow-inner overflow-hidden">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Terminal className="h-4 w-4 text-[#70b5f9]" />
+                      <span className="text-slate-300 text-xs font-bold">
+                        {text.features.docsHub.visual.reqExample}
+                      </span>
+                    </div>
+                    <button className="text-[10px] font-semibold text-slate-500 hover:text-white hover:bg-white/5 px-2 py-0.5 rounded border border-white/5 transition-colors cursor-pointer">
+                      {text.features.docsHub.visual.copy}
+                    </button>
+                  </div>
+                  <div className="text-slate-400 leading-relaxed overflow-x-auto whitespace-pre">
+                    <span className="text-purple-400 font-semibold">mutation</span> {'{'} <br />
+                    &nbsp;&nbsp;applyToJob( <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;jobUrl: <span className="text-orange-300">"https://linkedin.com/..."</span><br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;useAI: <span className="text-blue-300">true</span><br />
+                    &nbsp;&nbsp;) {'{'} <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;status <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;applicationId <br />
+                    &nbsp;&nbsp;{'}'} <br />
+                    {'}'}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Developer Recommendations */}
-      <section className="w-full px-6 py-20 relative border-t border-[#2f3539] overflow-hidden">
-        <NetworkNodesDither />
-        <div className="max-w-6xl mx-auto relative z-10">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#e9ecef]">
-              Recomendado por Desenvolvedores
-            </h2>
-            <p className="text-sm text-[#8f969b] mt-2 max-w-xl mx-auto leading-relaxed">
-              Veja o que os profissionais que utilizam o monorepo dizem sobre a facilidade de integração e automação.
-            </p>
-          </div>
+      {/* Code Playground Section (InteractiveIntegration) */}
+      <section className="w-full px-6 py-20 border-t border-[#2f3539] bg-[#12161a]/5 relative">
+        <div className="max-w-6xl mx-auto relative z-10 text-left">
+          <InteractiveIntegration lang={lang} />
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left max-w-4xl mx-auto">
-            {/* Recommendation 1 */}
-            <div className="rounded-xl border border-[#2f3539] bg-[#1d2226] p-6 flex flex-col justify-between shadow-sm relative">
-              <div className="absolute top-4 right-4 text-[#70b5f9]/20 text-5xl font-serif select-none pointer-events-none">“</div>
-              <div>
-                <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-[#2f3539]/50">
-                  <div className="size-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
-                    AS
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#e9ecef] flex items-center gap-1">
-                      Alex S.
-                      <span className="text-[10px] text-[#8f969b] font-normal">• 1º</span>
+      {/* DeepBrief Workflow Section */}
+      <section id="workflow" className="w-full py-24 border-t border-[#2f3539] bg-zinc-950/40 relative overflow-hidden z-10">
+        <div className="mx-auto max-w-6xl px-6 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="text-left">
+              <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl mb-6">
+                {text.workflow.title}
+              </h2>
+              <p className="text-sm sm:text-base text-slate-400 mb-10 leading-relaxed">
+                {text.workflow.subtitle}
+              </p>
+
+              <div className="space-y-8">
+                {workflowSteps.map((step, idx) => (
+                  <div key={idx} className="flex gap-4 relative transition-all duration-300 hover:translate-x-0.5">
+                    {/* Connection Line */}
+                    {idx !== workflowSteps.length - 1 && (
+                      <div className="absolute left-6 top-10 bottom-[-2rem] w-px bg-white/10" />
+                    )}
+
+                    <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-zinc-900 shadow-sm">
+                      {step.icon}
                     </div>
-                    <span className="text-[10px] text-[#8f969b] block leading-tight">
-                      Líder Fullstack
-                    </span>
+                    <div className="pt-1 text-left">
+                      <h4 className="text-base font-semibold text-white mb-1">{step.title}</h4>
+                      <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                        {step.description}
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <p className="text-xs text-[#8f969b] italic leading-relaxed">
-                  "Configurar a Gateway API levou menos de 5 minutos. A interface GraphQL é extremamente suave e economiza dezenas de consultas de endpoints manuais."
-                </p>
+                ))}
               </div>
             </div>
 
-            {/* Recommendation 2 */}
-            <div className="rounded-xl border border-[#2f3539] bg-[#1d2226] p-6 flex flex-col justify-between shadow-sm relative">
-              <div className="absolute top-4 right-4 text-[#70b5f9]/20 text-5xl font-serif select-none pointer-events-none">“</div>
-              <div>
-                <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-[#2f3539]/50">
-                  <div className="size-9 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-                    JK
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-[#e9ecef] flex items-center gap-1">
-                      Jessica K.
-                      <span className="text-[10px] text-[#8f969b] font-normal">• 1º</span>
-                    </div>
-                    <span className="text-[10px] text-[#8f969b] block leading-tight">
-                      Engenheira de Machine Learning
-                    </span>
-                  </div>
+            {/* Simulated Live Logs terminal panel */}
+            <div className="flex flex-col rounded-2xl border border-white/10 bg-[#12161a]/60 overflow-hidden shadow-2xl h-[420px] text-left">
+              <div className="flex items-center justify-between border-b border-white/5 bg-zinc-900/50 px-4 py-3">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-500/50" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/50" />
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-500/50" />
                 </div>
-                <p className="text-xs text-[#8f969b] italic leading-relaxed">
-                  "Filas em background acopladas com o Gemini respondem com sucesso mais de 90% dos questionários de candidatura de forma correta e contextual."
-                </p>
+                <span className="text-[10px] text-[#8f969b] font-mono">
+                  {text.workflow.log.title}
+                </span>
+              </div>
+              <div className="flex-1 p-5 font-mono text-[11px] text-[#e9ecef] bg-black/20 space-y-2 overflow-y-auto leading-relaxed shadow-inner">
+                <div className="text-[#8f969b]">{text.workflow.log.l1}</div>
+                <div className="text-emerald-400 font-medium">{text.workflow.log.l2}</div>
+                <div className="text-[#8f969b] pl-3">{text.workflow.log.l2_sub}</div>
+                <div className="text-[#70b5f9] animate-pulse">{text.workflow.log.l3}</div>
+                <div className="text-[#8f969b] pl-3">{text.workflow.log.l3_sub1}</div>
+                <div className="text-[#8f969b] pl-3">{text.workflow.log.l3_sub2}</div>
+                <div className="text-emerald-400 font-semibold">{text.workflow.log.l4}</div>
+                <div className="text-emerald-400/80 font-bold bg-emerald-500/5 py-0.5 px-2 rounded-md max-w-fit">{text.workflow.log.l4_sub}</div>
+                <div className="text-[#70b5f9] animate-pulse">{text.workflow.log.l5}</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FAQ Accordion Section */}
-      <section className="w-full px-6 py-16 border-t border-[#2f3539] bg-[#12161a]/10 z-10">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#e9ecef]">
-              {text.faq.title}
+      {/* Audiences Section */}
+      <section id="audiences" className="w-full px-6 py-24 relative border-t border-[#2f3539] bg-[#090e11]/30 z-10">
+        <div className="mx-auto max-w-6xl relative z-10">
+          <div className="text-center mb-16">
+            <h2 className="font-display text-3xl font-bold tracking-tight text-white sm:text-4xl mb-4">
+              {text.audiences.title}
             </h2>
-            <p className="text-sm text-[#8f969b] mt-2 leading-relaxed">
-              {text.faq.subtitle}
+            <p className="mx-auto max-w-2xl text-sm sm:text-base text-[#8f969b] leading-relaxed">
+              {text.audiences.subtitle}
             </p>
           </div>
 
-          {/* Accordion Questions List */}
-          <div className="space-y-4 text-left">
-            {text.faq.questions.map((faqItem, idx) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+            {packages.map((pkg, idx) => (
               <div
                 key={idx}
-                className="rounded-xl border border-[#2f3539] bg-[#1d2226] overflow-hidden transition-all duration-200"
+                className={`relative rounded-3xl border transition-all duration-300 hover:scale-[1.01] ${
+                  pkg.popular
+                    ? 'border-purple-500/50 bg-purple-500/5 shadow-purple-500/5 shadow-lg'
+                    : 'border-white/10 bg-zinc-900/50'
+                } p-8 backdrop-blur-sm flex flex-col justify-between`}
               >
-                <button
-                  onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                  className="w-full px-5 py-4 flex items-center justify-between gap-4 font-bold text-sm text-[#e9ecef] hover:text-[#70b5f9] text-left cursor-pointer focus:outline-none"
-                >
-                  <span>{faqItem.q}</span>
-                  <ChevronRight
-                    className={`size-4 text-[#8f969b] shrink-0 transition-transform duration-200 ${
-                      openFaq === idx ? 'rotate-90 text-[#70b5f9]' : ''
-                    }`}
-                  />
-                </button>
-                <div
-                  className={`transition-all duration-300 ease-in-out ${
-                    openFaq === idx ? 'max-h-[300px] border-t border-[#2f3539]/50' : 'max-h-0 pointer-events-none'
-                  } overflow-hidden`}
-                >
-                  <p className="p-5 text-xs text-[#8f969b] leading-relaxed bg-[#12161a]/40">
-                    {faqItem.a}
-                  </p>
+                {pkg.popular && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-purple-500 to-indigo-500 px-3.5 py-1 text-[10px] font-bold text-white uppercase tracking-wider shadow-md">
+                    {text.audiences.popularBadge}
+                  </div>
+                )}
+
+                <div>
+                  <div className="mb-6 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-sm">
+                    {pkg.icon}
+                  </div>
+
+                  <h3 className="font-display text-lg font-bold text-white mb-6">
+                    {pkg.title}
+                  </h3>
+
+                  <ul className="space-y-4 mb-8 text-left">
+                    {pkg.features.map((feature, fIdx) => (
+                      <li key={fIdx} className="flex gap-3 items-start text-xs sm:text-sm text-slate-300">
+                        <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-emerald-400" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
+
+                <Link
+                  href={`/docs/${lang}/quickstart`}
+                  className={`w-full rounded-full py-2.5 text-center text-xs font-semibold tracking-wide transition-all border ${
+                    pkg.popular
+                      ? 'bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800'
+                      : 'bg-white/15 text-white hover:bg-white/20 active:bg-white/25 border border-white/10'
+                  }`}
+                >
+                  {text.audiences.exploreBtn}
+                </Link>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Visual Bannered CTA Section */}
-      <section className="w-full px-6 py-20 relative bg-[#090e11] border-t border-[#2f3539] z-10 text-center">
-        <div className="absolute inset-0 bg-radial from-[#0a66c2]/5 via-transparent to-transparent pointer-events-none" />
-        <div className="max-w-4xl mx-auto relative z-10 flex flex-col items-center">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#e9ecef] tracking-wider uppercase font-mono mb-4">
-            {text.cta.title}
-          </h2>
-          <p className="text-sm text-[#8f969b] mb-8 max-w-md">
-            {text.cta.subtitle}
-          </p>
-          <Link
-            href="/docs/quickstart"
-            className="inline-flex items-center gap-2 px-8 py-4 text-sm font-bold text-white bg-[#0a66c2] hover:bg-[#004182] rounded-full hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer shadow-lg shadow-[#0a66c2]/10"
-          >
-            <span>{text.cta.button}</span>
-            <ArrowRight className="size-4" />
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="w-full px-6 py-12 border-t border-[#2f3539] relative z-10 bg-[#1d2226] text-left">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-2.5 text-xs text-[#8f969b]">
-            <Layers className="h-4 w-4 text-[#70b5f9]" />
-            <span className="font-bold text-[#e9ecef]">LinkedIn Job Explorer</span>
-            <span className="text-[#2f3539]">·</span>
-            <span>{text.footer.built}</span>
+      {/* Footer Section */}
+      <footer className="w-full px-6 py-16 border-t border-[#2f3539] relative z-10 bg-[#12161a] text-left">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center gap-2.5 text-xs text-[#8f969b]">
+              <Layers className="h-5 w-5 text-[#70b5f9]" />
+              <span className="font-bold text-white text-sm">LinkedIn Job Explorer</span>
+            </div>
+            <p className="text-xs text-[#8f969b] max-w-sm leading-relaxed">
+              {text.footer.desc}
+            </p>
           </div>
-          <div className="flex items-center gap-6">
-            <Link href="/docs/quickstart" className="text-xs text-[#8f969b] hover:text-[#70b5f9] transition-colors">
+          <div className="flex flex-wrap gap-x-8 gap-y-4 justify-center md:justify-end text-xs text-[#8f969b] font-medium">
+            <Link href={`/docs/${lang}/quickstart`} className="hover:text-white transition-colors">
               {text.footer.links.docs}
             </Link>
-            <Link href="/docs/job-backend/credentials/getCredentialsStatus" className="text-xs text-[#8f969b] hover:text-[#70b5f9] transition-colors">
+            <Link href={`/docs/${lang}/job-backend/overview`} className="hover:text-white transition-colors">
               {text.footer.links.gateway}
             </Link>
-            <Link href="/docs/job-backend/overview" className="text-xs text-[#8f969b] hover:text-[#70b5f9] transition-colors">
+            <Link href={`/docs/${lang}/job-backend/overview`} className="hover:text-white transition-colors">
               {text.footer.links.jobBackend}
             </Link>
-            <Link href="/docs/publisher-backend/overview" className="text-xs text-[#8f969b] hover:text-[#70b5f9] transition-colors">
+            <Link href={`/docs/${lang}/publisher-backend/overview`} className="hover:text-white transition-colors">
               {text.footer.links.publisher}
             </Link>
+          </div>
+        </div>
+
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between pt-8 mt-8 border-t border-white/5 text-[11px] text-[#8f969b] gap-4">
+          <p>{text.footer.rights}</p>
+          <div className="flex gap-4">
+            <a href="#" className="hover:text-white transition-colors">
+              {text.footer.privacy}
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              {text.footer.terms}
+            </a>
           </div>
         </div>
       </footer>
