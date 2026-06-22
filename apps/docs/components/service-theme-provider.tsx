@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 
 const serviceThemes: Record<string, string> = {
   '/docs/gateway': 'service-gateway',
@@ -20,9 +20,18 @@ export function ServiceThemeProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const theme = getServiceTheme(pathname);
 
-  return (
-    <div data-service={theme || undefined} className={theme}>
-      {children}
-    </div>
-  );
+  useEffect(() => {
+    const classesToRemove = Object.values(serviceThemes);
+    
+    // Apply changes to both documentElement (html) and body for maximum compatibility
+    document.documentElement.classList.remove(...classesToRemove);
+    document.body.classList.remove(...classesToRemove);
+    
+    if (theme) {
+      document.documentElement.classList.add(theme);
+      document.body.classList.add(theme);
+    }
+  }, [theme]);
+
+  return <>{children}</>;
 }
