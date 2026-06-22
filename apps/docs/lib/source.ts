@@ -4,13 +4,24 @@ import { lucideIconsPlugin } from 'fumadocs-core/source/lucide-icons';
 import { openapiPlugin } from 'fumadocs-openapi/server';
 import { docsContentRoute, docsImageRoute, docsRoute } from './shared';
 
+import { defineI18n } from 'fumadocs-core/i18n';
+
+const i18n = defineI18n({
+  languages: ['pt-BR', 'en'],
+  defaultLanguage: 'pt-BR',
+  parser: 'dir',
+});
+
 // See https://fumadocs.dev/docs/headless/source-api for more info
 export const source = loader({
   baseUrl: docsRoute,
   source: docs.toFumadocsSource(),
-  i18n: {
-    languages: ['pt-BR', 'en'],
-    defaultLanguage: 'pt-BR',
+  i18n,
+  url(slugs, locale) {
+    if (locale) {
+      return '/' + ['docs', locale, ...slugs].join('/');
+    }
+    return '/' + ['docs', ...slugs].join('/');
   },
   plugins: [lucideIconsPlugin(), openapiPlugin()],
 });

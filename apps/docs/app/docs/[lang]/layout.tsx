@@ -45,13 +45,7 @@ export default async function Layout({
     url: `/docs/${lang}${tab.url.replace('/docs', '')}`,
   }));
 
-  const rawTree = source.getPageTree(lang);
-  const langFolder = rawTree.children.find(
-    (child) => child.type === 'folder' && (child as any).$id === lang
-  );
-  const tree = langFolder && langFolder.type === 'folder'
-    ? { ...rawTree, children: langFolder.children }
-    : rawTree;
+  const tree = source.getPageTree(lang);
 
   return (
     <ServiceThemeProvider>

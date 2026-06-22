@@ -29,7 +29,7 @@ export default async function Page(props: PageProps<'/docs/[lang]/[[...slug]]'>)
     console.log('[DEBUG] Sample pages:', allPages.slice(0, 3).map(p => ({ url: p.url, slugs: p.slugs })));
   }
 
-  const page = source.getPage([params.lang, ...normalizedSlug], params.lang);
+  const page = source.getPage(normalizedSlug, params.lang);
   console.log('[DEBUG] Page found:', !!page, page ? page.url : 'null');
   if (!page) notFound();
 
@@ -74,7 +74,7 @@ export async function generateStaticParams() {
 
 export async function generateMetadata(props: PageProps<'/docs/[lang]/[[...slug]]'>): Promise<Metadata> {
   const params = await props.params;
-  const page = source.getPage([params.lang, ...(params.slug ?? [])], params.lang);
+  const page = source.getPage(params.slug ?? [], params.lang);
   if (!page) notFound();
 
   return {
