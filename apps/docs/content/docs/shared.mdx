@@ -1,0 +1,139 @@
+---
+title: Shared Package
+description: TypeScript types and React UI components used across all apps
+---
+
+# Shared Package
+
+`packages/shared` (`@linkedin-job-applier/shared`) provides the shared type system and reusable React UI components consumed by both frontend applications and backend services.
+
+---
+
+## Types
+
+Core TypeScript interfaces that define the data contracts across the monorepo.
+
+### Job Types
+
+| Type | Description |
+| :--- | :--- |
+| `Job` | Job listing (id, title, companyInfo, companyLogo, applied, language) |
+| `JobDetail` | Full job detail (description, location, url, employmentStatus, applyForm, applied, closed) |
+
+### Form Types
+
+| Type | Description |
+| :--- | :--- |
+| `FormQuestion` | Application form field (urn, type, options, suggestedAnswer, prefilledValue) |
+| `ApplyForm` | Full form structure (steps, questions, referenceId, resumeUploadFormElementUrn) |
+| `FormResponse` | LinkedIn submission format (formElementUrn + discriminated union input values) |
+| `FileUploadResponse` | Resume upload mapping (inputUrn + formElementUrn) |
+
+### Profile Types
+
+| Type | Description |
+| :--- | :--- |
+| `WorkExperience` | Structured work experience (company, role, duration, description) |
+| `Education` | Structured education entry (institution, degree, duration) |
+| `ParsedResume` | AI-parsed resume (about + experiences + education) |
+
+### Application Types
+
+| Type | Description |
+| :--- | :--- |
+| `Application` | Job application record with metadata |
+| `AIAnswer` | AI-generated answer format |
+| `AIResponse` | AI response wrapper |
+
+---
+
+## Components
+
+Reusable React components shared across `linkedin-job-frontend` and `linkedin-publisher-frontend`.
+
+### Card
+
+Card container with active/hover states for list items.
+
+```tsx
+import { Card } from '@linkedin-job-applier/shared';
+
+<Card active onClick={() => select(item)}>
+  <h3>{item.title}</h3>
+  <p>{item.description}</p>
+</Card>
+```
+
+### Button
+
+Button component with variants and sizes.
+
+```tsx
+import { Button } from '@linkedin-job-applier/shared';
+
+<Button variant="primary" size="md" icon={<RocketIcon />}>
+  Launch
+</Button>
+```
+
+**Variants**: `primary`, `secondary`, `ghost`
+**Sizes**: `sm`, `md`, `lg`
+
+### Input
+
+Input and Textarea components with icon slots.
+
+```tsx
+import { Input } from '@linkedin-job-applier/shared';
+
+<Input
+  placeholder="Search jobs..."
+  startIcon={<SearchIcon />}
+  endIcon={<FilterIcon />}
+/>
+```
+
+### ProfileView
+
+Full profile display with avatar, about, experience, and education sections.
+
+```tsx
+import { ProfileView } from '@linkedin-job-applier/shared';
+
+<ProfileView profile={userProfile} />
+```
+
+### Toast
+
+Toast notification system with context provider and hook.
+
+```tsx
+import { ToastProvider, useToast } from '@linkedin-job-applier/shared';
+
+// In your app root
+<ToastProvider>
+  <App />
+</ToastProvider>
+
+// In components
+const { addToast } = useToast();
+addToast({ type: 'success', title: 'Saved!', description: 'Profile updated.' });
+```
+
+**Types**: `success`, `error`, `info`, `warning`
+
+### SidebarLayout
+
+App shell sidebar with brand logo, navigation, and theme toggle.
+
+```tsx
+import { SidebarLayout } from '@linkedin-job-applier/shared';
+
+<SidebarLayout
+  brand={{ name: 'My App', icon: <LogoIcon /> }}
+  navigation={navItems}
+  theme="dark"
+>
+  {children}
+</SidebarLayout>
+```

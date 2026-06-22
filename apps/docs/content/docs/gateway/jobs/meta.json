@@ -1,5 +1,5 @@
 {
-  "title": "Jobs API",
+  "title": "Jobs",
   "pages": [
     "listJobs",
     "getJobDetail",

@@ -3,7 +3,32 @@ import { credentialsService } from '../services/credentialsService';
 
 const router = Router();
 
-// GET /api/credentials/status – used by frontend to check if credentials exist
+/**
+ * @openapi
+ * /api/credentials/status:
+ *   get:
+ *     tags:
+ *       - Credentials
+ *     operationId: getPublisherCredentialsStatus
+ *     summary: Check credential status
+ *     description: Returns whether the publisher backend currently stores session credentials and when they were updated.
+ *     responses:
+ *       200:
+ *         description: Credentials status checked successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 hasCredentials:
+ *                   type: boolean
+ *                   example: true
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *                   nullable: true
+ *                   example: "2026-06-21T18:00:00.000Z"
+ */
 router.get('/status', async (_req, res) => {
   try {
     const creds = await credentialsService.getLatest();
@@ -17,7 +42,55 @@ router.get('/status', async (_req, res) => {
   }
 });
 
-// POST /api/credentials – called by the Chrome extension to save session credentials
+/**
+ * @openapi
+ * /api/credentials:
+ *   post:
+ *     tags:
+ *       - Credentials
+ *     operationId: savePublisherCredentials
+ *     summary: Save session credentials
+ *     description: Receives the LinkedIn session cookies, CSRF tokens, and client environment headers synced from the Chrome extension.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - cookie
+ *               - csrf
+ *             properties:
+ *               cookie:
+ *                 type: string
+ *                 description: Full LinkedIn session cookie string
+ *                 example: "li_at=AQED...; JSESSIONID=\"ajax:123456\";"
+ *               csrf:
+ *                 type: string
+ *                 description: Plain CSRF token extracted from JSESSIONID
+ *                 example: "ajax:123456"
+ *               headers:
+ *                 type: object
+ *                 description: Client environment headers
+ *     responses:
+ *       200:
+ *         description: Credentials saved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 id:
+ *                   type: string
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Missing required fields
+ */
 router.post('/', async (req, res) => {
   try {
     const { cookie, csrf, headers } = req.body as { cookie?: string; csrf?: string; headers?: Record<string, string> };
