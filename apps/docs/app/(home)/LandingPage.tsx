@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import {
   Layers, Briefcase, Rocket, ArrowRight,
   Zap, Bot, FileText, Terminal, Globe, RefreshCw,
-  ImageIcon, ChevronRight, Database, Cpu, Check, Users,
+  ImageIcon, ChevronLeft, ChevronRight, Database, Cpu, Check, Users,
   Search, Play, AlertCircle, ShieldAlert, Award,
   ThumbsUp, MessageSquare, Share2, Send, Bookmark, MoreHorizontal, Sparkles,
   PenTool, BookOpen, FileCheck2, Rss, Network, UserSearch, Code2, CheckCircle2,
@@ -701,16 +701,20 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
           {/* Post Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="size-8.5 rounded-full bg-[#0a66c2] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow">JL</div>
+              <div className="size-9 rounded-full bg-[#deebf7] flex items-center justify-center shrink-0 overflow-hidden border border-[#c9daf8]/50">
+                <svg viewBox="0 0 24 24" className="w-7 h-7 fill-[#9ec0e6]">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+              </div>
               <div>
                 <div className="text-xs font-bold text-white hover:text-[#70b5f9] hover:underline cursor-pointer flex items-center gap-1">
-                  <span>Julio Lima</span>
-                  <span className="text-[9px] font-normal text-slate-400">· {lang === 'pt-BR' ? '1º grau' : '1st'}</span>
+                  <span>Júlio V.</span>
+                  <span className="text-[10px] font-normal text-slate-400">· {lang === 'pt-BR' ? 'Você' : 'You'}</span>
                 </div>
-                <div className="text-[9px] text-[#8f969b] truncate max-w-[220px] sm:max-w-[320px]">Senior Software Engineer | Tech Creator</div>
-                <div className="text-[8px] text-[#8f969b] flex items-center gap-1.5 mt-0.5">
-                  <span>1 h · {lang === 'pt-BR' ? 'Editado' : 'Edited'} ·</span>
-                  <Globe className="size-2.5 text-[#8f969b]" />
+                <div className="text-[9px] text-[#8f969b] leading-none mt-0.5">--</div>
+                <div className="text-[8px] text-[#8f969b] flex items-center gap-1 mt-0.5">
+                  <span>1 d ·</span>
+                  <Globe className="size-2 text-[#8f969b]" />
                 </div>
               </div>
             </div>
@@ -721,66 +725,156 @@ function BentoGridFeatures({ lang }: { lang: Locale }) {
           <div className="text-[10.5px] text-slate-200 leading-relaxed space-y-1">
             <p className="whitespace-pre-wrap">
               {lang === 'pt-BR' 
-                ? 'Acabei de gerar um guia completo sobre workers em background e filas com BullMQ diretamente do meu docs! 🚀\nO formato carrossel ajuda a explicar melhor a arquitetura. Dê uma olhada:'
-                : 'Just generated a complete architecture guide explaining background queue workers with Redis and BullMQ! 🚀\nVisual slides make deep backend topics much easier to follow. Check it out:'}
+                ? 'Acabei de criar esse carrossel sobre **Como usar BullMQ e Redis no Next.js** utilizando nosso assistente com Inteligência Artificial! 🚀\n\nConfira o arquivo PDF em anexo abaixo e arraste para o lado para ler os slides.'
+                : 'I just created this carousel about **How to use BullMQ and Redis in Next.js** using our AI assistant! 🚀\n\nCheck the attached PDF file below and swipe to read the slides.'}
             </p>
           </div>
 
           {/* PDF Slides Carousel Widget Container */}
-          <div className="border border-[#2f3539]/60 rounded-xl bg-[#090e11] flex flex-col justify-between h-[155px] font-sans relative overflow-hidden group/carousel">
+          <div className="relative overflow-hidden w-full bg-[#0f1316] rounded-xl border border-[#2f3539]/60 p-3 h-[340px] flex items-center shadow-inner group/carousel">
             
-            {/* Header row in slides */}
-            <div className="px-4 py-2 border-b border-[#2f3539]/40 bg-[#12161a]/30 flex justify-between items-center">
-              <span className="text-[8.5px] font-bold text-[#70b5f9] font-mono tracking-wider">
-                {lang === 'pt-BR' ? 'GUIA DE ARQUITETURA' : 'ARCHITECTURE SLIDES'}
-              </span>
-              <span className="text-[9px] font-mono font-bold text-[#8f969b] bg-[#12161a] border border-[#2f3539]/60 px-1.5 py-0.2 rounded shadow-inner">
-                {currentSlide + 1} / 3
-              </span>
+            {/* Slide translator wrapper */}
+            <div 
+              className="flex gap-3 transition-transform duration-300 ease-out" 
+              style={{ transform: `translateX(-${currentSlide * 257}px)` }}
+            >
+              {/* Slide 1 Card (Cover) */}
+              <div className="w-[245px] h-[310px] bg-[#faf6f0] border border-[#e6ded5] rounded-xl p-4 flex flex-col justify-between shrink-0 transition-all select-none relative shadow-md">
+                <div className="flex-1 flex flex-col justify-between">
+                  <div>
+                    <span className="bg-[#1d2226] text-white font-mono text-[7.5px] px-2 py-0.5 rounded-full inline-block">
+                      {lang === 'pt-BR' ? 'carrossel-bullmq.pdf · 8 páginas' : 'carousel-bullmq.pdf · 8 pages'}
+                    </span>
+                    
+                    <h4 className="font-serif text-base font-bold text-[#3d2314] leading-snug mt-4 px-1">
+                      {lang === 'pt-BR' ? 'Guia Completo de Filas e Background Jobs' : 'Complete Guide to Background Queues'}
+                    </h4>
+                    
+                    <p className="font-sans text-[10px] text-[#4a3f35] leading-relaxed mt-2 px-1">
+                      {lang === 'pt-BR' 
+                        ? 'Aprenda a orquestrar workers BullMQ e Redis de forma escalável no Next.js App Router.' 
+                        : 'Master scales and asynchronous queues utilizing BullMQ and Redis.'}
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 mt-4 px-1">
+                    <div className="size-6 rounded-full bg-[#ea580c] text-white flex items-center justify-center font-bold text-[8px] shrink-0">
+                      JL
+                    </div>
+                    <span className="text-[9.5px] text-[#4a3f35] font-semibold truncate">Júlio Lima Costa Valladares</span>
+                  </div>
+                </div>
+
+                <div className="border-t border-[#e6ded5] pt-2 flex justify-between items-center text-[7.5px] text-[#8c7e6f] font-sans">
+                  <span className="truncate max-w-[90px]">Júlio Lima</span>
+                  <span className="text-[#ea580c] font-bold tracking-wider">{lang === 'pt-BR' ? 'DESLIZE ➔' : 'SWIPE ➔'}</span>
+                  <span>1 / 8</span>
+                </div>
+              </div>
+
+              {/* Slide 2 Card */}
+              <div className="w-[245px] h-[310px] bg-[#faf6f0] border border-[#e6ded5] rounded-xl p-4 flex flex-col justify-between shrink-0 transition-all select-none relative shadow-md">
+                <div>
+                  <h4 className="font-serif text-[14px] font-bold text-[#3d2314] leading-snug px-1">
+                    {lang === 'pt-BR' ? 'Por que BullMQ & Redis?' : 'Why BullMQ & Redis?'}
+                  </h4>
+                  
+                  <div className="text-[9.5px] text-[#4a3f35] space-y-2 mt-3 leading-tight px-1 font-sans">
+                    <div>
+                      <div className="text-[#2b1a0e] font-bold">● {lang === 'pt-BR' ? 'Threads em Background:' : 'Background Threads:'}</div>
+                      <div className="pl-3.5 text-[8.5px] text-[#5c5043]">
+                        {lang === 'pt-BR' ? 'Processamento assíncrono que evita o congelamento das rotas da API.' : 'Async processing that avoids blocking API route execution.'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[#2b1a0e] font-bold">● {lang === 'pt-BR' ? 'Concorrência & Filas:' : 'Queue Concurrency:'}</div>
+                      <div className="pl-3.5 text-[8.5px] text-[#5c5043]">
+                        {lang === 'pt-BR' ? 'Orquestração de tarefas paralelas distribuídas e rate limit control.' : 'Orchestration of distributed parallel jobs and rate limit control.'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[#2b1a0e] font-bold">● {lang === 'pt-BR' ? 'Retries Automáticos:' : 'Automatic Retries:'}</div>
+                      <div className="pl-3.5 text-[8.5px] text-[#5c5043]">
+                        {lang === 'pt-BR' ? 'Resiliência a limites de requisição com políticas de backoff exponencial.' : 'Resiliency to API limits using exponential backoff policies.'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-[#e6ded5] pt-2 flex justify-between items-center text-[7.5px] text-[#8c7e6f] font-sans">
+                  <span className="truncate max-w-[90px]">Júlio Lima</span>
+                  <span className="text-[#ea580c] font-bold tracking-wider">{lang === 'pt-BR' ? 'DESLIZE ➔' : 'SWIPE ➔'}</span>
+                  <span>2 / 8</span>
+                </div>
+              </div>
+
+              {/* Slide 3 Card */}
+              <div className="w-[245px] h-[310px] bg-[#faf6f0] border border-[#e6ded5] rounded-xl p-4 flex flex-col justify-between shrink-0 transition-all select-none relative shadow-md">
+                <div>
+                  <h4 className="font-serif text-[14px] font-bold text-[#3d2314] leading-snug px-1">
+                    {lang === 'pt-BR' ? 'Benefícios e Resultados' : 'Achieved Results'}
+                  </h4>
+                  
+                  <div className="text-[9.5px] text-[#4a3f35] space-y-2 mt-3 leading-tight px-1 font-sans">
+                    <div>
+                      <div className="text-[#2b1a0e] font-bold">● {lang === 'pt-BR' ? 'Automação sem Bloqueios:' : 'Block-free Automation:'}</div>
+                      <div className="pl-3.5 text-[8.5px] text-[#5c5043]">
+                        {lang === 'pt-BR' ? 'Execução em paralelo permite aplicar para mais de 100 vagas/hora.' : 'Parallel execution allows applying for 100+ jobs/hour.'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[#2b1a0e] font-bold">● {lang === 'pt-BR' ? 'Orquestrador Inteligente:' : 'Intelligent Orchestrator:'}</div>
+                      <div className="pl-3.5 text-[8.5px] text-[#5c5043]">
+                        {lang === 'pt-BR' ? 'Modelos Gemini geram respostas contextuais customizadas com IA.' : 'Gemini models resolve complex questionnaire answers automatically.'}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[#2b1a0e] font-bold">● {lang === 'pt-BR' ? 'Alta Disponibilidade:' : 'High Availability:'}</div>
+                      <div className="pl-3.5 text-[8.5px] text-[#5c5043]">
+                        {lang === 'pt-BR' ? 'Persistência no Redis previne perda de dados em quedas de rede.' : 'Redis caching guarantees queue state persistence across crashes.'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-[#e6ded5] pt-2 flex justify-between items-center text-[7.5px] text-[#8c7e6f] font-sans">
+                  <span className="truncate max-w-[90px]">Júlio Lima</span>
+                  <span className="text-[#ea580c] font-bold tracking-wider">{lang === 'pt-BR' ? 'FIM ➔' : 'END ➔'}</span>
+                  <span>3 / 8</span>
+                </div>
+              </div>
             </div>
 
-            {/* Slide Body Content */}
-            <div className="px-6 py-3 flex-1 flex flex-col justify-center">
-              <h4 className="text-[11px] font-bold text-white mb-2 leading-tight">
-                {slides[currentSlide].title}
-              </h4>
-              <ul className="space-y-1 text-[9px] text-slate-300">
-                {slides[currentSlide].bullets.map((bullet, bIdx) => (
-                  <li key={bIdx} className="truncate">
-                    {bullet}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Slide footer */}
-            <div className="px-4 py-1.5 border-t border-[#2f3539]/30 bg-[#12161a]/20 text-[8px] text-[#70b5f9] font-medium truncate">
-              {slides[currentSlide].footer}
-            </div>
-
-            {/* Navigation arrows */}
+            {/* Navigation arrows overlay */}
             <button
               onClick={() => setCurrentSlide(prev => Math.max(0, prev - 1))}
               disabled={currentSlide === 0}
-              className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center bg-[#090e11]/80 hover:bg-[#12161a] border border-[#2f3539] text-[#70b5f9] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-0 select-none shadow transition-opacity duration-200"
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold w-9 h-9 rounded-full flex items-center justify-center bg-[#1d2226]/90 hover:bg-[#2f3539] border border-[#2f3539] text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-0 select-none shadow transition-opacity duration-200 z-20"
             >
-              ◀
+              <ChevronLeft className="size-4" />
             </button>
             <button
-              onClick={() => setCurrentSlide(prev => Math.min(slides.length - 1, prev + 1))}
-              disabled={currentSlide === slides.length - 1}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold w-6 h-6 rounded-full flex items-center justify-center bg-[#090e11]/80 hover:bg-[#12161a] border border-[#2f3539] text-[#70b5f9] hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-0 select-none shadow transition-opacity duration-200"
+              onClick={() => setCurrentSlide(prev => Math.min(1, prev + 1))}
+              disabled={currentSlide === 1}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold w-9 h-9 rounded-full flex items-center justify-center bg-[#1d2226]/90 hover:bg-[#2f3539] border border-[#2f3539] text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer p-0 select-none shadow transition-opacity duration-200 z-20"
             >
-              ▶
+              <ChevronRight className="size-4" />
             </button>
+
+            {/* Fullscreen Button Mock */}
+            <div className="absolute bottom-2.5 right-2.5 z-20 bg-[#1d2226]/90 border border-[#2f3539] hover:bg-[#2f3539] rounded-full w-9 h-9 flex items-center justify-center cursor-pointer transition-all shadow text-white">
+              <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+              </svg>
+            </div>
           </div>
 
           {/* Social Stats indicators line */}
           <div className="flex justify-between items-center text-[9px] text-[#8f969b] border-b border-[#2f3539]/30 pb-2">
             <span className="flex items-center gap-1.5 hover:text-[#70b5f9] hover:underline cursor-pointer">
-              <span>👍❤️ 142</span>
+              <span>👍 2</span>
             </span>
-            <span className="hover:text-[#70b5f9] hover:underline cursor-pointer">12 {lang === 'pt-BR' ? 'comentários' : 'comments'}</span>
+            <span className="hover:text-[#70b5f9] hover:underline cursor-pointer">0 {lang === 'pt-BR' ? 'comentários' : 'comments'}</span>
           </div>
 
           {/* Feed Post Interactive Action buttons footer */}
