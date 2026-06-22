@@ -620,6 +620,7 @@ async function main() {
     path.join(outputDir, 'meta.json'),
     JSON.stringify({
       title: 'LinkedIn Gateway',
+      root: true,
       pages: ['overview', 'jobs', 'posts', 'profile'],
     }, null, 2)
   );
@@ -678,6 +679,7 @@ async function main() {
     path.join(outputDirBackend, 'meta.json'),
     JSON.stringify({
       title: 'Job Backend',
+      root: true,
       pages: ['overview', 'credentials', 'resume', 'ai', 'applications'],
     }, null, 2)
   );
@@ -758,6 +760,7 @@ async function main() {
     path.join(outputDirPublisher, 'meta.json'),
     JSON.stringify({
       title: 'Publisher Backend',
+      root: true,
       pages: ['overview', 'posts', 'ai', 'carousel', 'credentials', 'profile'],
     }, null, 2)
   );
