@@ -488,8 +488,8 @@ const swaggerOptions = {
     ],
   },
   apis: [
-    path.join(projectRoot, '../graphql-linkedin/src/routes/*.ts'),
-    path.join(projectRoot, '../graphql-linkedin/src/routes/*.js'),
+    path.join(projectRoot, '../../packages/graphql-linkedin/src/routes/*.ts'),
+    path.join(projectRoot, '../../packages/graphql-linkedin/src/routes/*.js'),
   ],
 };
 
@@ -526,8 +526,8 @@ const swaggerOptionsBackend = {
     ],
   },
   apis: [
-    path.join(projectRoot, '../linkedin-job-backend/src/routes/*.ts'),
-    path.join(projectRoot, '../linkedin-job-backend/src/routes/*.js'),
+    path.join(projectRoot, '../../packages/job-backend/src/routes/*.ts'),
+    path.join(projectRoot, '../../packages/job-backend/src/routes/*.js'),
   ],
 };
 
@@ -581,8 +581,8 @@ const swaggerOptionsPublisher = {
     ],
   },
   apis: [
-    path.join(projectRoot, '../linkedin-publisher-backend/src/routes/*.ts'),
-    path.join(projectRoot, '../linkedin-publisher-backend/src/routes/*.js'),
+    path.join(projectRoot, '../../packages/publisher-backend/src/routes/*.ts'),
+    path.join(projectRoot, '../../packages/publisher-backend/src/routes/*.js'),
   ],
 };
 

@@ -10,12 +10,13 @@
     "strict": true
   },
   "references": [
-    { "path": "./apps/linkedin-job-backend" },
+    { "path": "./packages/job-backend" },
     { "path": "./apps/linkedin-job-frontend" },
-    { "path": "./apps/linkedin-publisher-backend" },
+    { "path": "./packages/publisher-backend" },
     { "path": "./apps/linkedin-publisher-frontend" },
-    { "path": "./apps/graphql-linkedin" },
+    { "path": "./packages/graphql-linkedin" },
     { "path": "./apps/extension" },
-    { "path": "./packages/shared" }
+    { "path": "./packages/shared" },
+    { "path": "./packages/linkedin-sdk" }
   ]
 }
