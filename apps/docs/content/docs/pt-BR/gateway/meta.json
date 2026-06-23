@@ -1,5 +1,6 @@
 {
   "title": "Gateway LinkedIn",
+  "description": "Proxy REST + GraphQL para as APIs LinkedIn Voyager",
   "root": true,
   "pages": [
     "overview",

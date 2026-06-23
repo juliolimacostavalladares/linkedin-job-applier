@@ -1,5 +1,6 @@
 {
   "title": "Backend Jobs",
+  "description": "Automação de candidaturas com IA",
   "root": true,
   "pages": [
     "overview",

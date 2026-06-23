@@ -1,5 +1,6 @@
 {
   "title": "Backend Publisher",
+  "description": "Plataforma de criação e publicação de conteúdo",
   "root": true,
   "pages": [
     "overview",
