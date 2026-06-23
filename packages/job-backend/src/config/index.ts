@@ -17,6 +17,19 @@ export const config = {
     model: process.env.NINE_ROUTER_MODEL || 'kr/claude-sonnet-4.5',
   },
 
+  ai: {
+    provider: process.env.AI_PROVIDER || '9router',
+    nineRouter: {
+      apiKey: process.env.NINE_ROUTER_API_KEY || '',
+      baseUrl: process.env.NINE_ROUTER_BASE_URL || 'http://localhost:20128/v1',
+      model: process.env.NINE_ROUTER_MODEL || 'kr/claude-sonnet-4.5',
+    },
+    ollama: {
+      baseUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434/v1',
+      model: process.env.OLLAMA_MODEL || 'qwen2.5-coder:7b',
+    },
+  },
+
   cors: {
     allowedOrigins: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:5173'],
   },
