@@ -160,7 +160,21 @@ function buildHtml(bodyHtml: string): string {
 // We also handle plain markdown headers gracefully.
 function preprocessMarkdown(markdown: string): string {
   // Normalise line endings
-  return markdown.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  let cleaned = markdown.replace(/\r\n/g, '\n').replace(/\r/g, '\n').trim();
+
+  // Strip top-level code block wrapper (e.g., ```markdown ... ```) if present
+  if (cleaned.startsWith('```')) {
+    const lines = cleaned.split('\n');
+    if (lines.length > 2) {
+      lines.shift(); // Remove the open backticks line
+      if (lines[lines.length - 1].trim() === '```') {
+        lines.pop(); // Remove the closing backticks line
+      }
+      cleaned = lines.join('\n').trim();
+    }
+  }
+
+  return cleaned;
 }
 
 export class PdfService {

@@ -273,7 +273,7 @@ SECTION STRUCTURE (in this order):
 Return ONLY the resume text (HTML header + Markdown body), without explanations, introductions or code blocks.
 `;
       const text = await this.callAI(prompt);
-      return text.trim();
+      return text.replace(/^```[a-z]*\n/i, '').replace(/\n```$/, '').trim();
     }
 
     const prompt = `
@@ -334,7 +334,7 @@ Retorne APENAS o texto do curr√≠culo (HTML header + Markdown body), sem explica√
 `;
 
     const text = await this.callAI(prompt);
-    return text.trim();
+    return text.replace(/^```[a-z]*\n/i, '').replace(/\n```$/, '').trim();
   }
 
   async generateSearchQuery(resumeText: string): Promise<string> {
