@@ -18,19 +18,8 @@ import { APIPage } from '@/components/api-page-client';
 export default async function Page(props: PageProps<'/docs/[lang]/[[...slug]]'>) {
   const params = await props.params;
   const normalizedSlug = params.slug ?? [];
-  console.log('[DEBUG] Route params:', { slug: params.slug, normalized: normalizedSlug, lang: params.lang });
-
-  // Debug: Check what pages exist for this language
-  const allPages = source.getPages(params.lang);
-  console.log('[DEBUG] Total pages for', params.lang, ':', allPages.length);
-  const allPagesNoLang = source.getPages();
-  console.log('[DEBUG] Total pages WITHOUT lang param:', allPagesNoLang.length);
-  if (allPages.length > 0) {
-    console.log('[DEBUG] Sample pages:', allPages.slice(0, 3).map(p => ({ url: p.url, slugs: p.slugs })));
-  }
 
   const page = source.getPage(normalizedSlug, params.lang);
-  console.log('[DEBUG] Page found:', !!page, page ? page.url : 'null');
   if (!page) notFound();
 
   const MDX = page.data.body;

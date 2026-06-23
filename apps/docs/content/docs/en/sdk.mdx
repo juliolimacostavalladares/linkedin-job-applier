@@ -1,0 +1,167 @@
+---
+title: LinkedIn SDK
+description: Portable, database-agnostic SDK for the LinkedIn job automation ecosystem
+---
+
+# LinkedIn SDK
+
+The **LinkedIn SDK** (`packages/linkedin-sdk`) is a decoupled, portable library that wraps all backend services (Gateway, Job Backend, Publisher Backend) into a single importable package. It supports two consumption modes: **direct** (in-process with your own database) and **http** (calling running microservices over the network).
+
+---
+
+## Installation
+
+```bash
+pnpm add @linkedin-job-applier/linkedin-sdk
+```
+
+---
+
+## Modes
+
+<Tabs>
+  <Tab value="direct">
+
+### Direct Mode
+
+Runs service logic in-process. You provide a `storage` adapter that implements `LinkedInSDKStorage` — this lets you use any database (Prisma, Drizzle, raw SQL, etc.) without the SDK knowing.
+
+Best for: server-side workers, CLI tools, serverless functions.
+
+```ts
+import { LinkedInSDK } from '@linkedin-job-applier/linkedin-sdk';
+import type { LinkedInSDKStorage } from '@linkedin-job-applier/linkedin-sdk';
+
+const storage: LinkedInSDKStorage = {
+  async getResume(profileId) { /* ... */ },
+  async getLatestResume() { /* ... */ },
+  async upsertResume(profileId, data) { /* ... */ },
+  async saveApplication(jobId, answers, status, metadata) { /* ... */ },
+  async listApplications() { /* ... */ },
+  async getApplicationByJobId(jobId) { /* ... */ },
+  async updateApplicationStatus(jobId, status) { /* ... */ },
+};
+
+const sdk = new LinkedInSDK({
+  mode: 'direct',
+  storage,
+  ai: {
+    baseUrl: 'https://api.openai.com/v1',
+    apiKey: process.env.OPENAI_API_KEY,
+    model: 'gpt-4o',
+  },
+  linkedinCredentials: {
+    cookie: process.env.LINKEDIN_COOKIE,
+    csrf: process.env.LINKEDIN_CSRF,
+  },
+});
+```
+
+  </Tab>
+  <Tab value="http">
+
+### HTTP Mode
+
+Makes HTTP requests to running microservices. No storage adapter needed — all state lives in the backends.
+
+Best for: browser apps, mobile clients, external integrations.
+
+```ts
+import { LinkedInSDK } from '@linkedin-job-applier/linkedin-sdk';
+
+const sdk = new LinkedInSDK({
+  mode: 'http',
+  baseUrl: 'http://localhost:4000',
+});
+```
+
+  </Tab>
+</Tabs>
+
+---
+
+## Namespaces
+
+### `sdk.jobs`
+
+Job search, application form parsing, AI answer generation, and application submission.
+
+```ts
+// Search for jobs
+const jobs = await sdk.jobs.search({ keywords: 'React', remote: true });
+
+// Get application form
+const form = await sdk.jobs.getApplyForm(jobId);
+
+// Submit application with AI-generated answers
+const result = await sdk.jobs.apply(jobId, answers);
+```
+
+### `sdk.publisher`
+
+Post creation, AI content generation, carousel rendering, and publishing to LinkedIn.
+
+```ts
+// Generate a post with AI
+const post = await sdk.publisher.generatePost({ prompt: 'Write about TypeScript best practices' });
+
+// Publish to LinkedIn
+await sdk.publisher.publish(post.id);
+```
+
+### `sdk.graphql`
+
+Direct access to the Gateway's GraphQL executor for custom queries.
+
+```ts
+const result = await sdk.graphql.execute({
+  query: `query { jobs(keywords: "React") { id title } }`,
+});
+```
+
+---
+
+## Storage Interface
+
+The `LinkedInSDKStorage` interface must be implemented when using direct mode. It covers resume management and application tracking:
+
+| Method | Description |
+| :--- | :--- |
+| `getResume(profileId)` | Fetch a resume by profile ID |
+| `getLatestResume()` | Fetch the most recent resume |
+| `upsertResume(profileId, data)` | Create or update a resume |
+| `saveApplication(jobId, answers, status, metadata)` | Record a job application |
+| `listApplications()` | List all tracked applications |
+| `getApplicationByJobId(jobId)` | Find an application by job ID |
+| `updateApplicationStatus(jobId, status)` | Update application status |
+
+---
+
+## Error Handling
+
+The SDK exports a hierarchy of typed errors:
+
+```ts
+import {
+  LinkedInSDKError,
+  SDKValidationError,
+  StorageError,
+  GatewayError,
+  AIError,
+} from '@linkedin-job-applier/linkedin-sdk';
+```
+
+| Error Class | When |
+| :--- | :--- |
+| `SDKValidationError` | Invalid configuration (missing mode, baseUrl, storage) |
+| `StorageError` | Database adapter throws or returns unexpected results |
+| `GatewayError` | Gateway HTTP/GraphQL request fails |
+| `AIError` | LLM API call fails or returns malformed response |
+
+---
+
+## Related
+
+- [LinkedIn Gateway](/docs/gateway/overview) — the underlying API layer
+- [Job Backend](/docs/job-backend/overview) — full backend with Prisma + SQLite
+- [Publisher Backend](/docs/publisher-backend/overview) — content creation backend

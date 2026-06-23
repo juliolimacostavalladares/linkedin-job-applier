@@ -1,0 +1,167 @@
+---
+title: LinkedIn SDK
+description: SDK portável e desacoplado para o ecossistema de automação de vagas do LinkedIn
+---
+
+# LinkedIn SDK
+
+O **LinkedIn SDK** (`packages/linkedin-sdk`) é uma biblioteca portátil e desacoplada que encapsula todos os serviços backend (Gateway, Job Backend, Publisher Backend) em um único pacote importável. Ele suporta dois modos de consumo: **direct** (in-process com seu próprio banco de dados) e **http** (chamando microsserviços em execução pela rede).
+
+---
+
+## Instalação
+
+```bash
+pnpm add @linkedin-job-applier/linkedin-sdk
+```
+
+---
+
+## Modos
+
+<Tabs>
+  <Tab value="direct">
+
+### Modo Direto
+
+Executa a lógica dos serviços in-process. Você fornece um adaptador `storage` que implementa `LinkedInSDKStorage` — isso permite usar qualquer banco de dados (Prisma, Drizzle, SQL raw, etc.) sem que o SDK saiba.
+
+Ideal para: workers server-side, ferramentas CLI, funções serverless.
+
+```ts
+import { LinkedInSDK } from '@linkedin-job-applier/linkedin-sdk';
+import type { LinkedInSDKStorage } from '@linkedin-job-applier/linkedin-sdk';
+
+const storage: LinkedInSDKStorage = {
+  async getResume(profileId) { /* ... */ },
+  async getLatestResume() { /* ... */ },
+  async upsertResume(profileId, data) { /* ... */ },
+  async saveApplication(jobId, answers, status, metadata) { /* ... */ },
+  async listApplications() { /* ... */ },
+  async getApplicationByJobId(jobId) { /* ... */ },
+  async updateApplicationStatus(jobId, status) { /* ... */ },
+};
+
+const sdk = new LinkedInSDK({
+  mode: 'direct',
+  storage,
+  ai: {
+    baseUrl: 'https://api.openai.com/v1',
+    apiKey: process.env.OPENAI_API_KEY,
+    model: 'gpt-4o',
+  },
+  linkedinCredentials: {
+    cookie: process.env.LINKEDIN_COOKIE,
+    csrf: process.env.LINKEDIN_CSRF,
+  },
+});
+```
+
+  </Tab>
+  <Tab value="http">
+
+### Modo HTTP
+
+Faz requisições HTTP para microsserviços em execução. Nenhum adaptador de storage necessário — todo o estado vive nos backends.
+
+Ideal para: aplicações browser, clientes mobile, integrações externas.
+
+```ts
+import { LinkedInSDK } from '@linkedin-job-applier/linkedin-sdk';
+
+const sdk = new LinkedInSDK({
+  mode: 'http',
+  baseUrl: 'http://localhost:4000',
+});
+```
+
+  </Tab>
+</Tabs>
+
+---
+
+## Namespaces
+
+### `sdk.jobs`
+
+Busca de vagas, parsing de formulários de candidatura, geração de respostas com IA e submissão de candidaturas.
+
+```ts
+// Buscar vagas
+const jobs = await sdk.jobs.search({ keywords: 'React', remote: true });
+
+// Obter formulário de candidatura
+const form = await sdk.jobs.getApplyForm(jobId);
+
+// Enviar candidatura com respostas geradas por IA
+const result = await sdk.jobs.apply(jobId, answers);
+```
+
+### `sdk.publisher`
+
+Criação de posts, geração de conteúdo com IA, renderização de carrossel e publicação no LinkedIn.
+
+```ts
+// Gerar post com IA
+const post = await sdk.publisher.generatePost({ prompt: 'Escreva sobre boas práticas de TypeScript' });
+
+// Publicar no LinkedIn
+await sdk.publisher.publish(post.id);
+```
+
+### `sdk.graphql`
+
+Acesso direto ao executor GraphQL do Gateway para consultas personalizadas.
+
+```ts
+const result = await sdk.graphql.execute({
+  query: `query { jobs(keywords: "React") { id title } }`,
+});
+```
+
+---
+
+## Interface de Storage
+
+A interface `LinkedInSDKStorage` deve ser implementada ao usar o modo direto. Ela cobre gerenciamento de currículos e rastreamento de candidaturas:
+
+| Método | Descrição |
+| :--- | :--- |
+| `getResume(profileId)` | Buscar currículo por ID do perfil |
+| `getLatestResume()` | Buscar o currículo mais recente |
+| `upsertResume(profileId, data)` | Criar ou atualizar um currículo |
+| `saveApplication(jobId, answers, status, metadata)` | Registrar uma candidatura |
+| `listApplications()` | Listar todas as candidaturas rastreadas |
+| `getApplicationByJobId(jobId)` | Encontrar candidatura por ID da vaga |
+| `updateApplicationStatus(jobId, status)` | Atualizar status da candidatura |
+
+---
+
+## Tratamento de Erros
+
+O SDK exporta uma hierarquia de erros tipados:
+
+```ts
+import {
+  LinkedInSDKError,
+  SDKValidationError,
+  StorageError,
+  GatewayError,
+  AIError,
+} from '@linkedin-job-applier/linkedin-sdk';
+```
+
+| Classe de Erro | Quando |
+| :--- | :--- |
+| `SDKValidationError` | Configuração inválida (mode, baseUrl ou storage ausente) |
+| `StorageError` | Adaptador de banco lança erro ou retorna resultado inesperado |
+| `GatewayError` | Requisição HTTP/GraphQL ao Gateway falha |
+| `AIError` | Chamada à API de LLM falha ou retorna resposta malformada |
+
+---
+
+## Relacionados
+
+- [LinkedIn Gateway](/docs/gateway/overview) — camada de API subjacente
+- [Job Backend](/docs/job-backend/overview) — backend completo com Prisma + SQLite
+- [Publisher Backend](/docs/publisher-backend/overview) — backend de criação de conteúdo

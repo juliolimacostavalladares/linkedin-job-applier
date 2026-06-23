@@ -8,6 +8,12 @@
     "extension",
     "security",
     "---Pacote Compartilhado---",
-    "shared"
+    "shared",
+    "---SDK---",
+    "sdk",
+    "---Serviços---",
+    "gateway",
+    "job-backend",
+    "publisher-backend"
   ]
 }

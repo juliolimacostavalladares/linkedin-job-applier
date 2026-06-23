@@ -5,9 +5,9 @@ description: LinkedIn Gateway — Proxy REST e GraphQL para APIs LinkedIn Voyage
 
 # LinkedIn Gateway
 
-O **LinkedIn Gateway** (`apps/graphql-linkedin`) é a camada de API fundamental da ferramenta. Fornece uma interface dual REST + GraphQL que faz proxy de todas as interações diretas com as APIs internas Voyager do LinkedIn.
+O **LinkedIn Gateway** (`packages/graphql-linkedin`) é a camada de API fundamental da ferramenta. Fornece uma interface dual REST + GraphQL que faz proxy de todas as interações diretas com as APIs internas Voyager do LinkedIn.
 
-Tanto o **Job Backend** quanto o **Publisher Backend** consomem este serviço como sua camada de abstração da API LinkedIn.
+Tanto o **Job Backend** quanto o **Publisher Backend** consomem este serviço como sua camada de abstração da API LinkedIn. O **LinkedIn SDK** (`packages/linkedin-sdk`) também encapsula operações do Gateway em uma interface portátil e desacoplada do banco.
 
 ---
 

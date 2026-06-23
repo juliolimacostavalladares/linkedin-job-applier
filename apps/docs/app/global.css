@@ -42,6 +42,19 @@ html > body[data-scroll-locked] {
   --color-fd-accent-foreground: oklch(0.62 0.19 290);
 }
 
+/* Dropdown tab icons: centered, fixed colors that resist hover inheritance */
+.icon-tab {
+  display: flex;
+  align-items: center;
+}
+.icon-tab-all { color: oklch(0.55 0 0) !important; }
+.icon-tab-gateway { color: oklch(0.65 0.19 264) !important; }
+.icon-tab-job { color: oklch(0.65 0.17 162) !important; }
+.icon-tab-publisher { color: oklch(0.62 0.19 290) !important; }
+button:hover .icon-tab {
+  filter: brightness(1.3);
+}
+
 .grain-bg {
   position: relative;
 }
@@ -54,7 +67,7 @@ html > body[data-scroll-locked] {
   height: 100%;
   opacity: 0.055;
   pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   z-index: 5;
 }
 
@@ -69,4 +82,3 @@ html > body[data-scroll-locked] {
 .border-brand-lime {
   border-color: #e2ff6f;
 }
-
