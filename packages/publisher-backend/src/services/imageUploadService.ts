@@ -91,7 +91,6 @@ async function registerUpload(
           };
           uploadUrl?: string;
         };
-        uploadUrl?: string;
       };
       urn?: string;
       asset?: string;

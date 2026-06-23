@@ -1,6 +1,6 @@
 export { CarouselService } from './services/carouselService';
 export { CredentialsService } from './services/credentialsService';
-export { ImageUploadService } from './services/imageUploadService';
+export { uploadImages, uploadDocument } from './services/imageUploadService';
 export { AIService } from './services/aiService';
 export { default as prisma } from './lib/prisma';
 export { default as postsRouter } from './routes/posts';

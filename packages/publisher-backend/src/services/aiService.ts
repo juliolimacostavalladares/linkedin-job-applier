@@ -14,76 +14,7 @@ Diretrizes de Formatação e Acessibilidade (ESSENCIAL):
 - Evite placeholders como [Seu Nome] ou [Sua Empresa]. O texto deve vir pronto para publicação direta.
 - Fale em português do Brasil.`;
 
-    const response = await fetch(`${config.nineRouter.baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(config.nineRouter.apiKey ? { 'Authorization': `Bearer ${config.nineRouter.apiKey}` } : {}),
-      },
-      body: JSON.stringify({
-        model: config.nineRouter.model,
-        messages: [
-          { role: 'system', content: systemInstruction },
-          { role: 'user', content: prompt }
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`NineRouter error: ${response.status} ${response.statusText} - ${text}`);
-    }
-
-    const text = await response.text();
-    const isStream = text.includes('data: ') || response.headers.get('content-type')?.includes('event-stream');
-
-    if (isStream) {
-      let accumulatedContent = '';
-      const lines = text.split('\n');
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (trimmed.startsWith('data: ')) {
-          const dataStr = trimmed.slice(6).trim();
-          if (dataStr === '[DONE]') {
-            continue;
-          }
-          try {
-            const parsed = JSON.parse(dataStr) as {
-              choices?: Array<{
-                delta?: {
-                  content?: string;
-                };
-                text?: string;
-              }>;
-            };
-            const chunk = parsed.choices?.[0]?.delta?.content || parsed.choices?.[0]?.text;
-            if (chunk) {
-              accumulatedContent += chunk;
-            }
-          } catch {
-            // Ignore parse errors for partial/malformed lines in buffer
-          }
-        }
-      }
-      const trimmedResult = accumulatedContent.trim();
-      if (!trimmedResult) {
-        throw new Error('9Router returned an empty stream response');
-      }
-      return trimmedResult;
-    } else {
-      const data = JSON.parse(text) as {
-        choices?: Array<{
-          message?: {
-            content?: string;
-          };
-        }>;
-      };
-      const content = data.choices?.[0]?.message?.content;
-      if (!content) {
-        throw new Error('Retorno vazio da API do NineRouter');
-      }
-      return content.trim();
-    }
+    return this.callAI(prompt, systemInstruction);
   }
 
   static async generateCarousel(prompt: string, tone: string): Promise<string> {
@@ -133,30 +64,53 @@ Diretrizes importantes:
 - NÃO use nenhum emoji ou ícone no conteúdo dos slides. Mantenha o texto limpo e estritamente profissional.
 - O retorno deve ser um JSON perfeitamente válido para podermos rodar JSON.parse() diretamente.`;
 
-    const response = await fetch(`${config.nineRouter.baseUrl}/chat/completions`, {
+    const content = await this.callAI(prompt, systemInstruction);
+
+    // Clean any markdown formatting if the model outputs them anyway
+    let cleaned = content.trim();
+    if (cleaned.startsWith('```json')) {
+      cleaned = cleaned.substring(7);
+    } else if (cleaned.startsWith('```')) {
+      cleaned = cleaned.substring(3);
+    }
+    if (cleaned.endsWith('```')) {
+      cleaned = cleaned.substring(0, cleaned.length - 3);
+    }
+    return cleaned.trim();
+  }
+
+  private static async callAI(prompt: string, systemInstruction?: string): Promise<string> {
+    const { provider, nineRouter, ollama } = config.ai;
+    const baseUrl = provider === 'ollama' ? ollama.baseUrl : nineRouter.baseUrl;
+    const apiKey = provider === 'ollama' ? '' : nineRouter.apiKey;
+    const model = provider === 'ollama' ? ollama.model : nineRouter.model;
+
+    const messages = [];
+    if (systemInstruction) {
+      messages.push({ role: 'system', content: systemInstruction });
+    }
+    messages.push({ role: 'user', content: prompt });
+
+    const response = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(config.nineRouter.apiKey ? { 'Authorization': `Bearer ${config.nineRouter.apiKey}` } : {}),
+        ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}),
       },
       body: JSON.stringify({
-        model: config.nineRouter.model,
-        messages: [
-          { role: 'system', content: systemInstruction },
-          { role: 'user', content: prompt }
-        ],
+        model,
+        messages,
       }),
     });
 
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(`NineRouter error: ${response.status} ${response.statusText} - ${text}`);
+      throw new Error(`${provider === 'ollama' ? 'Ollama' : 'NineRouter'} error: ${response.status} ${response.statusText} - ${text}`);
     }
 
     const text = await response.text();
     const isStream = text.includes('data: ') || response.headers.get('content-type')?.includes('event-stream');
 
-    let content = '';
     if (isStream) {
       let accumulatedContent = '';
       const lines = text.split('\n');
@@ -185,7 +139,11 @@ Diretrizes importantes:
           }
         }
       }
-      content = accumulatedContent.trim();
+      const trimmedResult = accumulatedContent.trim();
+      if (!trimmedResult) {
+        throw new Error(`${provider === 'ollama' ? 'Ollama' : '9Router'} returned an empty stream response`);
+      }
+      return trimmedResult;
     } else {
       const data = JSON.parse(text) as {
         choices?: Array<{
@@ -194,23 +152,11 @@ Diretrizes importantes:
           };
         }>;
       };
-      content = (data.choices?.[0]?.message?.content || '').trim();
+      const content = data.choices?.[0]?.message?.content;
+      if (!content) {
+        throw new Error(`Retorno vazio da API do ${provider === 'ollama' ? 'Ollama' : 'NineRouter'}`);
+      }
+      return content.trim();
     }
-
-    if (!content) {
-      throw new Error('Retorno vazio da API do NineRouter');
-    }
-
-    // Clean any markdown formatting if the model outputs them anyway
-    let cleaned = content.trim();
-    if (cleaned.startsWith('```json')) {
-      cleaned = cleaned.substring(7);
-    } else if (cleaned.startsWith('```')) {
-      cleaned = cleaned.substring(3);
-    }
-    if (cleaned.endsWith('```')) {
-      cleaned = cleaned.substring(0, cleaned.length - 3);
-    }
-    return cleaned.trim();
   }
 }

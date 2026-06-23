@@ -3,15 +3,20 @@ import type { AIResponse, FormQuestion, ParsedResume } from '../types';
 import { detectLanguageFromText } from '../utils/language';
 
 export class AIService {
-  private async call9Router(prompt: string): Promise<string> {
-    const response = await fetch(`${config.nineRouter.baseUrl}/chat/completions`, {
+  private async callAI(prompt: string): Promise<string> {
+    const { provider, nineRouter, ollama } = config.ai;
+    const baseUrl = provider === 'ollama' ? ollama.baseUrl : nineRouter.baseUrl;
+    const apiKey = provider === 'ollama' ? '' : nineRouter.apiKey;
+    const model = provider === 'ollama' ? ollama.model : nineRouter.model;
+
+    const response = await fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(config.nineRouter.apiKey ? { 'Authorization': `Bearer ${config.nineRouter.apiKey}` } : {}),
+        ...(apiKey ? { 'Authorization': `Bearer ${apiKey}` } : {}),
       },
       body: JSON.stringify({
-        model: config.nineRouter.model,
+        model,
         messages: [
           { role: 'user', content: prompt }
         ],
@@ -20,7 +25,7 @@ export class AIService {
 
     if (!response.ok) {
       const text = await response.text();
-      throw new Error(`9Router API error: ${response.status} ${response.statusText} - ${text}`);
+      throw new Error(`${provider === 'ollama' ? 'Ollama' : '9Router'} API error: ${response.status} ${response.statusText} - ${text}`);
     }
 
     const text = await response.text();
@@ -56,7 +61,7 @@ export class AIService {
       }
       const trimmedResult = accumulatedContent.trim();
       if (!trimmedResult) {
-        throw new Error('9Router returned an empty stream response');
+        throw new Error(`${provider === 'ollama' ? 'Ollama' : '9Router'} returned an empty stream response`);
       }
       return trimmedResult;
     } else {
@@ -69,7 +74,7 @@ export class AIService {
       };
       const content = data.choices?.[0]?.message?.content?.trim();
       if (!content) {
-        throw new Error('9Router returned an empty JSON response');
+        throw new Error(`${provider === 'ollama' ? 'Ollama' : '9Router'} returned an empty JSON response`);
       }
       return content;
     }
@@ -89,7 +94,7 @@ export class AIService {
     jobContext?: { title?: string; companyName?: string; description?: string }
   ): Promise<AIResponse> {
     const prompt = this.buildPrompt(questions, resume, jobContext);
-    const text = await this.call9Router(prompt);
+    const text = await this.callAI(prompt);
     return this.cleanAndParseJson<AIResponse>(text);
   }
 
@@ -131,7 +136,7 @@ Retorne um JSON válido e estrito no formato abaixo, sem tags markdown ou explic
 }
 `;
 
-    const text = await this.call9Router(prompt);
+    const text = await this.callAI(prompt);
     return this.cleanAndParseJson<ParsedResume>(text);
   }
 
@@ -267,8 +272,8 @@ SECTION STRUCTURE (in this order):
 
 Return ONLY the resume text (HTML header + Markdown body), without explanations, introductions or code blocks.
 `;
-      const text = await this.call9Router(prompt);
-      return text.trim();
+      const text = await this.callAI(prompt);
+      return text.replace(/^```[a-z]*\n/i, '').replace(/\n```$/, '').trim();
     }
 
     const prompt = `
@@ -328,8 +333,8 @@ ESTRUTURA DAS SEÇÕES (nesta ordem):
 Retorne APENAS o texto do currículo (HTML header + Markdown body), sem explicações, introduções ou blocos de código.
 `;
 
-    const text = await this.call9Router(prompt);
-    return text.trim();
+    const text = await this.callAI(prompt);
+    return text.replace(/^```[a-z]*\n/i, '').replace(/\n```$/, '').trim();
   }
 
   async generateSearchQuery(resumeText: string): Promise<string> {
@@ -351,7 +356,7 @@ Texto do currículo do usuário:
 ${resumeText}
 `;
 
-    const text = await this.call9Router(prompt);
+    const text = await this.callAI(prompt);
     return text.replace(/^```[a-z]*\n/i, '').replace(/\n```$/, '').trim();
   }
 }
